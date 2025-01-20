@@ -1,9 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
-import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
