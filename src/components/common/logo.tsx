@@ -5,7 +5,7 @@ import { siteConfig } from '@/config/site';
 
 export function Logo() {
   return (
-    <Link href="/" className="block">
+    <Link href="/" className="flex items-center justify-center">
       <Image
         src="/logo.png"
         alt={siteConfig.name}

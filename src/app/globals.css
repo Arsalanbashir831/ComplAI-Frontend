@@ -24,7 +24,7 @@ body {
     --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
+    --border: 0 0% 73%;
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
     --chart-1: 12 76% 61%;
@@ -32,6 +32,9 @@ body {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --gray-dark: 50 3% 44%;
+    --gray-light: 0 0% 94%;
+    --blue-dark: 218, 90%, 29%;
     --radius: 0.5rem;
   }
   .dark {
@@ -69,4 +72,25 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.query-limit-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: url('../../public/icons/circle.svg') no-repeat left 0 top 0;
+  background-size: 30%;
+}
+
+.query-limit-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: url('../../public/icons/circle-bg-2.svg') no-repeat right 0 bottom
+    0;
+  background-size: 25%;
 }
