@@ -1,6 +1,6 @@
-import { IdentityVerificationForm } from '../../../components/auth/identity-verification';
+import { IdentityVerificationForm } from '@/components/auth/identity-verification';
 
-export default function VerifyIdentity() {
+export default function VerifyIdentityPage() {
   return (
     <>
       <IdentityVerificationForm />

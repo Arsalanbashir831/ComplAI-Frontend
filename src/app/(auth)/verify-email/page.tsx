@@ -1,6 +1,6 @@
-import { EmailVerificationForm } from '../../../components/auth/email-verification';
+import { EmailVerificationForm } from '@/components/auth/email-verification';
 
-export default function VerifyEmail() {
+export default function VerifyEmailPage() {
   return (
     <>
       <EmailVerificationForm />

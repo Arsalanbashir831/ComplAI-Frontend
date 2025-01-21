@@ -1,85 +1,90 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-// import { useAuth } from "@/features/auth/hooks/use-auth"
-// import { useForm } from "@/hooks/use-form"
+import { Button } from '@/components/ui/button';
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '../ui/form';
+import { InputOTP, InputOTPSeparator, InputOTPSlot } from '../ui/input-otp';
+import AuthFormLayout from './form-layout';
+
+const formSchema = z.object({
+  code: z.string().min(4, {
+    message: 'Verification code must be 4 characters long',
+  }),
+});
 
 export function IdentityVerificationForm() {
-  // const { verifyIdentity, resendVerificationCode } = useAuth()
-  // const { values, handleChange } = useForm({
-  //   code: ["", "", "", ""],
-  // })
-  const values = { code: ['', '', '', ''] };
+  const router = useRouter();
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      code: '',
+    },
+  });
 
-  const handleCodeChange = (index: number, value: string) => {
-    if (value.length <= 1) {
-      // const newCode = [...values.code]
-      // newCode[index] = value
-      // handleChange({ target: { name: "code", value: newCode } })
+  const onSubmit = (value: z.infer<typeof formSchema>) => {
+    console.log('Verification Code:', value.code);
+    // Call your verification API here
 
-      if (value !== '' && index < 3) {
-        const nextInput = document.getElementById(`code-${index + 1}`);
-        nextInput?.focus();
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // await verifyIdentity(values.code.join(""))
+    router.push(ROUTES.CHAT);
   };
 
   const handleResend = async () => {
-    // await resendVerificationCode()
+    // Logic to resend verification code
+    console.log('Resend code');
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Verify your identity
-        </h1>
-        <p className="text-gray-500">
-          We&rsquo;ve sent a security code to your email
-        </p>
-      </div>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="code-0">Verification Code</Label>
-          <div className="flex gap-4">
-            {values.code.map((digit, index) => (
-              <Input
-                key={index}
-                id={`code-${index}`}
-                name={`code-${index}`}
-                type="text"
-                inputMode="numeric"
-                pattern="\d{1}"
-                maxLength={1}
-                className="w-14 text-center text-2xl"
-                value={digit}
-                onChange={(e) => handleCodeChange(index, e.target.value)}
-                required
+    <AuthFormLayout
+      title="Identity Verification"
+      subtitle="Enter the verification code sent to your email"
+      footerText="Didn’t receive code?"
+      footerLinkText="Resend OTP"
+      handleFooterLinkClick={handleResend}
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex gap-4">
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <InputOTP maxLength={6} {...field}>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSeparator />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSeparator />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSeparator />
+                        <InputOTPSlot index={3} />
+                      </InputOTP>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            ))}
+            </div>
           </div>
-        </div>
-        <Button type="submit" className="w-full">
-          Verify
-        </Button>
-      </form>
-      <p className="text-center text-sm text-gray-500">
-        Didn&rsquo;t receive code?{' '}
-        <button
-          onClick={handleResend}
-          className="text-blue-600 hover:underline"
-        >
-          Resend Code
-        </button>
-      </p>
-    </div>
+
+          <Button type="submit" className="w-full">
+            Verify
+          </Button>
+        </form>
+      </Form>
+    </AuthFormLayout>
   );
 }

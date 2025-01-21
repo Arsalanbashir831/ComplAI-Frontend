@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
@@ -19,7 +20,9 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
+import { Separator } from '../ui/separator';
 import AuthFormLayout from './form-layout';
+import { OAuthButtons } from './outh-buttons';
 
 const formSchema = z
   .object({
@@ -37,6 +40,8 @@ const formSchema = z
   });
 
 export function SignUpForm() {
+  const router = useRouter();
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,6 +56,7 @@ export function SignUpForm() {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // Handle form submission
     console.log(values);
+    router.push(ROUTES.VERIFY_EMAIL);
   };
 
   return (
@@ -61,6 +67,14 @@ export function SignUpForm() {
       footerLinkHref={ROUTES.LOGIN}
       footerLinkText="Login"
     >
+      <OAuthButtons />
+
+      <div className="flex gap-2 items-center justify-center overflow-hidden">
+        <Separator className="bg-[#BABABA]" />
+        <p className="text-xs text-gray-700">OR</p>
+        <Separator className="bg-[#BABABA]" />
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Name Field */}
@@ -149,28 +163,31 @@ export function SignUpForm() {
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
-                  <FormLabel htmlFor="agreeTerms">
+                  {/* <FormLabel htmlFor="agreeTerms">
                     I agree to the{' '}
                     <Link
                       href={ROUTES.TERMS}
-                      className="text-blue-600 hover:underline"
+                      className="text-primary hover:underline"
                     >
                       Terms of Service
                     </Link>{' '}
                     and{' '}
                     <Link
                       href={ROUTES.PRIVACY}
-                      className="text-blue-600 hover:underline"
+                      className="text-primary hover:underline"
                     >
                       Privacy Policy
                     </Link>
+                  </FormLabel> */}
+                  <FormLabel htmlFor="acceptTerms" className="text-xs">
+                    Remeber me
                   </FormLabel>
                 </div>
               )}
             />
             <Link
-              href="/forgot-password"
-              className="text-sm text-blue-600 hover:underline"
+              href={ROUTES.RESET_PASSWORD}
+              className="text-xs text-primary hover:underline"
             >
               Forgot Password?
             </Link>

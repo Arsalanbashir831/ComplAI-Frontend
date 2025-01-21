@@ -1,3 +1,4 @@
+import { AuthSlider } from '@/components/auth/AuthSlider';
 import { Logo } from '@/components/common/logo';
 
 export default function AuthLayout({
@@ -13,7 +14,9 @@ export default function AuthLayout({
           {children}
         </div>
       </div>
-      <div className="basis-1/2 p-8"></div>
+      <div className="basis-1/2 p-8">
+        <AuthSlider />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail } from 'lucide-react';
@@ -19,15 +20,19 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
+import { Separator } from '../ui/separator';
 import AuthFormLayout from './form-layout';
+import { OAuthButtons } from './outh-buttons';
 
+// no restriction on password length but password is reqquired
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters long'),
+  password: z.string().min(1, 'Password is required'),
   rememberMe: z.boolean().optional(),
 });
 
 export function LoginForm() {
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -40,6 +45,8 @@ export function LoginForm() {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // Handle form submission
     console.log(values);
+
+    router.push(ROUTES.CHAT);
   };
 
   return (
@@ -50,6 +57,14 @@ export function LoginForm() {
       footerLinkHref={ROUTES.SIGN_UP}
       footerLinkText="Sign up"
     >
+      <OAuthButtons />
+
+      <div className="flex gap-2 items-center justify-center overflow-hidden">
+        <Separator className="bg-[#BABABA]" />
+        <p className="text-xs text-gray-700">OR</p>
+        <Separator className="bg-[#BABABA]" />
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Email Field */}
@@ -95,19 +110,21 @@ export function LoginForm() {
               control={form.control}
               name="rememberMe"
               render={({ field }) => (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 ">
                   <Checkbox
                     id="rememberMe"
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
-                  <FormLabel htmlFor="rememberMe">Remember me</FormLabel>
+                  <FormLabel htmlFor="rememberMe" className="text-xs">
+                    Remember me
+                  </FormLabel>
                 </div>
               )}
             />
             <Link
-              href="/forgot-password"
-              className="text-sm text-blue-600 hover:underline"
+              href={ROUTES.RESET_PASSWORD}
+              className="text-xs text-primary hover:underline"
             >
               Forgot Password?
             </Link>
