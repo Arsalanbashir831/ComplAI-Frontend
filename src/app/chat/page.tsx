@@ -13,8 +13,10 @@ const recentChats: RecentChat[] = [
 
 export default function Page() {
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar recentChats={recentChats} />
+    <div className="flex h-screen bg-background overflow-hidden">
+      <div className="p-4">
+        <Sidebar recentChats={recentChats} />
+      </div>
       <main className="flex-1 overflow-auto">
         <NewChat />
       </main>
