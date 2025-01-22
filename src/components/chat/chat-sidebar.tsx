@@ -18,7 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Logo } from '../common/logo';
 import { Input } from '../ui/input';
 
-export function Sidebar({ recentChats }: SidebarProps) {
+export function ChatSidebar({ recentChats }: SidebarProps) {
   const router = useRouter();
 
   const handleLogout = () => {
@@ -29,7 +29,7 @@ export function Sidebar({ recentChats }: SidebarProps) {
     <div className="flex h-full w-[280px] flex-col border-[#07378C80] shadow-lg shadow-[#07378C14] rounded-xl border-[2.5px]">
       <div className="p-6">
         <div className="mb-8 border-b pb-6 ">
-          <Logo />
+          <Logo href={ROUTES.CHAT} />
         </div>
         <div className="relative">
           <Input

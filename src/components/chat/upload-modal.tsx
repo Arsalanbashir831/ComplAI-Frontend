@@ -1,10 +1,7 @@
-'use client';
-
-import { useState } from 'react';
 import Image from 'next/image';
 import { CloudUpload } from 'lucide-react';
 
-import type { UploadedFile, UploadModalProps } from '@/types/upload';
+import type { UploadModalProps } from '@/types/upload';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,72 +10,27 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+import { ScrollArea } from '../ui/scroll-area';
 import { FileCard } from './file-card';
 import { FileUpload } from './file-upload';
 
-export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-
-  const handleClose = () => {
-    setUploadedFiles([]);
-    onClose();
-  };
-
-  // Temporary function to simulate file upload progress
-  const simulateUpload = (fileId: string) => {
-    return new Promise<void>((resolve) => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        setUploadedFiles((prev) =>
-          prev.map((file) =>
-            file.id === fileId
-              ? { ...file, progress: Math.min(progress, 100) }
-              : file
-          )
-        );
-        progress += 10; // Increment progress
-
-        if (progress > 100) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 200); // Simulate progress every 200ms
-    });
-  };
-
-  const handleUpload = async (files: File[]) => {
-    const newFiles: UploadedFile[] = files.map((file) => ({
-      id: crypto.randomUUID(), // Unique identifier
-      lastModified: file.lastModified,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      webkitRelativePath: file.webkitRelativePath,
-      progress: 0, // Optional property for tracking upload progress
-      arrayBuffer: file.arrayBuffer,
-      bytes: async () => new Uint8Array(await file.arrayBuffer()),
-      slice: file.slice,
-      stream: file.stream,
-      text: file.text,
-    }));
-
-    setUploadedFiles((prev) => [...prev, ...newFiles]);
-
-    // Simulate file upload and update progress
-    await Promise.all(newFiles.map((file) => simulateUpload(file.id)));
-  };
-
+export function UploadModal({
+  isOpen,
+  uploadedFiles,
+  setUploadedFiles,
+  onClose,
+  onUpload,
+}: UploadModalProps) {
   const handleRemove = (id: string) => {
     setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
   };
 
   const handleSubmit = () => {
-    onUpload(uploadedFiles);
-    handleClose();
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className="sm:max-w-lg"
         closeButtonClass="bg-primary opacity-100 text-white p-1 rounded-full"
@@ -105,25 +57,21 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
             <div className="text-sm text-muted-foreground">
               Uploaded File(s)
             </div>
-            <div className="space-y-2">
-              {uploadedFiles.map((file) => (
-                <FileCard
-                  key={file.id}
-                  file={file}
-                  onRemove={handleRemove}
-                  type={file.type}
-                />
-              ))}
-            </div>
+            <ScrollArea className="w-full h-full max-h-48">
+              <div className="flex flex-col gap-2">
+                {uploadedFiles.map((file) => (
+                  <FileCard key={file.id} file={file} onRemove={handleRemove} />
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         ) : (
           <FileUpload
-            onUpload={handleUpload}
+            onUpload={onUpload}
             maxSize={5 * 1024 * 1024}
             allowedTypes={[
               'text/plain',
               'application/pdf',
-              'application/msword',
               'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             ]}
           />

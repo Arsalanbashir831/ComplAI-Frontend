@@ -11,12 +11,17 @@ export interface FileUploadProps {
 
 export interface UploadModalProps {
   isOpen: boolean;
+  uploadedFiles: UploadedFile[];
+  setUploadedFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>;
   onClose: () => void;
   onUpload: (files: File[]) => void;
 }
 
 export interface FileCardProps {
   file: UploadedFile;
-  type: string;
-  onRemove: (id: string) => void;
+  showExtraInfo?: boolean;
+  onRemove?: (id: string) => void;
+  titleColor?: string;
+  className?: string;
+  hasShareButton?: boolean;
 }

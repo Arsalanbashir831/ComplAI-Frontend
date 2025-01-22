@@ -35,6 +35,7 @@ body {
     --gray-dark: 50 3% 44%;
     --gray-light: 0 0% 94%;
     --blue-dark: 218, 90%, 29%;
+    --blue-light: 231, 100%, 99%;
     --radius: 0.5rem;
   }
   .dark {

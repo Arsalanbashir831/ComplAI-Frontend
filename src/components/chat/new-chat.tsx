@@ -49,7 +49,7 @@ export default function NewChat() {
         ))}
       </div>
 
-      <MessageInput />
+      <MessageInput isNewChat={true} />
     </div>
   );
 }
