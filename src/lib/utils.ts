@@ -28,3 +28,13 @@ export function validateFile(
 
   return null;
 }
+
+export function convertSizeToReadable(size: number): string {
+  if (size < 1024) return '1.00 KB'; // Minimum unit is KB
+
+  const units = ['KB', 'MB', 'GB', 'TB', 'PB'];
+  const i = Math.floor(Math.log(size) / Math.log(1024)) - 1; // Adjust index to start from KB
+  const readableSize = (size / Math.pow(1024, i + 1)).toFixed(2); // Convert size to the appropriate unit
+
+  return `${readableSize} ${units[i]}`;
+}

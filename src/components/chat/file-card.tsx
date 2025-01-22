@@ -2,28 +2,33 @@ import Image from 'next/image';
 import { X } from 'lucide-react';
 
 import type { FileCardProps } from '@/types/upload';
-import { cn } from '@/lib/utils';
+import { cn, convertSizeToReadable } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
-export function FileCard({ file, onRemove }: FileCardProps) {
-  console.log(file);
-  const isCompliance = file?.name?.toLowerCase().includes('compliance');
-
+export function FileCard({ file, type, onRemove }: FileCardProps) {
   return (
     <div
       className={cn(
         'flex items-center justify-between rounded-lg p-3',
-        isCompliance ? 'bg-red-100' : 'bg-[#07378C]'
+        type === 'application/pdf' ? 'bg-[#B1362F]' : 'bg-[#07378C]'
       )}
     >
       <div className="flex items-center gap-3">
         <Image
-          src="/icons/word-icon.svg"
-          width={24}
-          height={24}
+          src={`/icons/${type.split('/')[1]}-document.svg`}
+          width={30}
+          height={30}
           alt="Document"
         />
-        <span className="font-medium">{file.name}</span>
+        <div className="flex flex-col">
+          <span className="font-normal text-sm text-white">{file.name}</span>
+          <span className="text-xs text-white">
+            {convertSizeToReadable(file.size)}
+            <span className="ml-2">
+              {(file.progress ?? 100) < 100 ? ` Uploading...` : 'Completed'}
+            </span>
+          </span>
+        </div>
       </div>
       <Button
         variant="ghost"

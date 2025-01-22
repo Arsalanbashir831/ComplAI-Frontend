@@ -17,5 +17,6 @@ export interface UploadModalProps {
 
 export interface FileCardProps {
   file: UploadedFile;
+  type: string;
   onRemove: (id: string) => void;
 }
