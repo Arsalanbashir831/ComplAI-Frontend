@@ -1,0 +1,130 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
+import {
+  Banknote,
+  Bot,
+  ChevronLeft,
+  ChevronRight,
+  CircleDollarSign,
+  HelpCircle,
+  History,
+  LayoutDashboard,
+  LogOut,
+  User2,
+  Video,
+} from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+
+import { Logo } from '../common/logo';
+import { Separator } from '../ui/separator';
+
+const SIDEBAR_LINKS = [
+  { href: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
+  { href: ROUTES.COMPLIANCE_GPT, icon: Bot, label: 'Compliance GPT' },
+  { href: ROUTES.TUTORIALS, icon: Video, label: 'Tutorials' },
+  { href: ROUTES.HISTORY, icon: History, label: 'History' },
+];
+
+const PROFILE_LINKS = [
+  { href: ROUTES.PROFILE, icon: User2, label: 'My Profile' },
+  { href: ROUTES.SUPSCRIPTION, icon: CircleDollarSign, label: 'Subscription' },
+  { href: ROUTES.BILLING, icon: Banknote, label: 'Billing' },
+];
+
+export function DashboardSidebar() {
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
+  const handleLogout = () => router.push(ROUTES.LOGIN);
+
+  const renderLinks = (
+    links: {
+      href: string;
+      icon: React.ComponentType<{ className?: string }>;
+      label: string;
+    }[]
+  ) =>
+    links.map(({ href, icon: Icon, label }) => (
+      <Link
+        key={label}
+        href={href}
+        className="w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark"
+      >
+        <Icon className="mr-2 h-4 w-4" />
+        {label}
+      </Link>
+    ));
+
+  return (
+    <>
+      <div
+        className={cn(
+          'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col bg-blue-light md:static md:translate-x-0 transition-transform duration-300 ease-in-out',
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={toggleSidebar}
+          className={cn(
+            'md:hidden fixed top-5 z-50 rounded-full h-fit w-fit p-1.5',
+            isOpen ? '-right-4 top-7' : '-right-10'
+          )}
+        >
+          {isOpen ? (
+            <ChevronLeft className="h-6 w-6" />
+          ) : (
+            <ChevronRight className="h-6 w-6" />
+          )}
+        </Button>
+
+        <div className="p-6 pb-2">
+          <div className="mb-8 border-b border-gray-dark pb-6">
+            <Logo href={ROUTES.CHAT} />
+          </div>
+        </div>
+
+        <div className="px-6 pb-4 flex flex-col justify-between flex-1">
+          <div>
+            {renderLinks(SIDEBAR_LINKS)}
+            <Separator className="my-3 bg-gray-light" />
+            {renderLinks(PROFILE_LINKS)}
+          </div>
+
+          <div>
+            <Link
+              href={ROUTES.HELP_CENTER}
+              className="w-full flex items-center justify-start px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark"
+            >
+              <HelpCircle className="mr-2 h-4 w-4" />
+              Help Center
+            </Link>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-gray-dark"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Log out
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+    </>
+  );
+}
