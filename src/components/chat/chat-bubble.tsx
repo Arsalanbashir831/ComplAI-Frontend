@@ -1,6 +1,6 @@
-import type { ChatMessage } from '@/types/chat';
-import { cn, formatDate } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn, formatDate } from '@/lib/utils';
+import type { ChatMessage } from '@/types/chat';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
@@ -18,7 +18,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       <div
         className={cn(
           'flex flex-col gap-2 bg-blue-light border-gray-light border-2 shadow-md rounded-2xl py-6 px-8 max-w-[66.666667%]',
-          isBot && 'items-start'
+          isBot && 'items-start bg-[#ffff]'
         )}
       >
         <div className="flex items-center gap-2 ">
