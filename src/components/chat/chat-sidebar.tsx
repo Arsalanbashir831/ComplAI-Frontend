@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Command,
@@ -8,12 +10,10 @@ import {
   MessageSquareText,
   Search,
 } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
+import type { SidebarProps } from '@/types/chat';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import type { SidebarProps } from '@/types/chat';
 
 import { Logo } from '../common/logo';
 import { Input } from '../ui/input';
@@ -105,4 +105,3 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
     </div>
   );
 }
-

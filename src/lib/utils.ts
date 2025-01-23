@@ -39,7 +39,6 @@ export function convertSizeToReadable(size: number): string {
   return `${readableSize} ${units[i]}`;
 }
 
-
 export function formatDate(inputDate: string): string {
   const date = new Date(inputDate);
   const now = new Date();

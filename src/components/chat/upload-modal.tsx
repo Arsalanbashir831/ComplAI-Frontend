@@ -1,6 +1,7 @@
-import { CloudUpload } from 'lucide-react';
 import Image from 'next/image';
+import { CloudUpload } from 'lucide-react';
 
+import type { UploadModalProps } from '@/types/upload';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -8,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { UploadModalProps } from '@/types/upload';
 
 import { ScrollArea } from '../ui/scroll-area';
 import { FileCard } from './file-card';
