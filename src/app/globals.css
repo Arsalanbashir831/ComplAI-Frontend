@@ -95,8 +95,8 @@ body {
     0;
   background-size: 25%;
 }
-.text-gradient{
-  background: -webkit-linear-gradient(#020F26 0%, #07378C 100%);
+.text-gradient {
+  background: -webkit-linear-gradient(#020f26 0%, #07378c 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
