@@ -19,9 +19,8 @@ export default function ChatLayout({
   return (
     <ChatProvider>
       <div className="flex h-screen bg-background overflow-hidden">
-        <div className="p-4">
-          <ChatSidebar recentChats={recentChats} />
-        </div>
+        <ChatSidebar recentChats={recentChats} />
+
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </ChatProvider>
