@@ -1,8 +1,8 @@
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
 
-import { PromptCard as PromptCardType } from '@/types/chat';
 import { MessageInput } from '@/components/chat/message-input';
 import { PromptCard } from '@/components/chat/prompt-card';
+import { PromptCard as PromptCardType } from '@/types/chat';
 
 const promptCards: PromptCardType[] = [
   {
@@ -31,10 +31,10 @@ export default function NewChat() {
   return (
     <div className="mx-auto max-w-4xl px-6 py-12 flex flex-col justify-center h-full">
       <div className="mb-8">
-        <h1 className="mb-2 text-4xl font-bold bg-gradient-to-r from-[#020F26] to-[#07378CE5] bg-clip-text text-transparent">
+        <h1 className="mb-2 text-4xl font-bold text-gradient">
           Hi there, John
         </h1>
-        <h2 className="mb-4 text-4xl font-bold bg-gradient-to-r from-[#020F26] to-[#07378CE5] bg-clip-text text-transparent">
+        <h2 className="mb-4 text-4xl font-bold text-gradient">
           How can we help?
         </h2>
 
@@ -49,7 +49,7 @@ export default function NewChat() {
         ))}
       </div>
 
-      <MessageInput />
+      <MessageInput isNewChat={true} />
     </div>
   );
 }

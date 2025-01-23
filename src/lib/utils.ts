@@ -38,3 +38,32 @@ export function convertSizeToReadable(size: number): string {
 
   return `${readableSize} ${units[i]}`;
 }
+
+
+export function formatDate(inputDate: string): string {
+  const date = new Date(inputDate);
+  const now = new Date();
+
+  // Check if it's the same day
+  const isSameDay =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+
+  if (isSameDay) {
+    // Return time in HH:mm format
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  // Return full date and time for earlier days
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}

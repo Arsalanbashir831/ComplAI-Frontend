@@ -56,6 +56,7 @@ export default {
         },
         blue: {
           dark: 'hsl(var(--blue-dark))',
+          light: 'hsl(var(--blue-light))',
         },
       },
       borderRadius: {

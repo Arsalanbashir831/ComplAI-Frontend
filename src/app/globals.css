@@ -35,6 +35,7 @@ body {
     --gray-dark: 50 3% 44%;
     --gray-light: 0 0% 94%;
     --blue-dark: 218, 90%, 29%;
+    --blue-light: 231, 100%, 99%;
     --radius: 0.5rem;
   }
   .dark {
@@ -93,4 +94,10 @@ body {
   background: url('../../public/icons/circle-bg-2.svg') no-repeat right 0 bottom
     0;
   background-size: 25%;
+}
+.text-gradient {
+  background: -webkit-linear-gradient(#020f26 0%, #07378c 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

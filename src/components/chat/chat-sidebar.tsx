@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Command,
@@ -10,15 +8,17 @@ import {
   MessageSquareText,
   Search,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-import type { SidebarProps } from '@/types/chat';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import type { SidebarProps } from '@/types/chat';
 
 import { Logo } from '../common/logo';
 import { Input } from '../ui/input';
 
-export function Sidebar({ recentChats }: SidebarProps) {
+export function ChatSidebar({ recentChats }: SidebarProps) {
   const router = useRouter();
 
   const handleLogout = () => {
@@ -26,10 +26,10 @@ export function Sidebar({ recentChats }: SidebarProps) {
   };
 
   return (
-    <div className="flex h-full w-[280px] flex-col border-[#07378C80] shadow-lg shadow-[#07378C14] m-4 rounded-xl border-[2.5px]">
+    <div className="flex h-full w-[280px] flex-col border-[#07378C80] shadow-lg shadow-[#07378C14] rounded-xl border-[2.5px]">
       <div className="p-6">
         <div className="mb-8 border-b pb-6 ">
-          <Logo />
+          <Logo href={ROUTES.CHAT} />
         </div>
         <div className="relative">
           <Input
@@ -66,8 +66,8 @@ export function Sidebar({ recentChats }: SidebarProps) {
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="mb-8 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative">
+      <div className="p-6 pb-4">
+        <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative">
           <h3 className="mb-1 font-semibold text-xs">
             Daily query limit is almost reached
           </h3>
@@ -84,7 +84,7 @@ export function Sidebar({ recentChats }: SidebarProps) {
           </Button>
         </div>
 
-        <div className="border-t pt-6">
+        <div className="border-t pt-4">
           <Link
             href={ROUTES.DASHBOARD}
             className="w-full flex items-center justify-start px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm"
@@ -105,3 +105,4 @@ export function Sidebar({ recentChats }: SidebarProps) {
     </div>
   );
 }
+

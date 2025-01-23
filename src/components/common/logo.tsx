@@ -1,11 +1,12 @@
+import { ROUTES } from '@/constants/routes';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
 
-export function Logo() {
+export function Logo({ href = ROUTES.LANDINGPAGE }: { href?: string }) {
   return (
-    <Link href="/" className="flex items-center justify-center">
+    <Link href={href} className="flex items-center justify-center">
       <Image
         src="/logo.png"
         alt={siteConfig.name}
