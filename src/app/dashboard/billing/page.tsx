@@ -63,7 +63,7 @@ const invoices: Invoice[] = [
 
 export default function BillingPage() {
   return (
-    <div className="p-6 flex flex-col gap-y-16 bg-[#F9F9FC]">
+    <div className="p-6 flex flex-col gap-y-8 bg-[#F9F9FC]">
       <DashboardHeader title="Billings History" badgeTitle="18 Total" />
 
       <InvoiceTable invoices={invoices} />

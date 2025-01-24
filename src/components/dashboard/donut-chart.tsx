@@ -27,7 +27,11 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
     <Card className="rounded-lg shadow-md border-none w-full max-w-md md:max-w-none">
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="text-[#030229]">Tokens Summary</CardTitle>
-        <DatePicker icon={<ChevronDown className="ml-auto h-4 w-4" />} />
+        <DatePicker
+          value={undefined}
+          onChange={() => {}}
+          icon={<ChevronDown className="ml-auto h-4 w-4" />}
+        />
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center px-4">
         <ResponsiveContainer width="100%" height={300}>

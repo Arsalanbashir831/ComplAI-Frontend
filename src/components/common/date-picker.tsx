@@ -20,7 +20,7 @@ export function DatePicker({
   icon = <CalendarIcon className="ml-auto h-4 w-4 text-gray-dark" />,
   className,
 }: Readonly<{
-  value?: Date;
+  value: Date | undefined;
   onChange: (date: Date) => void;
   icon?: React.ReactNode;
   disabled?: boolean;

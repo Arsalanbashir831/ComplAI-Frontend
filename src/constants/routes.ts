@@ -14,6 +14,7 @@ export const ROUTES = {
   BILLING: '/dashboard/billing',
   PROFILE: '/dashboard/profile',
   SUPSCRIPTION: '/dashboard/subscription',
+  ENTERPRISE_SUBSCRIPTION: '/dashboard/subscription/enterprise',
   HELP_CENTER: '/help-center',
   TERMS: '/terms',
   PRIVACY: '/privacy',

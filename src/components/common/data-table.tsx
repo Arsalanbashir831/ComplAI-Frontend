@@ -87,7 +87,7 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="border-[#F0F1F3] bg-[#F7F9FC]"
+                className="border-[#F0F1F3] bg-[#F7F9FC] border-t"
               >
                 {headerGroup.headers.map((header) => {
                   const isSortable = header.column.getCanSort();
@@ -98,7 +98,7 @@ export function DataTable<TData, TValue>({
                       onClick={header.column.getToggleSortingHandler()}
                       style={{ cursor: isSortable ? 'pointer' : 'default' }}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 py-4">
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
@@ -130,7 +130,7 @@ export function DataTable<TData, TValue>({
                   className="border-[#F0F1F3]"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="text-[#667085]">
+                    <TableCell key={cell.id} className="text-[#667085] py-6">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -152,7 +152,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-center px-2 py-4">
+      <div className="flex items-center justify-center px-2 py-4 bg-[#F7F9FC] rounded-xl">
         {/* <div className="flex-1 text-sm text-muted-foreground">
           Page {table.getState().pagination.pageIndex + 1} of{' '}
           {table.getPageCount()}

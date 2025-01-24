@@ -25,7 +25,7 @@ export const columns: ColumnDef<Invoice>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
-        className="border-[#B6C2E2]"
+        className="border-[#B6C2E2] ml-8"
       />
     ),
     enableSorting: false,
@@ -48,7 +48,7 @@ export const columns: ColumnDef<Invoice>[] = [
     cell: ({ row }) => {
       const date = new Date(row.getValue('billingDate'));
       return (
-        <div className="text-xs text-[#667085]">
+        <div className="font-medium text-xs text-[#667085]">
           {date.toLocaleDateString('en-US', {
             month: 'numeric',
             day: 'numeric',
@@ -67,7 +67,9 @@ export const columns: ColumnDef<Invoice>[] = [
         style: 'currency',
         currency: 'USD',
       }).format(amount);
-      return <div className="text-xs text-[#667085]">{formatted}</div>;
+      return (
+        <div className="font-medium text-xs text-[#667085]">{formatted}</div>
+      );
     },
   },
   {
@@ -75,7 +77,9 @@ export const columns: ColumnDef<Invoice>[] = [
     header: 'Plan',
     cell: ({ row }) => {
       return (
-        <div className="text-xs text-[#667085]">{row.getValue('plan')}</div>
+        <div className="font-medium text-xs text-[#667085]">
+          {row.getValue('plan')}
+        </div>
       );
     },
   },
