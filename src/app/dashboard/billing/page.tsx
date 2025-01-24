@@ -1,6 +1,6 @@
 import type { Invoice } from '@/types/invoice';
+import InvoiceTable from '@/components/dashboard/billing/invoice-table';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
-import InvoiceTable from '@/components/dashboard/invoices/invoice-table';
 
 const invoices: Invoice[] = [
   {

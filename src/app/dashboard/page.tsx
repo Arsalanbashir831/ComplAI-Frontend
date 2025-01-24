@@ -56,7 +56,7 @@ const mockTrendData = Array.from({ length: 10 }, (_, i) => ({
 
 export default function DashboardPage() {
   return (
-    <div className="p-6 space-y-6 bg-[#F9F9FC]">
+    <div className="p-6 space-y-6">
       <DashboardHeader title="Dashboard" />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

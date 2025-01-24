@@ -48,7 +48,7 @@ const mockActivities = [
 
 export default function HistoryPage() {
   return (
-    <div className="p-6 space-y-6 bg-[#F9F9FC]">
+    <div className="p-6 space-y-6">
       <DashboardHeader title="Compliance History" />
 
       <ActivityTable

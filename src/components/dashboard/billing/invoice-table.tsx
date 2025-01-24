@@ -3,7 +3,7 @@ import { CloudUpload, Download } from 'lucide-react';
 import { Invoice } from '@/types/invoice';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/common/data-table';
-import { columns } from '@/components/dashboard/invoices/columns';
+import { columns } from '@/components/dashboard/billing/columns';
 
 export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   return (
