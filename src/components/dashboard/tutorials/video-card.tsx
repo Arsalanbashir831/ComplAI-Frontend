@@ -56,8 +56,8 @@ export function VideoCard({ video }: VideoCardProps) {
           {video.title}
         </DialogTitle>
         <DialogContent
-          className="max-w-sm md:max-w-3xl p-2 md:p-0 bg-transparent border-none"
-          closeButtonClass="bg-white rounded-full p-1"
+          className="max-w-sm md:max-w-3xl p-2 md:p-0 bg-transparent border-none group"
+          closeButtonClass="bg-white rounded-full p-1 opacity-0 group-hover:opacity-100"
           aria-describedby="video-description"
         >
           <VideoPlayer videoUrl={video.url} thumbnail={video.thumbnail} />

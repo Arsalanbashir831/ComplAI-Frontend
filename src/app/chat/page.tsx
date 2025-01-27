@@ -30,7 +30,7 @@ const promptCards: PromptCardType[] = [
 export default function ChatPage() {
   return (
     <>
-      <div className="mx-auto max-w-4xl px-6 py-12 flex flex-col justify-center">
+      <div className="mx-auto max-w-4xl px-6 py-12 flex flex-col justify-center h-full">
         <div className="mb-8">
           <h1 className="mb-2 text-4xl font-bold text-gradient">
             Hi there, John

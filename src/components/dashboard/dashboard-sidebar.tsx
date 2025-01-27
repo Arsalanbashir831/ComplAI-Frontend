@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -39,6 +39,8 @@ const PROFILE_LINKS = [
 
 export function DashboardSidebar() {
   const router = useRouter();
+  const pathname = usePathname();
+
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -55,7 +57,10 @@ export function DashboardSidebar() {
       <Link
         key={label}
         href={href}
-        className="w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark"
+        className={cn(
+          'w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark',
+          { 'text-blue-dark': pathname === href }
+        )}
       >
         <Icon className="mr-2 h-4 w-4" />
         {label}
@@ -102,7 +107,10 @@ export function DashboardSidebar() {
           <div>
             <Link
               href={ROUTES.HELP_CENTER}
-              className="w-full flex items-center justify-start px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark"
+              className={cn(
+                'w-full flex items-center justify-start px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark',
+                { 'text-blue-dark': pathname === ROUTES.HELP_CENTER }
+              )}
             >
               <HelpCircle className="mr-2 h-4 w-4" />
               Help Center
