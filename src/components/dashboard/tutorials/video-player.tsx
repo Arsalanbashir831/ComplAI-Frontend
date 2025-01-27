@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import {
   Maximize2,
   Pause,
@@ -10,8 +12,6 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
 
 import { Button } from '@/components/ui/button';
