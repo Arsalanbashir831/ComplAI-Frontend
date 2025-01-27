@@ -7,6 +7,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <>
     <div className="flex min-h-screen bg-[#F8F8FF]">
       <div className="flex-1 md:basis-1/2 px-8 py-12">
         <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center space-y-8">
@@ -18,5 +19,6 @@ export default function AuthLayout({
         <AuthSlider />
       </div>
     </div>
+    </>
   );
 }
