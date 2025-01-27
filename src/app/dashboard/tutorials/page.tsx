@@ -1,13 +1,13 @@
 'use client';
 
-import { ChevronDown, Filter, SortDesc } from 'lucide-react';
 import { useState } from 'react';
+import { ChevronDown, Filter, SortDesc } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { SearchInput } from '@/components/dashboard/tutorials/search-input';
 import { VideoSection } from '@/components/dashboard/tutorials/video-section';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 
 const MOCK_DATA = {
   recommendedVideos: {
