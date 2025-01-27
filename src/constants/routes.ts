@@ -8,7 +8,7 @@ export const ROUTES = {
   RESET_PASSWORD: '/reset-password',
   CHAT: '/chat',
   DASHBOARD: '/dashboard',
-  COMPLIANCE_GPT: '/dashboard/compliance-gpt',
+  COMPLIANCE_GPT: '/chat',
   HISTORY: '/dashboard/history',
   TUTORIALS: '/dashboard/tutorials',
   BILLING: '/dashboard/billing',
