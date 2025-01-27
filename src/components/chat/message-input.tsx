@@ -163,7 +163,7 @@ export function MessageInput({ isNewChat = false }: { isNewChat?: boolean }) {
   };
 
   return (
-    <div className="relative">
+    <div>
       <div className="bg-muted/50 rounded-lg py-4 ">
         <div className="relative bg-gray-light rounded-xl p-4">
           <Textarea

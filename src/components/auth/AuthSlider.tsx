@@ -73,7 +73,7 @@ export function AuthSlider() {
   }, []);
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-4 py-8 h-full flex flex-col justify-center">
+    <div className="relative w-full max-w-3xl mx-auto px-4 py-8 h-full flex flex-col justify-center bg-white rounded-2xl">
       {/* Question Card */}
 
       <div className={`relative w-full ${currentSlide.height} right-10`}>
