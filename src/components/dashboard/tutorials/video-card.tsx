@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { Play, User } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
 
-import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import type { Video } from '@/types/video';
 
 import { VideoPlayer } from './video-player';
 
@@ -56,8 +56,8 @@ export function VideoCard({ video }: VideoCardProps) {
           {video.title}
         </DialogTitle>
         <DialogContent
-          className="max-w-sm md:max-w-3xl p-2 md:p-0 bg-transparent border-none"
-          closeButtonClass="bg-white rounded-full p-1"
+          className="max-w-sm md:max-w-3xl p-2 md:p-0 bg-transparent border-none group"
+          closeButtonClass="bg-white rounded-full p-1 opacity-0 group-hover:opacity-100"
           aria-describedby="video-description"
         >
           <VideoPlayer videoUrl={video.url} thumbnail={video.thumbnail} />

@@ -21,7 +21,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           isBot && 'items-start bg-[#ffff]'
         )}
       >
-        <div className="flex items-center gap-2 ">
+        <div className="flex md:items-center justify-between md:justify-start gap-2 w-full">
           {!isBot ? (
             <Avatar className="h-6 w-6">
               {message.avatarUrl || '/avatar.png' ? (
@@ -42,7 +42,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             </Avatar>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row items-end md:items-center gap-2">
             <span className="text-sm font-medium border-r border-gray-light pr-2">
               {isBot ? 'Compt-AI' : message.userName || 'John William'}
             </span>
@@ -52,7 +52,11 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           </div>
         </div>
 
-        <div className={cn('rounded-lg text-sm text-justify')}>
+        <div
+          className={cn(
+            'rounded-lg text-sm text-justify break-words overflow-hidden'
+          )}
+        >
           {message.content}
         </div>
 
