@@ -175,7 +175,7 @@ export function MessageInput({ isNewChat = false }: { isNewChat?: boolean }) {
           <div className="flex justify-between items-center gap-2 mt-2">
             <div className="flex items-center">
               {uploadedFiles.length > 0 && (
-                <ScrollArea className="whitespace-nowrap w-full max-w-[600px]">
+                <ScrollArea className="whitespace-nowrap w-full max-w-[160px] min-[425px]:max-w-[250px] md:max-w-[600px]">
                   <div className="flex w-max space-x-2 p-2 h-14">
                     {uploadedFiles.map((file) => (
                       <FileCard
