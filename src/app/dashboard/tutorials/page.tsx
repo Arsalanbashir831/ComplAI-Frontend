@@ -21,6 +21,7 @@ const MOCK_DATA = {
         description:
           'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
         thumbnail: '/placeholders/tutorial-1.svg',
+        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
         tags: ['vue', 'javascript'],
       },
       {
@@ -30,6 +31,7 @@ const MOCK_DATA = {
         description:
           'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
         thumbnail: '/placeholders/tutorial-2.svg',
+        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
         tags: ['design', 'ui'],
       },
       {
@@ -39,6 +41,7 @@ const MOCK_DATA = {
         description:
           'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
         thumbnail: '/placeholders/tutorial-3.svg',
+        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
         tags: ['design', 'ui'],
       },
       {
@@ -48,6 +51,7 @@ const MOCK_DATA = {
         description:
           'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
         thumbnail: '/placeholders/tutorial-1.svg',
+        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
         tags: ['design', 'ui'],
       },
       {
@@ -57,6 +61,7 @@ const MOCK_DATA = {
         description:
           'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
         thumbnail: '/placeholders/tutorial-1.svg',
+        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
         tags: ['design', 'ui'],
       },
     ],
@@ -72,6 +77,7 @@ const MOCK_DATA = {
         description:
           'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
         thumbnail: '/placeholders/tutorial-1.svg',
+        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
         tags: ['react', 'mobile'],
       },
       {
@@ -81,6 +87,7 @@ const MOCK_DATA = {
         description:
           'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
         thumbnail: '/placeholders/tutorial-2.svg',
+        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
         tags: ['web', 'development'],
       },
       // Add more tutorials as needed
@@ -93,7 +100,10 @@ export default function TutorialsPage() {
 
   return (
     <div className="p-6 flex flex-col gap-y-8">
-      <DashboardHeader title="Subscription" />
+      <DashboardHeader
+        title="Tutorials and Guides"
+        subtitle="Your Path to Mastering Compl- AI"
+      />
 
       <div className="px-6 py-10 bg-white shadow-md rounded-xl w-full mx-auto space-y-8">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
