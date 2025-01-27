@@ -62,23 +62,53 @@ const slides: Slide[] = [
 
 export function AuthSlider() {
   const [currentSlideNo, setCurrentSlideNo] = React.useState(0);
+  const [isVisible, setIsVisible] = React.useState(true);
+  const [staggerIndex, setStaggerIndex] = React.useState(0);
   const currentSlide = slides[currentSlideNo];
 
   React.useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
+    const slideInterval = setInterval(() => {
+      // Start fade-out animation
+      setIsVisible(false);
+
+      // Change slide after fade-out animation
+      setTimeout(() => {
+        setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
+        setStaggerIndex(0);
+        setIsVisible(true);
+      }, 1000); // Wait for fade-out animation to complete
     }, 10000);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(slideInterval);
   }, []);
+
+  React.useEffect(() => {
+    if (isVisible && staggerIndex < 3) {
+      const staggerTimeout = setTimeout(() => {
+        setStaggerIndex((prevIndex) => prevIndex + 1);
+      }, 200); // Stagger each element by 200ms
+
+      return () => clearTimeout(staggerTimeout);
+    }
+  }, [isVisible, staggerIndex]);
+
+  const fadeInClass = (index: number) =>
+    isVisible && staggerIndex >= index ? 'animate-fade-in-bottom' : 'opacity-0';
+
+  const fadeOutClass = !isVisible ? 'animate-fade-out-bottom' : '';
 
   return (
     <div className="relative w-full max-w-3xl mx-auto px-4 py-8 h-full flex flex-col justify-center bg-white rounded-2xl">
       {/* Question Card */}
-
-      <div className={`relative w-full ${currentSlide.height} right-10`}>
+      <div
+        className={cn(
+          `relative w-full ${currentSlide.height} right-10`,
+          fadeInClass(0),
+          fadeOutClass
+        )}
+      >
         <Image
-          src={currentSlide.question}
+          src={currentSlide.question || '/placeholder.svg'}
           alt="Question"
           fill
           className="object-contain"
@@ -89,10 +119,14 @@ export function AuthSlider() {
       <div className="overflow-hidden">
         {currentSlide.answers[0].src && (
           <div
-            className={`relative w-full ${currentSlide.answers[0].height} z-10`}
+            className={cn(
+              `relative w-full ${currentSlide.answers[0].height} z-10`,
+              fadeInClass(1),
+              fadeOutClass
+            )}
           >
             <Image
-              src={currentSlide.answers[0].src}
+              src={currentSlide.answers[0].src || '/placeholder.svg'}
               alt={currentSlide.answers[0].alt}
               fill
               className="object-contain"
@@ -102,10 +136,14 @@ export function AuthSlider() {
 
         {currentSlide.answers[1] && (
           <div
-            className={`relative w-full ${currentSlide.answers[1].height} ${currentSlide.answers[1].top}  left-20`}
+            className={cn(
+              `relative w-full ${currentSlide.answers[1].height} ${currentSlide.answers[1].top} left-20`,
+              fadeInClass(2),
+              fadeOutClass
+            )}
           >
             <Image
-              src={currentSlide.answers[1].src}
+              src={currentSlide.answers[1].src || '/placeholder.svg'}
               alt={currentSlide.answers[1].alt}
               fill
               className="object-contain"
@@ -115,8 +153,10 @@ export function AuthSlider() {
 
         <div
           className={cn(
-            'relative scale-[1.1] bottom-4  w-full h-14 flex items-center justify-center ',
-            currentSlideNo === 2 ? 'mt-8' : ''
+            'relative scale-[1.1] bottom-4 w-full h-14 flex items-center justify-center',
+            currentSlideNo === 2 ? 'mt-8' : '',
+            fadeInClass(3),
+            fadeOutClass
           )}
         >
           <Image
@@ -137,7 +177,14 @@ export function AuthSlider() {
               'h-2 w-2 rounded-full transition-colors',
               currentSlideNo === index ? 'bg-blue-600' : 'bg-gray-300'
             )}
-            onClick={() => setCurrentSlideNo(index)}
+            onClick={() => {
+              setIsVisible(false);
+              setTimeout(() => {
+                setCurrentSlideNo(index);
+                setStaggerIndex(0);
+                setIsVisible(true);
+              }, 1000);
+            }}
             aria-label={`Slide ${index + 1}`}
           />
         ))}

@@ -3,15 +3,20 @@ import { Badge } from '../ui/badge';
 
 export default function DashboardHeader({
   title,
+  subtitle,
   badgeTitle,
 }: {
   title: string;
+  subtitle?: string;
   badgeTitle?: string;
 }) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center justify-center gap-5 ml-4 md:ml-0">
-        <h1 className="text-xl md:text-3xl font-bold">{title}</h1>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl md:text-3xl font-bold">{title}</h1>
+          {subtitle && <p className="text-base text-[#1B1B1B99]">{subtitle}</p>}
+        </div>
         {badgeTitle && (
           <Badge
             variant="outline"

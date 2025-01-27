@@ -1,9 +1,10 @@
 export interface Video {
   id: string;
   title: string;
-  studio: string;
   description: string;
   thumbnail: string;
+  studio: string;
+  url: string;
   tags: string[];
 }
 
