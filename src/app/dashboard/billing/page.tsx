@@ -1,6 +1,6 @@
-import type { Invoice } from '@/types/invoice';
 import InvoiceTable from '@/components/dashboard/billing/invoice-table';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
+import type { Invoice } from '@/types/invoice';
 
 const invoices: Invoice[] = [
   {
@@ -63,10 +63,14 @@ const invoices: Invoice[] = [
 
 export default function BillingPage() {
   return (
-    <div className="p-6 flex flex-col gap-y-8 bg-[#F9F9FC]">
+    <div className="min-h-screen flex flex-col items-center px-6 py-8 bg-[#F9F9FC]">
+      {/* Header Stays at the Top */}
       <DashboardHeader title="Billings Information" badgeTitle="18 Total" />
 
-      <InvoiceTable invoices={invoices} />
+      {/* Centered Content */}
+      <div className="flex flex-col justify-center flex-1 w-full  bg-white  rounded-xl p-8 space-y-8 mt-3">
+        <InvoiceTable invoices={invoices} />
+      </div>
     </div>
   );
 }

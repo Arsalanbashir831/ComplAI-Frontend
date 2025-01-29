@@ -48,14 +48,18 @@ const mockActivities = [
 
 export default function HistoryPage() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen flex flex-col items-center px-6 py-8">
+      {/* Header Stays at the Top */}
       <DashboardHeader title="Compliance History" />
 
-      <ActivityTable
-        activities={mockActivities}
-        pageSize={7}
-        showTitle={false}
-      />
+      {/* Centered Content */}
+      <div className="flex flex-col justify-center flex-1 w-full    rounded-xl p-6 space-y-6">
+        <ActivityTable
+          activities={mockActivities}
+          pageSize={7}
+          showTitle={false}
+        />
+      </div>
     </div>
   );
 }
