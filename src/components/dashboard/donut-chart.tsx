@@ -1,6 +1,7 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+
+
 import { Label, Pie, PieChart, ResponsiveContainer } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,9 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 
-import { DatePicker } from '../common/date-picker';
+
+import { DateRangePicker } from '../common/date-range-picker';
+
 
 interface DonutChartProps {
   used: number;
@@ -27,74 +30,74 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
     <Card className="rounded-lg shadow-md border-none w-full max-w-md md:max-w-none">
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="text-[#030229]">Tokens Summary</CardTitle>
-        <DatePicker
-          value={undefined}
-          onChange={() => {}}
-          icon={<ChevronDown className="ml-auto h-4 w-4" />}
-        />
+
+        <DateRangePicker value={undefined} onChange={() => {}} />
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center px-4">
-        <ResponsiveContainer width="100%" height={300}>
-          <ChartContainer
-            config={{
-              used: {
-                label: 'Used Tokens',
-                color: 'hsl(var(--chart-1))',
-              },
-              remaining: {
-                label: 'Remaining Tokens',
-                color: 'hsl(var(--chart-2))',
-              },
-            }}
-          >
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Pie
-                data={data}
-                innerRadius="60%"
-                outerRadius="90%"
-                paddingAngle={2}
-                dataKey="value"
-                nameKey="name"
-                startAngle={90}
-                endAngle={-270}
-              >
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="top"
-                        >
-                          <tspan
+        <div className="h-64 w-64 md:h-80 md:w-80">
+          <ResponsiveContainer>
+            <ChartContainer
+              config={{
+                used: {
+                  label: 'Used Tokens',
+                  color: 'hsl(var(--chart-1))',
+                },
+                remaining: {
+                  label: 'Remaining Tokens',
+                  color: 'hsl(var(--chart-2))',
+                },
+              }}
+            >
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Pie
+                  data={data}
+                  innerRadius="60%"
+                  outerRadius="90%"
+                  paddingAngle={2}
+                  dataKey="value"
+                  nameKey="name"
+                  startAngle={90}
+                  endAngle={-270}
+                >
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                        return (
+                          <text
                             x={viewBox.cx}
                             y={viewBox.cy}
-                            className="fill-foreground text-xl md:text-3xl font-bold"
+                            textAnchor="middle"
+                            dominantBaseline="top"
                           >
-                            {used}
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 24}
-                            className="fill-muted-foreground text-xs md:text-sm"
-                          >
-                            Remaining Tokens
-                          </tspan>
-                        </text>
-                      );
-                    }
-                  }}
-                />
-              </Pie>
-            </PieChart>
-          </ChartContainer>
-        </ResponsiveContainer>
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className="fill-foreground text-xl md:text-3xl font-bold"
+                            >
+                              {used}
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 24}
+                              className="fill-muted-foreground text-xs md:text-sm"
+                            >
+                              Remaining Tokens
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </ResponsiveContainer>
+        </div>
+
         <div className="mt-4 flex justify-center gap-4 flex-wrap">
           {data.map((entry, index) => (
             <div key={entry.name} className="flex items-center gap-2">

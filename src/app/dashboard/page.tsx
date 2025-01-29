@@ -56,21 +56,32 @@ const mockTrendData = Array.from({ length: 10 }, (_, i) => ({
 
 export default function DashboardPage() {
   return (
-    <div className="p-6 space-y-6">
+
+    <div className="min-h-screen w-full flex flex-col items-center px-6 py-8">
+      {/* Dashboard Header - Stays at the Top */}
       <DashboardHeader title="Dashboard" />
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <MetricCard title="Total Tokens" value={500} type="total" />
-        <MetricCard title="Used Tokens" value={150} type="used" />
-        <MetricCard title="Remaining Tokens" value={350} type="remaining" />
+      {/* Main Content - Centered */}
+      <div className="flex flex-col items-center justify-center flex-1 w-full mt-2 gap-8">
+        {/* Metric Cards - Centered */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full ">
+          <MetricCard title="Total Tokens" value={500} type="total" />
+          <MetricCard title="Used Tokens" value={150} type="used" />
+          <MetricCard title="Remaining Tokens" value={350} type="remaining" />
+        </div>
+
+        {/* Charts Section - Centered */}
+        <div className="grid gap-6 md:grid-cols-2 w-full ">
+          <DonutChart used={150} remaining={350} />
+          <TokenChart data={mockTrendData} />
+        </div>
+
+        {/* Activity Table - Centered & Scrollable */}
+        <div className="w-full  overflow-x-auto">
+          <ActivityTable activities={mockActivities} showActions={false} />
+        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <DonutChart used={150} remaining={350} />
-        <TokenChart data={mockTrendData} />
-      </div>
-
-      <ActivityTable activities={mockActivities} showActions={false} />
     </div>
   );
 }

@@ -17,7 +17,7 @@ export default function SpecificChatPage() {
   if (!chat) return <p>Chat not found</p>;
 
   return (
-    <div className="mx-auto  px-6  flex flex-col justify-center h-full">
+    <div className="mx-auto px-6 flex flex-col justify-center h-full">
       <ChatHeader />
 
       <ChatMessages messages={chat.messages} />

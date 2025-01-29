@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -13,7 +14,6 @@ import {
   HelpCircle,
   History,
   LayoutDashboard,
-  LogOut,
   User2,
   Video,
 } from 'lucide-react';
@@ -22,11 +22,13 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 import { Logo } from '../common/logo';
+
+import LogoutButton from '../common/logout-button';
 import { Separator } from '../ui/separator';
 
 const SIDEBAR_LINKS = [
-  { href: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
   { href: ROUTES.COMPLIANCE_GPT, icon: Bot, label: 'Compliance GPT' },
+  { href: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
   { href: ROUTES.TUTORIALS, icon: Video, label: 'Tutorials' },
   { href: ROUTES.HISTORY, icon: History, label: 'History' },
 ];
@@ -38,13 +40,16 @@ const PROFILE_LINKS = [
 ];
 
 export function DashboardSidebar() {
-  const router = useRouter();
+
+
   const pathname = usePathname();
 
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
+
   const handleLogout = () => router.push(ROUTES.LOGIN);
+
 
   const renderLinks = (
     links: {
@@ -62,7 +67,9 @@ export function DashboardSidebar() {
           { 'text-blue-dark': pathname === href }
         )}
       >
-        <Icon className="mr-2 h-4 w-4" />
+
+        <Icon className="mr-2 h-5 w-5" />
+
         {label}
       </Link>
     ));
@@ -71,7 +78,9 @@ export function DashboardSidebar() {
     <>
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col bg-blue-light md:static md:translate-x-0 transition-transform duration-300 ease-in-out',
+
+          'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col bg-blue-light lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out',
+
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -80,7 +89,9 @@ export function DashboardSidebar() {
           variant="secondary"
           onClick={toggleSidebar}
           className={cn(
-            'md:hidden fixed top-5 z-50 rounded-full h-fit w-fit p-1.5',
+
+            'lg:hidden fixed top-5 z-50 rounded-full h-fit w-fit p-1.5',
+
             isOpen ? '-right-4 top-7' : '-right-10'
           )}
         >
@@ -115,14 +126,9 @@ export function DashboardSidebar() {
               <HelpCircle className="mr-2 h-4 w-4" />
               Help Center
             </Link>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-gray-dark"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Log out
-            </Button>
+
+            <LogoutButton className="text-gray-dark hover:text-blue-dark" />
+
           </div>
         </div>
       </div>

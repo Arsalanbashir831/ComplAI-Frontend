@@ -1,4 +1,6 @@
-import { BriefcaseBusiness, Mail, Phone, User2 } from 'lucide-react';
+
+import { BriefcaseBusiness, Mail, User2 } from 'lucide-react';
+
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
@@ -14,10 +16,15 @@ import {
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/common/date-picker';
 
+import { PhoneInput } from '@/components/dashboard/profile/phone-input';
+
+
 export const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Invalid email address'),
-  phoneNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number'),
+
+  phoneNumber: z.string().regex(/^\+\d+\s*\d+$/, 'Invalid phone number'),
+
   jobTitle: z.string().min(2, 'Job title must be at least 2 characters'),
   accountType: z.enum(['personal', 'organization']),
   creationDate: z.date(),
@@ -51,13 +58,8 @@ export function ProfileFormFields({
       icon: <Mail size={16} />,
     },
     {
-      name: 'phoneNumber' as const,
-      label: 'Phone Number',
-      placeholder: 'Phone number',
-      type: 'tel',
-      icon: <Phone size={16} />,
-    },
-    {
+
+
       name: 'jobTitle' as const,
       label: 'Job Title',
       placeholder: 'Job Title',
@@ -78,20 +80,18 @@ export function ProfileFormFields({
                 <Label htmlFor={field.name} className="text-primary font-bold">
                   {field.label}
                 </Label>
-                <div className="relative">
-                  <Input
-                    id={field.name}
-                    className="border-[#D1D5DB] pl-8"
-                    disabled={!isEditable}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={field.placeholder}
-                    type={field.type}
-                  />
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500">
-                    {field.icon}
-                  </span>
-                </div>
+
+                <Input
+                  id={field.name}
+                  className="border-[#D1D5DB]"
+                  disabled={!isEditable}
+                  value={value}
+                  onChange={onChange}
+                  placeholder={field.placeholder}
+                  type={field.type}
+                  startIcon={field.icon}
+                />
+
                 {error && (
                   <p className="text-red-500 text-sm">{error.message}</p>
                 )}
@@ -101,6 +101,26 @@ export function ProfileFormFields({
         ))}
 
         <Controller
+
+          name="phoneNumber"
+          control={control}
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="phoneNumber" className="text-primary font-bold">
+                Phone Number
+              </Label>
+              <PhoneInput
+                value={value}
+                onChange={onChange}
+                disabled={!isEditable}
+              />
+              {error && <p className="text-red-500 text-sm">{error.message}</p>}
+            </div>
+          )}
+        />
+
+        <Controller
+
           name="accountType"
           control={control}
           render={({ field: { onChange, value } }) => (
@@ -133,7 +153,9 @@ export function ProfileFormFields({
               </Label>
               <DatePicker
                 className="w-full border-[#D1D5DB]"
-                disabled={!isEditable}
+
+                disabled={true}
+
                 value={value}
                 onChange={onChange}
               />

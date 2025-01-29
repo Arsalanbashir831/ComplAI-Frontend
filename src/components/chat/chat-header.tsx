@@ -3,9 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
-import { Plus, Settings, Trash2 } from 'lucide-react'; // Icons from Lucide React
+import { Plus, Trash2 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button'; // ShadCN Button Component
+import { Button } from '@/components/ui/button';
 
 export function ChatHeader() {
   return (
@@ -27,15 +27,6 @@ export function ChatHeader() {
             <span>New Chat</span>
           </Link>
         </div>
-
-        {/* Settings Icon */}
-        <Button
-          variant="ghost"
-          className="text-gray-600 hover:text-gray-800 p-2 rounded-lg"
-          aria-label="Settings"
-        >
-          <Settings className="h-5 w-5" />
-        </Button>
 
         {/* Trash Icon */}
         <Button

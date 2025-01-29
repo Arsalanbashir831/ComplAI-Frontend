@@ -22,28 +22,28 @@ const slides: Slide[] = [
   {
     question: '/auth-slider/q1.svg',
     answers: [
-      { src: '/auth-slider/a1-a.svg', alt: 'Answer-1', height: 'h-14' },
+      { src: '/auth-slider/a1-a.svg', alt: 'Answer-1', height: 'h-16' },
       {
         src: '/auth-slider/a1-b.svg',
         alt: 'Answer-2',
-        height: 'h-60',
+        height: 'h-64',
         top: '-top-8',
       },
     ],
-    height: 'h-16',
+    height: 'h-20',
   },
   {
     question: '/auth-slider/q2.svg',
     answers: [
-      { src: '/auth-slider/a2-a.svg', alt: 'Answer-1', height: 'h-14' },
+      { src: '/auth-slider/a2-a.svg', alt: 'Answer-1', height: 'h-16' },
       {
         src: '/auth-slider/a2-b.svg',
         alt: 'Answer-2',
-        height: 'h-60',
+        height: 'h-64',
         top: '-top-8',
       },
     ],
-    height: 'h-24',
+    height: 'h-28',
   },
   {
     question: '/auth-slider/q3.svg',
@@ -52,11 +52,11 @@ const slides: Slide[] = [
       {
         src: '/auth-slider/a3.svg',
         alt: 'Answer-1',
-        height: 'h-40',
+        height: 'h-44',
         top: 'top-0',
       },
     ],
-    height: 'h-20',
+    height: 'h-24',
   },
 ];
 
@@ -153,7 +153,7 @@ export function AuthSlider() {
 
         <div
           className={cn(
-            'relative scale-[1.1] bottom-4 w-full h-14 flex items-center justify-center',
+            'relative bottom-4 w-full h-16 flex items-center justify-center',
             currentSlideNo === 2 ? 'mt-8' : '',
             fadeInClass(3),
             fadeOutClass

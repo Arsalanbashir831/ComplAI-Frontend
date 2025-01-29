@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
-import { Play, User } from 'lucide-react';
+
+import { Download, Play, User } from 'lucide-react';
+
 
 import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';
@@ -41,10 +43,21 @@ export function VideoCard({ video }: VideoCardProps) {
         </div>
         <CardContent className="p-4 px-0">
           <h3 className="font-bold line-clamp-1">{video.title}</h3>
-          <p className="text-sm flex items-center gap-1">
-            <User className="h-4 w-4 inline-block" />
-            <span className="text-blue-dark">{video.studio}</span>
-          </p>
+
+          <div className="flex items-center  gap-3 mt-2">
+            <p className="text-sm flex items-center gap-1">
+              <User className="h-4 w-4 inline-block" />
+              <span className="text-blue-dark">{video.studio}</span>
+            </p>
+            <Button
+              variant="link"
+              className="text-xs p-0 !no-underline text-gray-dark hover:text-blue-dark h-fit"
+            >
+              <Download className="h-4 w-4 inline-block" />
+              PDF
+            </Button>
+          </div>
+
           <p className="mt-2 text-sm line-clamp-3 text-gray-dark">
             {video.description}
           </p>
