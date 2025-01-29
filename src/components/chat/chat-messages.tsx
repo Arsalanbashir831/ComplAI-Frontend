@@ -16,7 +16,7 @@ export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
   }, [messages]);
 
   return (
-    <ScrollArea className="h-[calc(100vh-2rem)] rounded-md ">
+    <ScrollArea className="h-[calc(100vh-2rem)] rounded-md">
       {messages.map((msg) => (
         <ChatBubble key={msg.id} message={msg} />
       ))}

@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 
 import type { ActivityItem } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DatePicker } from '@/components/common/date-picker';
+import { DateRangePicker } from '@/components/common/date-range-picker';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
@@ -44,11 +43,7 @@ export function ActivityTable({
         )}
 
         <div className="flex flex-col items-start md:flex-row md:items-center gap-4">
-          <DatePicker
-            value={undefined}
-            onChange={() => {}}
-            icon={<ChevronDown className="ml-auto h-4 w-4" />}
-          />
+          <DateRangePicker value={undefined} onChange={() => {}} />
           <Tabs
             defaultValue="all"
             onValueChange={(value) => setActiveTab(value)}
@@ -64,7 +59,7 @@ export function ActivityTable({
                 value="Uploaded Document"
                 className="text-[#667085] data-[state=active]:bg-[#0F9B5A1F] data-[state=active]:text-[#09B975]"
               >
-                Upload Document
+                Document Upload
               </TabsTrigger>
               <TabsTrigger
                 value="all"

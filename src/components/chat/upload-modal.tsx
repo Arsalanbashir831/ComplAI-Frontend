@@ -10,9 +10,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-import { ScrollArea } from '../ui/scroll-area';
-import { FileCard } from './file-card';
 import { FileUpload } from './file-upload';
+import UploadedFiles from './uploaded-files';
 
 export function UploadModal({
   isOpen,
@@ -21,9 +20,13 @@ export function UploadModal({
   onClose,
   onUpload,
 }: UploadModalProps) {
-  const handleRemove = (id: string) => {
-    setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
-  };
+  const allowedTypes = [
+    'text/plain',
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
+
+  const maxSize = 5 * 1024 * 1024; // 5MB
 
   const handleSubmit = () => {
     onClose();
@@ -53,27 +56,20 @@ export function UploadModal({
         </DialogHeader>
 
         {uploadedFiles.length > 0 ? (
-          <div className="space-y-4 bg-blue-100 p-4 rounded-xl">
-            <div className="text-sm text-muted-foreground">
-              Uploaded File(s)
-            </div>
-            <ScrollArea className="w-full h-full max-h-48">
-              <div className="flex flex-col gap-2">
-                {uploadedFiles.map((file) => (
-                  <FileCard key={file.id} file={file} onRemove={handleRemove} />
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
+          <UploadedFiles
+            {...{
+              uploadedFiles,
+              setUploadedFiles,
+              onUpload,
+              maxSize,
+              allowedTypes,
+            }}
+          />
         ) : (
           <FileUpload
             onUpload={onUpload}
-            maxSize={5 * 1024 * 1024}
-            allowedTypes={[
-              'text/plain',
-              'application/pdf',
-              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            ]}
+            maxSize={maxSize}
+            allowedTypes={allowedTypes}
           />
         )}
 

@@ -46,6 +46,7 @@ export function SubscriptionInfo({
         <Switch
           id="auto-renew"
           checked={autoRenew}
+          className="data-[state=unchecked]:bg-gray-400"
           onCheckedChange={onAutoRenewChange}
         />
       </div>

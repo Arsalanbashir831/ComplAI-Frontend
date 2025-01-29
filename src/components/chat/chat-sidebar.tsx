@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   ChevronLeft,
   ChevronRight,
   Command,
   LayoutDashboard,
-  LogOut,
   MessageSquareText,
   Search,
 } from 'lucide-react';
@@ -20,26 +18,24 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
 import { Logo } from '../common/logo';
+import LogoutButton from '../common/logout-button';
 import { Input } from '../ui/input';
 
 export function ChatSidebar({ recentChats }: SidebarProps) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-
-  const handleLogout = () => {
-    router.push(ROUTES.LOGIN);
-  };
+  const value = 30;
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
   return (
-    <div className="md:p-4">
+    <div>
       <div
-        className={`fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col border-[#07378C80] shadow-lg shadow-[#07378C14] md:rounded-xl md:border-[2.5px] bg-blue-light md:static md:translate-x-0 transition-transform duration-300 ease-in-out ${
+        className={cn(
+          'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col bg-blue-light lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out',
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        )}
       >
         {/* Toggle Button for Mobile */}
         <Button
@@ -47,7 +43,7 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
           variant="secondary"
           onClick={toggleSidebar}
           className={cn(
-            'md:hidden fixed top-5 z-50 rounded-full h-fit w-fit p-1.5',
+            'lg:hidden fixed top-5 z-50 rounded-full h-fit w-fit p-1.5',
             isOpen ? '-right-4 top-7' : '-right-10'
           )}
         >
@@ -59,7 +55,7 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
         </Button>
 
         <div className="p-6">
-          <div className="mb-8 border-b pb-6">
+          <div className="mb-8 border-b border-gray-dark pb-6">
             <Logo href={ROUTES.CHAT} />
           </div>
           <div className="relative">
@@ -103,9 +99,11 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
               Daily query limit is almost reached
             </h3>
             <Progress
-              value={70}
+              value={value}
               className="bg-white"
-              indicatorClassName="bg-blue-dark"
+              indicatorClassName={cn(
+                value > 50 ? 'bg-red-500' : 'bg-green-500'
+              )}
             />
             <p className="mb-1 text-sm opacity-90 text-center">
               Enjoy working advances search experience and much more
@@ -123,14 +121,7 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Dashboard
             </Link>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Log out
-            </Button>
+            <LogoutButton />
           </div>
         </div>
       </div>

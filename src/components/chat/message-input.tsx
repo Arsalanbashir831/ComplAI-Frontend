@@ -209,7 +209,7 @@ export function MessageInput({ isNewChat = false }: { isNewChat?: boolean }) {
                 ) : (
                   <>
                     <PlusCircle className="h-4 w-4" />
-                    <span>Upload More</span>
+                    <span>Upload Files</span>
                   </>
                 )}
               </Button>

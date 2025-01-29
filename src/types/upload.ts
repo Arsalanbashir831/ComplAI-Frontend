@@ -25,3 +25,8 @@ export interface FileCardProps {
   className?: string;
   hasShareButton?: boolean;
 }
+
+export interface UploadedFilesProps extends FileUploadProps {
+  uploadedFiles: UploadedFile[];
+  setUploadedFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>;
+}

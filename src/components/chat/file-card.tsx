@@ -29,7 +29,11 @@ export function FileCard({
     <div
       className={cn(
         'flex items-center justify-between rounded-lg p-3',
-        file.type === 'application/pdf' ? 'bg-[#B1362F]' : 'bg-[#07378C]',
+        file.type === 'application/pdf'
+          ? 'bg-[#B1362F]'
+          : file.type === 'text/plain'
+            ? 'bg-[#372297bf]'
+            : 'bg-[#07378C]',
         className
       )}
     >

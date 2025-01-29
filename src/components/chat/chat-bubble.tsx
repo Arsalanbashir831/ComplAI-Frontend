@@ -14,7 +14,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.sender === 'bot';
 
   return (
-    <div className={cn('flex mb-5', isBot ? 'justify-end' : 'justify-start')}>
+    <div className={cn('flex mb-3', isBot ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
           'flex flex-col gap-2 bg-blue-light border-gray-light border-2 shadow-md rounded-2xl py-6 px-8 max-w-[66.666667%]',

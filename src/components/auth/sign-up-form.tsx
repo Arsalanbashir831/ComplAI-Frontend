@@ -180,7 +180,7 @@ export function SignUpForm() {
                     </Link>
                   </FormLabel> */}
                   <FormLabel htmlFor="acceptTerms" className="text-xs">
-                    Remeber me
+                    Remember me
                   </FormLabel>
                 </div>
               )}

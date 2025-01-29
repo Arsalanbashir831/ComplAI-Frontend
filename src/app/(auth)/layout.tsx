@@ -1,4 +1,4 @@
-import { AuthSlider } from '@/components/auth/AuthSlider';
+import { AuthSlider } from '@/components/auth/auth-slider';
 import { Logo } from '@/components/common/logo';
 
 export default function AuthLayout({
