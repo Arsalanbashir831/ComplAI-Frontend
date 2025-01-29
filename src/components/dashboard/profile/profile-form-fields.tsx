@@ -1,4 +1,6 @@
+
 import { BriefcaseBusiness, Mail, User2 } from 'lucide-react';
+
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
@@ -13,12 +15,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/common/date-picker';
+
 import { PhoneInput } from '@/components/dashboard/profile/phone-input';
+
 
 export const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Invalid email address'),
+
   phoneNumber: z.string().regex(/^\+\d+\s*\d+$/, 'Invalid phone number'),
+
   jobTitle: z.string().min(2, 'Job title must be at least 2 characters'),
   accountType: z.enum(['personal', 'organization']),
   creationDate: z.date(),
@@ -52,6 +58,8 @@ export function ProfileFormFields({
       icon: <Mail size={16} />,
     },
     {
+
+
       name: 'jobTitle' as const,
       label: 'Job Title',
       placeholder: 'Job Title',
@@ -72,6 +80,7 @@ export function ProfileFormFields({
                 <Label htmlFor={field.name} className="text-primary font-bold">
                   {field.label}
                 </Label>
+
                 <Input
                   id={field.name}
                   className="border-[#D1D5DB]"
@@ -82,6 +91,7 @@ export function ProfileFormFields({
                   type={field.type}
                   startIcon={field.icon}
                 />
+
                 {error && (
                   <p className="text-red-500 text-sm">{error.message}</p>
                 )}
@@ -91,6 +101,7 @@ export function ProfileFormFields({
         ))}
 
         <Controller
+
           name="phoneNumber"
           control={control}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
@@ -109,6 +120,7 @@ export function ProfileFormFields({
         />
 
         <Controller
+
           name="accountType"
           control={control}
           render={({ field: { onChange, value } }) => (
@@ -141,7 +153,9 @@ export function ProfileFormFields({
               </Label>
               <DatePicker
                 className="w-full border-[#D1D5DB]"
+
                 disabled={true}
+
                 value={value}
                 onChange={onChange}
               />

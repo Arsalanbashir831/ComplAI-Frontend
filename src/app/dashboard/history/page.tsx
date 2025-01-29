@@ -48,6 +48,7 @@ const mockActivities = [
 
 export default function HistoryPage() {
   return (
+
     <div className="min-h-screen flex flex-col items-center px-6 py-8">
       {/* Header Stays at the Top */}
       <DashboardHeader title="Compliance History" />
@@ -60,6 +61,7 @@ export default function HistoryPage() {
           showTitle={false}
         />
       </div>
+
     </div>
   );
 }

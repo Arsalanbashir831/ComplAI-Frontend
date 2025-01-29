@@ -21,7 +21,9 @@ export default function ProfileForm() {
     defaultValues: {
       username: 'johndoe',
       email: 'john.doe@gmail.com',
+
       phoneNumber: '+1 234567890',
+
       jobTitle: 'Software Developer',
       accountType: 'personal',
       creationDate: new Date(),
@@ -44,6 +46,7 @@ export default function ProfileForm() {
       className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto"
     >
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+
         <div className="relative">
           <Image
             src="/user.png"
@@ -57,6 +60,7 @@ export default function ProfileForm() {
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
         </div>
+
         <h1 className="text-xl md:text-3xl font-bold">John Doe</h1>
         <div className="md:ml-auto flex gap-4">
           <Button

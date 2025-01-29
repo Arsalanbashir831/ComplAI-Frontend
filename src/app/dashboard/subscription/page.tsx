@@ -77,6 +77,7 @@ export default function SubscriptionPage() {
   }));
 
   return (
+
     <div className="min-h-screen flex flex-col items-center px-6 py-8 ">
       {/* Header Stays at the Top */}
       <DashboardHeader title="Subscription" />
@@ -85,6 +86,7 @@ export default function SubscriptionPage() {
       <div className="flex flex-col justify-center flex-1 w-full  bg-white  rounded-xl p-8 space-y-8 mt-3">
         <div>
           <h1 className="text-2xl font-semibold mb-6 text-center">Plans</h1>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plansWithRouter.map((plan) => (
               <PricingCard

@@ -99,6 +99,7 @@ export default function TutorialsPage() {
   const [search, setSearch] = useState('');
 
   return (
+
     <div className="min-h-screen flex flex-col items-center px-6 py-8">
       {/* Dashboard Header - Stays at the Top */}
       <DashboardHeader
@@ -111,6 +112,7 @@ export default function TutorialsPage() {
         {/* Search & Filter Section */}
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <SearchInput value={search} onChange={setSearch} />
+
           <div className="ml-auto flex items-center gap-2">
             <Button
               variant="outline"
@@ -132,7 +134,6 @@ export default function TutorialsPage() {
           </div>
         </div>
 
-        {/* Video Sections */}
         <VideoSection section={MOCK_DATA.recommendedVideos} />
         <Separator />
         <VideoSection section={MOCK_DATA.recommendedTutorials} />
