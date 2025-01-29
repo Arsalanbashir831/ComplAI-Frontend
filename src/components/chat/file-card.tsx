@@ -1,9 +1,9 @@
-import { DownloadIcon, X } from 'lucide-react';
 import Image from 'next/image';
+import { DownloadIcon, X } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { cn, convertSizeToReadable } from '@/lib/utils';
 import type { FileCardProps } from '@/types/upload';
+import { cn, convertSizeToReadable } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export function FileCard({
   file,
