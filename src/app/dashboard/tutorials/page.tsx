@@ -1,13 +1,13 @@
 'use client';
 
-import { ChevronDown, Filter, SortDesc } from 'lucide-react';
 import { useState } from 'react';
+import { ChevronDown, Filter, SortDesc } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { SearchInput } from '@/components/dashboard/tutorials/search-input';
 import { VideoSection } from '@/components/dashboard/tutorials/video-section';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 
 const MOCK_DATA = {
   recommendedVideos: {
@@ -95,7 +95,6 @@ const MOCK_DATA = {
   },
 };
 
-
 export default function TutorialsPage() {
   const [search, setSearch] = useState('');
 
@@ -113,11 +112,19 @@ export default function TutorialsPage() {
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <SearchInput value={search} onChange={setSearch} />
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="sm" className="border-[#E0E4EE] text-[#596375] px-4 py-5 rounded-xl">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-[#E0E4EE] text-[#596375] px-4 py-5 rounded-xl"
+            >
               Filter
               <Filter className="ml-2 h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" className="border-[#E0E4EE] text-[#596375] px-4 py-5 rounded-xl">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-[#E0E4EE] text-[#596375] px-4 py-5 rounded-xl"
+            >
               <SortDesc className="mr-2 h-4 w-4" />
               Sort by
               <ChevronDown className="ml-2 h-4 w-4" />
@@ -133,4 +140,3 @@ export default function TutorialsPage() {
     </div>
   );
 }
-

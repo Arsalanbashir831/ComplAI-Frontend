@@ -1,5 +1,5 @@
-import { ROUTES } from '@/constants/routes';
 import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
