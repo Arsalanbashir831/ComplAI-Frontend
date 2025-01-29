@@ -1,9 +1,9 @@
+import { DownloadIcon, X } from 'lucide-react';
 import Image from 'next/image';
-import { SquareArrowOutUpRight, X } from 'lucide-react';
 
-import type { FileCardProps } from '@/types/upload';
-import { cn, convertSizeToReadable } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn, convertSizeToReadable } from '@/lib/utils';
+import type { FileCardProps } from '@/types/upload';
 
 export function FileCard({
   file,
@@ -65,7 +65,7 @@ export function FileCard({
           size="icon"
           className="h-8 w-8 rounded-full hover:bg-background/20 text-gray-dark"
         >
-          <SquareArrowOutUpRight className="h-4 w-4" />
+          <DownloadIcon className="h-4 w-4" />
           <span className="sr-only">Share file</span>
         </Button>
       ) : (

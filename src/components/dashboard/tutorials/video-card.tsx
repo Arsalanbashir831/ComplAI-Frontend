@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { Download, Play, User } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
 
-import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import type { Video } from '@/types/video';
 
 import { VideoPlayer } from './video-player';
 
@@ -41,7 +41,7 @@ export function VideoCard({ video }: VideoCardProps) {
         </div>
         <CardContent className="p-4 px-0">
           <h3 className="font-bold line-clamp-1">{video.title}</h3>
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center  gap-3 mt-2">
             <p className="text-sm flex items-center gap-1">
               <User className="h-4 w-4 inline-block" />
               <span className="text-blue-dark">{video.studio}</span>
