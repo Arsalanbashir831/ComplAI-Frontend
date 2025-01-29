@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
-
 import { Download, Play, User } from 'lucide-react';
-
 
 import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';

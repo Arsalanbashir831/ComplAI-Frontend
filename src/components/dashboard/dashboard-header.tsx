@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 
@@ -15,9 +14,7 @@ export default function DashboardHeader({
   badgeTitle?: string;
 }) {
   return (
-
     <div className="flex items-start justify-between w-full ">
-
       <div className="flex items-center justify-center gap-5 ml-4 md:ml-0">
         <div className="flex flex-col gap-1">
           <h1 className="text-xl md:text-3xl font-bold">{title}</h1>

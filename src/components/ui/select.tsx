@@ -12,7 +12,6 @@ const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
-
 interface SelectTriggerProps
   extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> {
   startIcon?: React.ReactNode;
@@ -169,7 +168,6 @@ SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
 export {
   Select,
-
   SelectContent,
   SelectGroup,
   SelectItem,
@@ -179,5 +177,4 @@ export {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-
 };

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -22,7 +21,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 import { Logo } from '../common/logo';
-
 import LogoutButton from '../common/logout-button';
 import { Separator } from '../ui/separator';
 
@@ -40,16 +38,13 @@ const PROFILE_LINKS = [
 ];
 
 export function DashboardSidebar() {
-
-
   const pathname = usePathname();
 
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  const handleLogout = () => router.push(ROUTES.LOGIN);
-
+  // const handleLogout = () => router.push(ROUTES.LOGIN);
 
   const renderLinks = (
     links: {
@@ -67,7 +62,6 @@ export function DashboardSidebar() {
           { 'text-blue-dark': pathname === href }
         )}
       >
-
         <Icon className="mr-2 h-5 w-5" />
 
         {label}
@@ -78,7 +72,6 @@ export function DashboardSidebar() {
     <>
       <div
         className={cn(
-
           'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col bg-blue-light lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out',
 
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -89,7 +82,6 @@ export function DashboardSidebar() {
           variant="secondary"
           onClick={toggleSidebar}
           className={cn(
-
             'lg:hidden fixed top-5 z-50 rounded-full h-fit w-fit p-1.5',
 
             isOpen ? '-right-4 top-7' : '-right-10'
@@ -128,7 +120,6 @@ export function DashboardSidebar() {
             </Link>
 
             <LogoutButton className="text-gray-dark hover:text-blue-dark" />
-
           </div>
         </div>
       </div>

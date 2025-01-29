@@ -56,7 +56,6 @@ const mockTrendData = Array.from({ length: 10 }, (_, i) => ({
 
 export default function DashboardPage() {
   return (
-
     <div className="min-h-screen w-full flex flex-col items-center px-6 py-8">
       {/* Dashboard Header - Stays at the Top */}
       <DashboardHeader title="Dashboard" />
@@ -81,7 +80,6 @@ export default function DashboardPage() {
           <ActivityTable activities={mockActivities} showActions={false} />
         </div>
       </div>
-
     </div>
   );
 }

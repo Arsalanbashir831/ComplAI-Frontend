@@ -1,6 +1,4 @@
-
 import { BriefcaseBusiness, Mail, User2 } from 'lucide-react';
-
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
@@ -15,9 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/common/date-picker';
-
 import { PhoneInput } from '@/components/dashboard/profile/phone-input';
-
 
 export const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
@@ -58,8 +54,6 @@ export function ProfileFormFields({
       icon: <Mail size={16} />,
     },
     {
-
-
       name: 'jobTitle' as const,
       label: 'Job Title',
       placeholder: 'Job Title',
@@ -101,7 +95,6 @@ export function ProfileFormFields({
         ))}
 
         <Controller
-
           name="phoneNumber"
           control={control}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
@@ -120,7 +113,6 @@ export function ProfileFormFields({
         />
 
         <Controller
-
           name="accountType"
           control={control}
           render={({ field: { onChange, value } }) => (
@@ -153,9 +145,7 @@ export function ProfileFormFields({
               </Label>
               <DatePicker
                 className="w-full border-[#D1D5DB]"
-
                 disabled={true}
-
                 value={value}
                 onChange={onChange}
               />

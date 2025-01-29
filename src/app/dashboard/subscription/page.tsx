@@ -77,7 +77,6 @@ export default function SubscriptionPage() {
   }));
 
   return (
-
     <div className="min-h-screen flex flex-col items-center px-6 py-8 ">
       {/* Header Stays at the Top */}
       <DashboardHeader title="Subscription" />
