@@ -35,20 +35,22 @@ export function SubscriptionInfo({
       </div>
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-0.5">
-          <Label htmlFor="auto-renew" className="text-2xl font-semibold">
-            Enable auto Renew
-          </Label>
+          <div className="flex items-center gap-4">
+            <Label htmlFor="auto-renew" className="text-2xl font-semibold">
+              Enable auto Renew
+            </Label>
+            <Switch
+              id="auto-renew"
+              checked={autoRenew}
+              className="data-[state=unchecked]:bg-gray-400 mt-1.5"
+              onCheckedChange={onAutoRenewChange}
+            />
+          </div>
           <div className="text-sm">
             Automatically renew your subscription before it expires, ensuring
             uninterrupted service.
           </div>
         </div>
-        <Switch
-          id="auto-renew"
-          checked={autoRenew}
-          className="data-[state=unchecked]:bg-gray-400"
-          onCheckedChange={onAutoRenewChange}
-        />
       </div>
     </div>
   );

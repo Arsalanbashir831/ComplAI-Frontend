@@ -8,55 +8,51 @@ import { cn } from '@/lib/utils';
 interface Answer {
   src: string;
   alt: string;
-  height: string;
-  top?: string;
+  className?: string;
 }
 
 interface Slide {
   question: string;
   answers: Answer[];
-  height: string;
+  className?: string;
 }
 
 const slides: Slide[] = [
   {
     question: '/auth-slider/q1.svg',
     answers: [
-      { src: '/auth-slider/a1-a.svg', alt: 'Answer-1', height: 'h-16' },
+      { src: '/auth-slider/a1-a.svg', alt: 'Answer-1', className: 'h-16' },
       {
         src: '/auth-slider/a1-b.svg',
         alt: 'Answer-2',
-        height: 'h-64',
-        top: '-top-8',
+        className: 'h-64 -top-8',
       },
     ],
-    height: 'h-20',
+    className: 'h-20',
   },
   {
     question: '/auth-slider/q2.svg',
     answers: [
-      { src: '/auth-slider/a2-a.svg', alt: 'Answer-1', height: 'h-16' },
+      { src: '/auth-slider/a2-a.svg', alt: 'Answer-1', className: 'h-16' },
       {
         src: '/auth-slider/a2-b.svg',
         alt: 'Answer-2',
-        height: 'h-64',
-        top: '-top-8',
+        className: 'h-64 -top-8',
       },
     ],
-    height: 'h-28',
+    className: 'h-28',
   },
   {
     question: '/auth-slider/q3.svg',
     answers: [
-      { src: '', alt: '', height: '' },
+      { src: '', alt: '', className: '' },
       {
         src: '/auth-slider/a3.svg',
         alt: 'Answer-1',
-        height: 'h-44',
-        top: 'top-0',
+        className: 'h-40 top-0 left-10',
       },
     ],
-    height: 'h-24',
+    className: 'h-24',
   },
 ];
 
@@ -102,7 +98,8 @@ export function AuthSlider() {
       {/* Question Card */}
       <div
         className={cn(
-          `relative w-full ${currentSlide.height} right-10`,
+          'relative w-full right-10',
+          currentSlide.className,
           fadeInClass(0),
           fadeOutClass
         )}
@@ -120,7 +117,8 @@ export function AuthSlider() {
         {currentSlide.answers[0].src && (
           <div
             className={cn(
-              `relative w-full ${currentSlide.answers[0].height} z-10`,
+              'relative w-full z-10',
+              currentSlide.answers[0].className,
               fadeInClass(1),
               fadeOutClass
             )}
@@ -137,7 +135,8 @@ export function AuthSlider() {
         {currentSlide.answers[1] && (
           <div
             className={cn(
-              `relative w-full ${currentSlide.answers[1].height} ${currentSlide.answers[1].top} left-20`,
+              'relative w-full left-20',
+              currentSlide.answers[1].className,
               fadeInClass(2),
               fadeOutClass
             )}
@@ -174,8 +173,8 @@ export function AuthSlider() {
           <button
             key={index}
             className={cn(
-              'h-2 w-2 rounded-full transition-colors',
-              currentSlideNo === index ? 'bg-blue-600' : 'bg-gray-300'
+              'h-4 w-4 rounded-full transition-colors',
+              currentSlideNo === index ? 'bg-blue-dark' : 'bg-gray-300'
             )}
             onClick={() => {
               setIsVisible(false);

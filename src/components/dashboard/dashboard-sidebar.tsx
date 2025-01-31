@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -16,16 +13,18 @@ import {
   User2,
   Video,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
 import { Separator } from '../ui/separator';
 
 const SIDEBAR_LINKS = [
-  { href: ROUTES.COMPLIANCE_GPT, icon: Bot, label: 'Compliance GPT' },
   { href: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
   { href: ROUTES.TUTORIALS, icon: Video, label: 'Tutorials' },
   { href: ROUTES.HISTORY, icon: History, label: 'History' },
@@ -43,8 +42,6 @@ export function DashboardSidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
-
-  // const handleLogout = () => router.push(ROUTES.LOGIN);
 
   const renderLinks = (
     links: {
@@ -102,6 +99,17 @@ export function DashboardSidebar() {
 
         <div className="px-6 pb-4 flex flex-col justify-between flex-1">
           <div>
+            <Link
+              href={ROUTES.COMPLIANCE_GPT}
+              className={cn(
+                'w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark',
+                { 'text-blue-dark': pathname === ROUTES.COMPLIANCE_GPT }
+              )}
+            >
+              <Bot className="mr-2 h-5 w-5" />
+              Compliance GPT
+            </Link>
+            <Separator className="my-3 bg-gray-light" />
             {renderLinks(SIDEBAR_LINKS)}
             <Separator className="my-3 bg-gray-light" />
             {renderLinks(PROFILE_LINKS)}
@@ -111,12 +119,12 @@ export function DashboardSidebar() {
             <Link
               href={ROUTES.HELP_CENTER}
               className={cn(
-                'w-full flex items-center justify-start px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark',
+                'w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark',
                 { 'text-blue-dark': pathname === ROUTES.HELP_CENTER }
               )}
             >
-              <HelpCircle className="mr-2 h-4 w-4" />
-              Help Center
+              <HelpCircle className="mr-2 h-5 w-5" />
+              Contact Us
             </Link>
 
             <LogoutButton className="text-gray-dark hover:text-blue-dark" />

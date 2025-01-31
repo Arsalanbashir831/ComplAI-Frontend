@@ -164,12 +164,18 @@ export function MessageInput({ isNewChat = false }: { isNewChat?: boolean }) {
 
   return (
     <div>
-      <div className="bg-muted/50 rounded-lg py-4 ">
+      <div className="py-4 ">
         <div className="relative bg-gray-light rounded-xl p-4">
           <Textarea
             placeholder="Message Compl-AI"
             value={message}
             onChange={handleChange}
+            onKeyDown={(event) => {
+              if (event.ctrlKey && event.key === 'Enter') {
+                event.preventDefault();
+                handleSendMessage();
+              }
+            }}
             className="resize-none pr-20 border-none bg-transparent shadow-none focus-visible:ring-0"
           />
           <div className="flex justify-between items-center gap-2 mt-2">
