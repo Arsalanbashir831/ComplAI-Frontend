@@ -4,8 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import {
-  ChevronLeft,
-  ChevronRight,
   Command,
   LayoutDashboard,
   MessageSquareText,
@@ -19,6 +17,7 @@ import { Progress } from '@/components/ui/progress';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
+import MenuToggleButton from '../common/menu-toggle-button';
 import { Input } from '../ui/input';
 
 export function ChatSidebar({ recentChats }: SidebarProps) {
@@ -38,21 +37,7 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
         )}
       >
         {/* Toggle Button for Mobile */}
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={toggleSidebar}
-          className={cn(
-            'lg:hidden fixed top-5 z-50 rounded-full h-fit w-fit p-1.5',
-            isOpen ? '-right-4 top-7' : '-right-10'
-          )}
-        >
-          {isOpen ? (
-            <ChevronLeft className="h-6 w-6" />
-          ) : (
-            <ChevronRight className="h-6 w-6" />
-          )}
-        </Button>
+        <MenuToggleButton isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
         <div className="p-6">
           <div className="mb-8 border-b border-gray-dark pb-6">
@@ -108,7 +93,10 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
             <p className="mb-1 text-sm opacity-90 text-center">
               Enjoy working advances search experience and much more
             </p>
-            <Button variant="secondary" className="w-3/4 text-primary">
+            <Button
+              variant="secondary"
+              className="w-3/4 text-primary cursor-pointer z-10"
+            >
               Upgrade
             </Button>
           </div>
@@ -116,12 +104,12 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
           <div className="border-t pt-4">
             <Link
               href={ROUTES.DASHBOARD}
-              className="w-full flex items-center justify-start px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm"
+              className="w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark"
             >
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Dashboard
             </Link>
-            <LogoutButton />
+            <LogoutButton className="text-gray-dark hover:text-blue-dark" />
           </div>
         </div>
       </div>

@@ -99,7 +99,6 @@ export default function TutorialsPage() {
   const [search, setSearch] = useState('');
 
   return (
-
     <div className="min-h-screen flex flex-col items-center px-6 py-8">
       {/* Dashboard Header - Stays at the Top */}
       <DashboardHeader

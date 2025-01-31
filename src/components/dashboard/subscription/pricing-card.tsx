@@ -76,7 +76,7 @@ export function PricingCard({ plan, isActive }: PricingCardProps) {
               className={cn(
                 'w-fit',
                 !isPayAsYouUse
-                  ? 'text-blue-dark border-white hover:bg-blue-light hover:text-blue-dark'
+                  ? 'text-blue-dark hover:bg-gray-200 hover:text-blue-700'
                   : 'border-gray-dark text-gray-dark'
               )}
             >

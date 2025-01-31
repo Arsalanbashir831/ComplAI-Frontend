@@ -82,7 +82,7 @@ export function AuthSlider() {
     if (isVisible && staggerIndex < 3) {
       const staggerTimeout = setTimeout(() => {
         setStaggerIndex((prevIndex) => prevIndex + 1);
-      }, 200); // Stagger each element by 200ms
+      }, 900);
 
       return () => clearTimeout(staggerTimeout);
     }

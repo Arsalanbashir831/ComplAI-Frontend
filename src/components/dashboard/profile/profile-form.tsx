@@ -46,7 +46,6 @@ export default function ProfileForm() {
       className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto"
     >
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-
         <div className="relative">
           <Image
             src="/user.png"
