@@ -5,7 +5,7 @@ const mockActivities = [
   {
     serialNo: 1,
     requestedAt: '10/2/2024 4:45:52 AM',
-    activityType: 'Uploaded Document',
+    activityType: 'Document Upload',
     tokensDeducted: 50,
   },
   {
@@ -17,13 +17,13 @@ const mockActivities = [
   {
     serialNo: 3,
     requestedAt: '9/27/2024 4:45:52 AM',
-    activityType: 'Uploaded Document',
+    activityType: 'Document Upload',
     tokensDeducted: 80,
   },
   {
     serialNo: 4,
     requestedAt: '9/25/2024 4:45:52 AM',
-    activityType: 'Uploaded Document',
+    activityType: 'Document Upload',
     tokensDeducted: 100,
   },
   {
@@ -41,14 +41,13 @@ const mockActivities = [
   {
     serialNo: 7,
     requestedAt: '9/23/2024 4:45:52 AM',
-    activityType: 'Uploaded Document',
+    activityType: 'Document Upload',
     tokensDeducted: 90,
   },
 ];
 
 export default function HistoryPage() {
   return (
-
     <div className="min-h-screen flex flex-col items-center px-6 py-8">
       {/* Header Stays at the Top */}
       <DashboardHeader title="Compliance History" />
@@ -61,7 +60,6 @@ export default function HistoryPage() {
           showTitle={false}
         />
       </div>
-
     </div>
   );
 }

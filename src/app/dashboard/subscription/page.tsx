@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ROUTES } from '@/constants/routes';
 
 import type { PaymentCard, Plan } from '@/types/subscription';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
@@ -60,7 +58,7 @@ const paymentCards: PaymentCard[] = [
 ];
 
 export default function SubscriptionPage() {
-  const router = useRouter();
+  // const router = useRouter();
   const [autoRenew, setAutoRenew] = useState(false);
 
   const handleAddCard = () => {
@@ -70,14 +68,13 @@ export default function SubscriptionPage() {
   // Update plans with router
   const plansWithRouter = plans.map((plan) => ({
     ...plan,
-    buttonAction:
-      plan.type === 'enterprise'
-        ? () => router.push(ROUTES.ENTERPRISE_SUBSCRIPTION)
-        : plan.buttonAction,
+    buttonAction: plan.buttonAction,
+    // plan.type === 'enterprise'
+    //   ? () => router.push(ROUTES.ENTERPRISE_SUBSCRIPTION)
+    //   : plan.buttonAction,
   }));
 
   return (
-
     <div className="min-h-screen flex flex-col items-center px-6 py-8 ">
       {/* Header Stays at the Top */}
       <DashboardHeader title="Subscription" />
@@ -85,7 +82,7 @@ export default function SubscriptionPage() {
       {/* Centered Content */}
       <div className="flex flex-col justify-center flex-1 w-full  bg-white  rounded-xl p-8 space-y-8 mt-3">
         <div>
-          <h1 className="text-2xl font-semibold mb-6 text-center">Plans</h1>
+          <h1 className="text-2xl font-semibold mb-6">Plans</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plansWithRouter.map((plan) => (

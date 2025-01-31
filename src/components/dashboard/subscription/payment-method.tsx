@@ -1,9 +1,21 @@
 import Image from 'next/image';
-import { Check, Ellipsis, Plus } from 'lucide-react';
+import {
+  Check,
+  CircleCheckBig,
+  Edit,
+  Ellipsis,
+  Plus,
+  Trash,
+} from 'lucide-react';
 
 import type { PaymentCard } from '@/types/subscription';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface PaymentMethodProps {
   cards: PaymentCard[];
@@ -27,13 +39,40 @@ export function PaymentMethod({ cards, onAddCard }: PaymentMethodProps) {
                 </p>
 
                 {/* Menu Icon */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-fit w-fit p-0.5 rounded-full bg-[#BABABA]"
-                >
-                  <Ellipsis className="text-white w-2 h-2" />
-                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-fit w-fit p-0.5 rounded-full bg-[#BABABA] hover:bg-[#B0B0B0]"
+                    >
+                      <Ellipsis className="text-white w-2 h-2" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="py-2 flex flex-col max-w-44">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-[#008000] hover:text-green-700"
+                    >
+                      <CircleCheckBig className="mr-2" />
+                      Make Default
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-blue-dark hover:text-blue-900"
+                    >
+                      <Edit className="mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-red-500 hover:text-red-700"
+                    >
+                      <Trash className="mr-2" />
+                      Remove
+                    </Button>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="flex items-center space-x-4">
                 <Image

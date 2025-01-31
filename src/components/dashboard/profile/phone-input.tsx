@@ -40,7 +40,7 @@ export function PhoneInput({ value, onChange, disabled }: PhoneInputProps) {
         onValueChange={handleCountryCodeChange}
       >
         <SelectTrigger
-          className="w-fit space-x-2 border-r-0 rounded-r-none py-[19px]"
+          className="w-fit space-x-2 border-r-0 rounded-r-none py-[19px] disabled:bg-gray-light"
           startIcon={<Phone className="h-4 w-4 opacity-50" />}
         >
           <SelectValue>{countryCode}</SelectValue>
@@ -63,7 +63,7 @@ export function PhoneInput({ value, onChange, disabled }: PhoneInputProps) {
       </Select>
       <div className="relative flex-grow">
         <Input
-          className="rounded-l-none"
+          className="rounded-l-none disabled:bg-gray-light"
           disabled={disabled}
           value={localNumber}
           onChange={handleLocalNumberChange}

@@ -12,10 +12,13 @@ export default function LogoutButton({ className }: { className?: string }) {
   return (
     <Button
       variant="ghost"
-      className={cn('w-full justify-start', className)}
+      className={cn(
+        'w-full flex items-center justify-start px-5 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm',
+        className
+      )}
       onClick={handleLogout}
     >
-      <LogOut className="mr-2 h-4 w-4" />
+      <LogOut className="mr-2 h-5 w-5" />
       Log out
     </Button>
   );
