@@ -8,7 +8,7 @@ export function Logo({ href = ROUTES.LANDINGPAGE }: { href?: string }) {
   return (
     <Link href={href} className="flex items-center justify-center">
       <Image
-        src="/logo.png"
+        src="/logo.svg"
         alt={siteConfig.name}
         width={180}
         height={40}
