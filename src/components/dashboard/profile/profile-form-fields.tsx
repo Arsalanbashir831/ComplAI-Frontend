@@ -2,8 +2,6 @@ import { BriefcaseBusiness, Mail, User2 } from 'lucide-react';
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
-import { DatePicker } from '@/components/common/date-picker';
-import { PhoneInput } from '@/components/dashboard/profile/phone-input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DatePicker } from '@/components/common/date-picker';
+import { PhoneInput } from '@/components/dashboard/profile/phone-input';
 
 export const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
