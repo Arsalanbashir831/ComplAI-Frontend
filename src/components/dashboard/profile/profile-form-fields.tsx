@@ -71,7 +71,7 @@ export function ProfileFormFields({
             control={control}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-2">
-                <Label htmlFor={field.name} className="text-primary font-bold">
+                <Label htmlFor={field.name} className="text-[#000] font-bold">
                   {field.label}
                 </Label>
 
@@ -99,7 +99,7 @@ export function ProfileFormFields({
           control={control}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="phoneNumber" className="text-primary font-bold">
+              <Label htmlFor="phoneNumber" className="text-[#000] font-bold">
                 Phone Number
               </Label>
               <PhoneInput
@@ -117,7 +117,7 @@ export function ProfileFormFields({
           control={control}
           render={({ field: { onChange, value } }) => (
             <div className="flex flex-col gap-2">
-              <Label className="text-primary font-bold">Account Type</Label>
+              <Label className="text-[#000] font-bold">Account Type</Label>
               <Select
                 disabled={!isEditable}
                 onValueChange={onChange}
@@ -140,7 +140,7 @@ export function ProfileFormFields({
           control={control}
           render={({ field: { onChange, value } }) => (
             <div className="flex flex-col gap-2">
-              <Label className="text-primary font-bold">
+              <Label className="text-[#000] font-bold">
                 Account Creation Date
               </Label>
               <DatePicker
