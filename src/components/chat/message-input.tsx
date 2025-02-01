@@ -1,14 +1,14 @@
 'use client';
 
-import { Plus, PlusCircle, Send } from 'lucide-react';
-import { useRouter } from 'next/navigation'; // Import useRouter
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { Plus, PlusCircle, Send } from 'lucide-react';
 
+import { UploadedFile } from '@/types/upload';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/chat-hook';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useChat } from '@/hooks/chat-hook';
-import { cn } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
