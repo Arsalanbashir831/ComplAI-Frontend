@@ -7,8 +7,6 @@ import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
   Bot,
-  ChevronLeft,
-  ChevronRight,
   CircleDollarSign,
   HelpCircle,
   History,
@@ -18,10 +16,10 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
+import MenuToggleButton from '../common/menu-toggle-button';
 import { Separator } from '../ui/separator';
 
 const SIDEBAR_LINKS = [
@@ -74,22 +72,7 @@ export function DashboardSidebar() {
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={toggleSidebar}
-          className={cn(
-            'lg:hidden fixed top-5 z-50 rounded-full h-fit w-fit p-1.5',
-
-            isOpen ? '-right-4 top-7' : '-right-10'
-          )}
-        >
-          {isOpen ? (
-            <ChevronLeft className="h-6 w-6" />
-          ) : (
-            <ChevronRight className="h-6 w-6" />
-          )}
-        </Button>
+        <MenuToggleButton isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
         <div className="p-6 pb-2">
           <div className="mb-8 border-b border-gray-dark pb-6">

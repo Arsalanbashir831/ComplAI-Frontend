@@ -52,21 +52,21 @@ export function PaymentMethod({ cards, onAddCard }: PaymentMethodProps) {
                   <PopoverContent className="py-2 flex flex-col max-w-44">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-[#008000] hover:text-green-700"
+                      className="w-full justify-start text-gray-700"
                     >
                       <CircleCheckBig className="mr-2" />
                       Make Default
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-blue-dark hover:text-blue-900"
+                      className="w-full justify-start text-gray-700"
                     >
                       <Edit className="mr-2" />
                       Edit
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-red-500 hover:text-red-700"
+                      className="w-full justify-start text-gray-700"
                     >
                       <Trash className="mr-2" />
                       Remove
