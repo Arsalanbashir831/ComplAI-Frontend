@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/chat-hook';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat } from '@/hooks/chat-hook';
+import { cn } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -144,7 +144,8 @@ export function MessageInput({ isNewChat = false }: { isNewChat?: boolean }) {
       // Set dynamic content based on whether a file is being sent
       const content = shouldAttachFile
         ? 'Here are the requested files:'
-        : 'Hi, How can I assist further?';
+        : `Prevent Nausea or Vomiting: Nebulizer treatments can sometimes cause coughing, which might lead to nausea if the patient has eaten just before the treatment.
+Relaxed Breathing: The medication from the nebulizer helps open the airways, making it easier for the patient to breathe and eat comfortably after the treatment.`;
 
       // Add bot's message, with or without attachments
       addMessageToChat(chatId, {
