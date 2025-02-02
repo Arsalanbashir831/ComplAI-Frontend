@@ -1,8 +1,8 @@
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
 
-import { PromptCard as PromptCardType } from '@/types/chat';
 import { MessageInput } from '@/components/chat/message-input';
 import { PromptCard } from '@/components/chat/prompt-card';
+import { PromptCard as PromptCardType } from '@/types/chat';
 
 const promptCards: PromptCardType[] = [
   {

@@ -1,6 +1,6 @@
-import { RecentChat } from '@/types/chat';
-import { ChatProvider } from '@/hooks/chat-hook';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
+import { ChatProvider } from '@/hooks/chat-hook';
+import { RecentChat } from '@/types/chat';
 
 const recentChats: RecentChat[] = [
   { id: '1', message: 'I need a quick guide in...' },
