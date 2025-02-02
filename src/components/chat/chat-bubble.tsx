@@ -1,7 +1,7 @@
 import Image from 'next/image';
 
-import { cn, formatDate } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
+import { cn, formatDate } from '@/lib/utils';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
@@ -15,7 +15,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.sender === 'bot';
 
   return (
-    <div className={cn('flex mb-3', isBot?'justify-start' :'justify-end')}>
+    <div className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}>
       <div
         className={cn(
           `flex flex-col gap-2 rounded-2xl py-4 items-center justify-center  ${isBot ? 'px-0' : 'px-8'} max-w-[66.666667%]`,
