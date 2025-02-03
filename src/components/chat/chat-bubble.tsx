@@ -18,7 +18,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     <div className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}>
       <div
         className={cn(
-          `flex flex-col gap-2 rounded-2xl py-4 items-center justify-center  ${isBot ? 'px-0' : 'px-8'} max-w-[66.666667%]`,
+          `flex flex-col gap-2 rounded-2xl py-4 items-center justify-center  ${isBot ? 'px-0' : 'px-4 md:px-8'} md:max-w-[66.666667%]`,
           isBot
             ? 'bg-[#ffff]'
             : 'bg-blue-light text-white border-gray-light border-2 shadow-md'
@@ -40,8 +40,8 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             {!isBot && (
               <>
                 {/* User Name */}
-                <div className="flex gap-2 items-center">
-                  <span className="text-sm text-black font-medium border-r border-gray pr-2">
+                <div className="flex flex-col md:flex-row md:gap-2 md:items-center">
+                  <span className="text-sm text-black font-medium md:border-r border-gray md:pr-2">
                     {message.userName || 'John William'}
                   </span>
                   <span className="text-black text-xs">

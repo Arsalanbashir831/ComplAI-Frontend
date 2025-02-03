@@ -20,10 +20,12 @@ export default function SpecificChatPage() {
     <>
       <ChatHeader />
 
-      <div className="mx-auto max-w-[80%] px-6 flex flex-col justify-center h-[90%]">
+      <div className="px-6 flex flex-col justify-center h-[90%]">
         <ChatMessages messages={chat.messages} />
 
-        <MessageInput />
+        <div className="mx-auto md:max-w-[80%] w-full">
+          <MessageInput />
+        </div>
       </div>
     </>
   );
