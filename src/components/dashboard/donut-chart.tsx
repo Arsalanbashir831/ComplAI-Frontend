@@ -21,12 +21,12 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
   ];
 
   return (
-    <Card className="rounded-lg shadow-md border-none w-full max-w-md md:max-w-none">
+    <Card className="rounded-lg shadow-md border-none md:max-w-none">
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="text-[#030229]">Tokens Summary</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center px-4">
-        <div className="h-64 w-64 md:h-80 md:w-80">
+        <div className="h-60 w-60 md:h-80 md:w-80">
           <ResponsiveContainer>
             <ChartContainer
               config={{
