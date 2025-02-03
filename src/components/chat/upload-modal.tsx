@@ -48,7 +48,7 @@ export function UploadModal({
             />
           </div>
           <div className="space-y-2">
-            <DialogTitle>Upload Your Necessary Documents</DialogTitle>
+            <DialogTitle>Upload Your Documents</DialogTitle>
             <p className="text-sm text-muted-foreground">
               Start create and manage your property by few clicks!
             </p>

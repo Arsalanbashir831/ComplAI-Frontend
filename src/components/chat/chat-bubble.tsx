@@ -51,7 +51,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 </div>
 
                 {/* Message Content */}
-                <p className="text-sm break-words text-black">
+                <p className="text-sm break-words text-black whitespace-pre-line">
                   {message.content}
                 </p>
 
