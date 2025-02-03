@@ -1,5 +1,5 @@
-import { ROUTES } from '@/constants/routes';
 import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
@@ -31,7 +31,10 @@ export default function DashboardHeader({
       </div>
 
       <div>
-        <Link href={ROUTES.PROFILE} className="flex items-center gap-2 hover:bg-gray-300 p-2 rounded-md transition-all duration-200">
+        <Link
+          href={ROUTES.PROFILE}
+          className="flex items-center gap-2 hover:bg-gray-300 p-2 rounded-md transition-all duration-200"
+        >
           <Avatar className="transition-all duration-200 transform hover:scale-105">
             <AvatarImage src="https://github.com/shadcn.png" />
             <AvatarFallback>JW</AvatarFallback>
