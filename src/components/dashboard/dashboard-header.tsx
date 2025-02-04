@@ -1,5 +1,5 @@
-import { ROUTES } from '@/constants/routes';
 import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
@@ -29,7 +29,7 @@ export default function DashboardHeader({
           </Badge>
         )}
       </div>
-{/* test */}
+      {/* test */}
       <div>
         <Link
           href={ROUTES.PROFILE}
