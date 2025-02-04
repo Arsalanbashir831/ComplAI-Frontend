@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import type { PaymentCard, Plan } from '@/types/subscription';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import type { PaymentCard, Plan } from '@/types/subscription';
 
 const plans: Plan[] = [
   {
@@ -20,7 +20,7 @@ const plans: Plan[] = [
   },
   {
     type: 'professional',
-    title: 'Professional',
+    title: 'Pro (Recommended)',
     price: '£49',
     interval: 'month',
     minimumTerm: '12 Months',
