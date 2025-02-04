@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import type { PaymentCard, Plan } from '@/types/subscription';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import type { PaymentCard, Plan } from '@/types/subscription';
 
 const plans: Plan[] = [
   {
@@ -14,7 +14,7 @@ const plans: Plan[] = [
     title: 'Pay as you use',
     price: '£50 Top up',
     description:
-      'Suitable for firms with 1-10 employees who only need occasional support on compliance. ',
+      'Designed for firms with minimal compliance needs, this package offers only basic tools and features for occasional compliance support. It’s suited for those with straightforward regulatory requirements and low demand for ongoing assistance. ',
     buttonText: 'Add More Tokens',
     buttonAction: () => console.log('Add tokens'),
   },
@@ -25,7 +25,7 @@ const plans: Plan[] = [
     interval: 'month',
     minimumTerm: '12 Months',
     description:
-      'Better suited for firms who need to maintain accreditation such as Lexcel, SQM and Law Society and want to remain firmly on top of their compliance requirements.',
+      'Ideal for firms that require regular compliance support and aim to uphold key accreditations like Lexcel, SQM, and Law Society standards. With advanced features and ongoing expert assistance, this package keeps your firm ahead of regulatory challenges. Our most popular and highly recommended choice for staying fully compliant and in control.',
     buttonText: 'Switch Subscription',
     buttonAction: () => console.log('Switch to Professional'),
   },
@@ -35,7 +35,7 @@ const plans: Plan[] = [
     price: '£POA',
     minimumTerm: '24 Months',
     description:
-      'Our most powerful product with all the features. Best suited for firms servicing high risk areas, mulitple service areas of law and/or volume litigation providers.',
+      'Our most powerful solution, packed with every feature to meet the highest compliance demands. Ideal for firms operating in high-risk sectors, servicing multiple areas of law, or managing high-volume litigation. Custom solutions are also available to meet specific needs',
     buttonText: 'Apply Now',
     buttonAction: () => console.log('Apply for Enterprise'),
   },
