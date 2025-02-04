@@ -1,5 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -10,9 +13,6 @@ import {
   User2,
   Video,
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -103,36 +103,27 @@ export function DashboardSidebar() {
               </Link>
             </div> */}
 
-<div className=" pb-4">
-          <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative">
-            <h3 className="mb-1 font-semibold text-xl">
-            Compliance AI
-            </h3>
-            {/* <Progress
+            <div className=" pb-4">
+              <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative">
+                <h3 className="mb-1 font-semibold text-xl">Compliance AI</h3>
+                {/* <Progress
               value={value}
               className="bg-white"
               indicatorClassName={cn(
                 value > 50 ? 'bg-red-500' : 'bg-green-500'
               )}
             /> */}
-            <p className="mb-1 text-sm opacity-90 text-center">
-            Return to the Compliance AI chat
-            </p>
-            <Button 
-              variant="secondary"
-              className="w-3/4 text-primary cursor-pointer z-10"
-            >
-             <Link
-                href={ROUTES.CHAT}
-               
-              >
-                Use Compl-AI
-              </Link>
-            </Button>
-          </div>
-
-         
-        </div>
+                <p className="mb-1 text-sm opacity-90 text-center">
+                  Return to the Compliance AI chat
+                </p>
+                <Button
+                  variant="secondary"
+                  className="w-3/4 text-primary cursor-pointer z-10"
+                >
+                  <Link href={ROUTES.CHAT}>Use Compl-AI</Link>
+                </Button>
+              </div>
+            </div>
 
             <div className="border-t pt-4">
               <Link
@@ -149,8 +140,6 @@ export function DashboardSidebar() {
               <LogoutButton className="text-gray-dark hover:text-blue-dark" />
             </div>
           </div>
-
-          
         </div>
       </div>
 

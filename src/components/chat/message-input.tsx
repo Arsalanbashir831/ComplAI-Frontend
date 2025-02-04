@@ -1,14 +1,14 @@
 'use client';
 
-import { Plus, PlusCircle, Send } from 'lucide-react';
-import { useRouter } from 'next/navigation'; // Import useRouter
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { Plus, PlusCircle, Send } from 'lucide-react';
 
+import { UploadedFile } from '@/types/upload';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/chat-hook';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useChat } from '@/hooks/chat-hook';
-import { cn } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -167,9 +167,7 @@ Relaxed Breathing: The medication from the nebulizer helps open the airways, mak
     <div>
       <div className="py-4  ">
         <div className="relative bg-gray-light rounded-xl p-4">
-         <div>
-          
-         </div>
+          <div></div>
           <Textarea
             placeholder="Message Compl-AI"
             value={message}
@@ -240,7 +238,9 @@ Relaxed Breathing: The medication from the nebulizer helps open the airways, mak
             </div>
           </div>
         </div>
-        <p className='text-center mt-2 text-gray-500 italic'>Compl-AI can make mistakes and does not provide legal advice</p>
+        <p className="text-center mt-2 text-gray-500 italic">
+          Compl-AI can make mistakes and does not provide legal advice
+        </p>
       </div>
 
       <UploadModal
