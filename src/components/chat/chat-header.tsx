@@ -1,15 +1,15 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { Plus, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 
 export function ChatHeader() {
   return (
-    <header className="flex justify-end md:justify-between items-center py-4 md:px-4">
+    <header className="flex justify-end md:justify-between items-center py-4 md:px-4 border-b-gray-100 border-b-2 bottom-1">
       {/* Logo Section */}
       <div className="items-center space-x-2 hidden md:flex">
         <Image src="/favicon.svg" alt="Compl-AI-v1" width={40} height={40} />
