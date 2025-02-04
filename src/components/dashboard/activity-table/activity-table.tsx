@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 
-import type { ActivityItem } from '@/types/dashboard';
-import { cn } from '@/lib/utils';
+import { DateRangePicker } from '@/components/common/date-range-picker';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DateRangePicker } from '@/components/common/date-range-picker';
+import { cn } from '@/lib/utils';
+import type { ActivityItem } from '@/types/dashboard';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
@@ -57,10 +57,16 @@ export function ActivityTable({
                 Query Mode
               </TabsTrigger>
               <TabsTrigger
-                value="Uploaded Document"
+                value="Document Upload"
                 className="text-[#667085] data-[state=active]:bg-[#0F9B5A1F] data-[state=active]:text-[#09B975]"
               >
                 Document Upload
+              </TabsTrigger>
+              <TabsTrigger
+                value="Generated Document"
+                className="text-[#667085] data-[state=active]:bg-[#0F9B5A1F] data-[state=active]:text-[#09B975]"
+              >
+                Generated Document
               </TabsTrigger>
               <TabsTrigger
                 value="all"
