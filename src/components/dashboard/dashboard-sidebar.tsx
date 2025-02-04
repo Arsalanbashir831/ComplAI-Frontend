@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
-  Bot,
   CircleDollarSign,
   HelpCircle,
   History,
@@ -74,7 +73,7 @@ export function DashboardSidebar() {
       >
         <MenuToggleButton isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
-        <div className="p-6 pb-2">
+        <div className="p-6 pb-0">
           <div className="mb-8 border-b border-gray-dark pb-6">
             <Logo href={ROUTES.CHAT} />
           </div>
@@ -82,35 +81,41 @@ export function DashboardSidebar() {
 
         <div className="px-6 pb-4 flex flex-col justify-between flex-1">
           <div>
-            <Link
-              href={ROUTES.COMPLIANCE_GPT}
-              className={cn(
-                'w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark',
-                { 'text-blue-dark': pathname === ROUTES.COMPLIANCE_GPT }
-              )}
-            >
-              <Bot className="mr-2 h-5 w-5" />
-              Compliance GPT
-            </Link>
-            <Separator className="my-3 bg-gray-light" />
             {renderLinks(SIDEBAR_LINKS)}
             <Separator className="my-3 bg-gray-light" />
             {renderLinks(PROFILE_LINKS)}
           </div>
 
-          <div>
-            <Link
-              href={ROUTES.HELP_CENTER}
-              className={cn(
-                'w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark',
-                { 'text-blue-dark': pathname === ROUTES.HELP_CENTER }
-              )}
-            >
-              <HelpCircle className="mr-2 h-5 w-5" />
-              Contact Us
-            </Link>
+          <div className="py-4">
+            <div className="mb-6 rounded-lg bg-primary py-4 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative space-y-2 md:space-y-4">
+              <h3 className="mb-1 font-bold text-lg md:text-xl">
+                Compliance GPT
+              </h3>
+              <p className="mb-1 px-1 text-xs md:text-sm opacity-90 text-center">
+                Use this button to return to the Compliance AI Chat
+              </p>
+              <Link
+                href={ROUTES.CHAT}
+                className="md:w-3/4 text-primary cursor-pointer z-10 text-xs md:text-sm bg-white border border-primary rounded-lg py-2 px-4 hover:bg-gray-300 transition-colors text font-medium text-center"
+              >
+                Use Compl-AI
+              </Link>
+            </div>
 
-            <LogoutButton className="text-gray-dark hover:text-blue-dark" />
+            <div className="border-t pt-4">
+              <Link
+                href={ROUTES.HELP_CENTER}
+                className={cn(
+                  'w-full flex items-center px-4 py-2 rounded-lg hover:bg-gray-light transition-colors font-medium gap-2 text-sm text-gray-dark hover:text-blue-dark',
+                  { 'text-blue-dark': pathname === ROUTES.HELP_CENTER }
+                )}
+              >
+                <HelpCircle className="mr-2 h-5 w-5" />
+                Contact Us
+              </Link>
+
+              <LogoutButton className="text-gray-dark hover:text-blue-dark" />
+            </div>
           </div>
         </div>
       </div>
