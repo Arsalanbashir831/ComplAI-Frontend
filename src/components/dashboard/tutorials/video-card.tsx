@@ -48,10 +48,10 @@ export function VideoCard({ video }: VideoCardProps) {
               <span className="text-blue-dark">{video.studio}</span>
             </p>
             <Button
-              variant="link"
-              className="text-xs p-0 !no-underline text-gray-dark hover:text-blue-dark h-fit"
+              variant="destructive"
+              className="text-[10px] p-1 !no-underline h-fit"
             >
-              <Download className="h-4 w-4 inline-block" />
+              <Download className="!h-3.5 !w-3.5 inline-block" />
               PDF
             </Button>
           </div>

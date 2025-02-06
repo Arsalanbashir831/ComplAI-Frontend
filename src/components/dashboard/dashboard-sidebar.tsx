@@ -88,33 +88,11 @@ export function DashboardSidebar() {
           </div>
 
           <div className="py-4">
-            {/* <div className="mb-6 rounded-lg bg-primary py-4 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative space-y-2 md:space-y-4">
-              <h3 className="mb-1 font-bold text-lg md:text-xl">
-                Compliance AI
-              </h3>
-              <p className="mb-1 px-1 text-xs md:text-sm opacity-90 text-center">
-                Use this button to return to the Compliance AI Chat
-              </p>
-              <Link
-                href={ROUTES.CHAT}
-                className="md:w-3/4 text-primary cursor-pointer z-10 text-xs md:text-sm bg-white border border-primary rounded-lg py-2 px-4 hover:bg-gray-300 transition-colors text font-medium text-center"
-              >
-                Use Compl-AI
-              </Link>
-            </div> */}
-
             <div className=" pb-4">
               <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative">
                 <h3 className="mb-1 font-semibold text-xl">Compliance AI</h3>
-                {/* <Progress
-              value={value}
-              className="bg-white"
-              indicatorClassName={cn(
-                value > 50 ? 'bg-red-500' : 'bg-green-500'
-              )}
-            /> */}
                 <p className="mb-1 text-sm opacity-90 text-center">
-                  Return to the Compliance AI chat
+                  Return to AI Chat
                 </p>
                 <Button
                   variant="secondary"
