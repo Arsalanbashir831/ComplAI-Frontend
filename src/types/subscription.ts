@@ -8,6 +8,7 @@ export interface Plan {
   description: string;
   minimumTerm?: string;
   buttonText: string;
+  special:boolean
   buttonAction: () => void;
 }
 

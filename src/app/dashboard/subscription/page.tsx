@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import type { PaymentCard, Plan } from '@/types/subscription';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import type { PaymentCard, Plan } from '@/types/subscription';
 
 const plans: Plan[] = [
   {
@@ -16,17 +16,19 @@ const plans: Plan[] = [
     description:
       'Designed for firms with minimal compliance needs, this package offers only basic tools and features for occasional compliance support. It’s suited for those with straightforward regulatory requirements and low demand for ongoing assistance. ',
     buttonText: 'Add More Tokens',
+    special:false,
     buttonAction: () => console.log('Add tokens'),
   },
   {
     type: 'professional',
-    title: 'Pro (Recommended)',
+    title: 'Professional',
     price: '£49',
     interval: 'month',
     minimumTerm: '12 Months',
     description:
       'Ideal for firms that require regular compliance support and aim to uphold key accreditations like Lexcel, SQM, and Law Society standards. With advanced features and ongoing expert assistance, this package keeps your firm ahead of regulatory challenges. Our most popular and highly recommended choice for staying fully compliant and in control.',
     buttonText: 'Switch Subscription',
+    special:true,
     buttonAction: () => console.log('Switch to Professional'),
   },
   {
@@ -37,6 +39,7 @@ const plans: Plan[] = [
     description:
       'Our most powerful solution, packed with every feature to meet the highest compliance demands. Ideal for firms operating in high-risk sectors, servicing multiple areas of law, or managing high-volume litigation. Custom solutions are also available to meet specific needs',
     buttonText: 'Apply Now',
+    special:false,
     buttonAction: () => console.log('Apply for Enterprise'),
   },
 ];

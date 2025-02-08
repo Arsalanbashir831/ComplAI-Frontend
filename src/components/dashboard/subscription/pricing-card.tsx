@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 
-import type { Plan } from '@/types/subscription';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type { Plan } from '@/types/subscription';
 
 interface PricingCardProps {
   plan: Plan;
@@ -16,14 +16,19 @@ export function PricingCard({ plan, isActive }: PricingCardProps) {
   return (
     <Card
       className={cn(
-        'w-full h-full flex flex-col relative',
-        isActive && 'border-blue-dark border-2',
-        !isPayAsYouUse && 'bg-blue-dark'
+        'w-full h-full flex flex-col relative border-2',
+        !isPayAsYouUse ? 'bg-blue-dark ' : 'bg-[#fafffa] border-green-400'
       )}
     >
       {isActive && (
         <div className="absolute -top-2 -right-2">
-          <Check className="text-white bg-[#008000] rounded-full p-1" />
+          <Check className="text-white bg-[#008000] rounded-full p-1 size-8" />
+        </div>
+      )}
+
+      {plan.special && (
+        <div className="absolute left-1 top-1  bg-green-600 text-white text-sm px-2 py-1 rounded-md">
+          Recommended
         </div>
       )}
 
@@ -31,7 +36,7 @@ export function PricingCard({ plan, isActive }: PricingCardProps) {
         <div className="flex flex-col justify-between space-y-4 h-full">
           <div className="space-y-4">
             <div className="space-y-2">
-              <div className={'flex items-end justify-between'}>
+              <div className="flex items-end justify-between">
                 <h3
                   className={cn(
                     'font-medium text-xl',
