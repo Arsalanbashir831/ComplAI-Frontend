@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Image from 'next/image';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -21,9 +21,7 @@ export default function ProfileForm() {
     defaultValues: {
       username: 'johndoe',
       email: 'john.doe@gmail.com',
-
       phoneNumber: '+1 234567890',
-
       jobTitle: 'Software Developer',
       accountType: 'personal',
       creationDate: new Date(),
@@ -36,8 +34,7 @@ export default function ProfileForm() {
 
   const onSubmit = (data: ProfileFormValues) => {
     console.log(data);
-    // Here you would typically send the data to your backend
-    toggleEdit();
+    toggleEdit(); // Toggle back to view mode after saving
   };
 
   return (
@@ -46,7 +43,9 @@ export default function ProfileForm() {
       className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto"
     >
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-        <div className="relative">
+        {/* Profile Image Container - Hover effect only in edit mode */}
+        <div className={`relative w-16 h-16 ${isEditable ? 'group' : ''}`}>
+          {/* Profile Image */}
           <Image
             src="/user.png"
             alt="Profile Avatar"
@@ -54,9 +53,21 @@ export default function ProfileForm() {
             height={64}
             className="rounded-full object-cover"
           />
+
+          {/* Hover Overlay (Only visible in edit mode) */}
+          {isEditable && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <span className="text-white text-sm font-medium">Change</span>
+            </div>
+          )}
+
+          {/* Hidden File Input - Disabled when not in edit mode */}
           <input
             type="file"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            disabled={!isEditable}
+            className={`absolute inset-0 w-full h-full opacity-0 ${
+              isEditable ? 'cursor-pointer' : 'cursor-default'
+            }`}
           />
         </div>
 

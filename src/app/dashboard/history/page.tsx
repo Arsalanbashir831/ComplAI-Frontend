@@ -56,7 +56,7 @@ export default function HistoryPage() {
       />
 
       {/* Centered Content */}
-      <div className="flex flex-col justify-center flex-1 w-full    rounded-xl p-6 space-y-6">
+      <div className="flex flex-col justify-center flex-1 w-full    rounded-xl ">
         <ActivityTable
           activities={mockActivities}
           pageSize={7}
