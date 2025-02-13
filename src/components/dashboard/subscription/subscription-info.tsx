@@ -25,11 +25,11 @@ export function SubscriptionInfo({
           <span>{plan}</span>
         </div>
         <div className="flex gap-2 text-sm">
-          <span className="">Started at:</span>
+          <span className="">Started on:</span>
           <span>{startDate}</span>
         </div>
         <div className="flex gap-2 text-sm">
-          <span className="">Renewal Date:</span>
+          <span className="">Renews on:</span>
           <span>{renewalDate}</span>
         </div>
       </div>

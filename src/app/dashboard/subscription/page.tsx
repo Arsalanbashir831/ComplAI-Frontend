@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import type { PaymentCard, Plan } from '@/types/subscription';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import type { PaymentCard, Plan } from '@/types/subscription';
 
 const plans: Plan[] = [
   {
@@ -38,7 +38,7 @@ const plans: Plan[] = [
     minimumTerm: '24 Months',
     description:
       'Our most powerful solution, packed with every feature to meet the highest compliance demands. Ideal for firms operating in high-risk sectors, servicing multiple areas of law, or managing high-volume litigation. Custom solutions are also available to meet specific needs',
-    buttonText: 'Apply Now',
+    buttonText: 'Contact Sales',
     special: false,
     buttonAction: () => console.log('Apply for Enterprise'),
   },
