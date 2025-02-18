@@ -2,16 +2,16 @@
 
 import { useState } from 'react';
 
-import type { PaymentCard, Plan } from '@/types/subscription';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import type { PaymentCard, Plan } from '@/types/subscription';
 
 const plans: Plan[] = [
   {
     type: 'pay-as-you-use',
-    title: 'Pay as you use',
+    title: 'Pay As You Use',
     price: '£50 Top up',
     description:
       'Designed for firms with minimal compliance needs, this package offers only basic tools and features for occasional compliance support. It’s suited for those with straightforward regulatory requirements and low demand for ongoing assistance. ',
