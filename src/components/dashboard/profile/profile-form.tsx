@@ -6,8 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 import {
   ProfileFormFields,
@@ -78,21 +83,29 @@ export default function ProfileForm() {
           <h1 className="text-xl md:text-3xl font-bold">John Doe</h1>
         </div>
 
-        <div className="mt-2 text-gray-500 relative cursor-pointer flex items-center gap-2 group">
+        <div className="mt-2 text-gray-500 relative cursor-pointer flex items-center gap-2">
           <span className={showUserId ? 'text-black' : 'blur-sm'}>
             {showUserId ? 'UserID: 123456' : 'UserID: ******'}
           </span>
-          <button
-            type="button"
-            className={cn(
-              'text-gray-700 hover:text-black',
-              showUserId ? '' : 'blur-sm',
-              'group-hover:blur-none'
-            )}
-            onClick={() => setShowUserId((prev) => !prev)}
-          >
-            {showUserId ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  className="text-gray-700 hover:text-black relative p-0 h-fit bg-transparent"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowUserId((prev) => !prev);
+                  }}
+                >
+                  {showUserId ? <EyeOff size={16} /> : <Eye size={16} />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs bg-gray-800 p-2 py-1 text-white">
+                {showUserId ? 'Hide ID' : 'Reveal ID'}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <div className="md:ml-auto flex gap-4">
