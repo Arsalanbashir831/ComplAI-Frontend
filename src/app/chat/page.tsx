@@ -1,9 +1,9 @@
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
 
-import { PromptCard as PromptCardType } from '@/types/chat';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageInput } from '@/components/chat/message-input';
 import { PromptCard } from '@/components/chat/prompt-card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { PromptCard as PromptCardType } from '@/types/chat';
 
 const promptCards: PromptCardType[] = [
   {
@@ -37,7 +37,7 @@ export default function ChatPage() {
             Hi there, John
           </h1>
           <h2 className="mb-4 text-4xl font-bold text-gradient">
-            How can we help?
+            How can I help?
           </h2>
 
           <p className="text-gray-dark">

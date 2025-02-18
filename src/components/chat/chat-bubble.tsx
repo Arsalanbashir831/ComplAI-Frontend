@@ -1,7 +1,7 @@
 import Image from 'next/image';
 
-import type { ChatMessage } from '@/types/chat';
 import { cn, formatDate } from '@/lib/utils';
+import type { ChatMessage } from '@/types/chat';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
@@ -102,10 +102,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 )}
 
                 {/* Copy Button */}
-                <CopyButton content={message.content} />
+              
               </>
             )}
+         {isBot&&(<><CopyButton content={message.content} /></>)} 
           </div>
+        {!isBot&&(<><CopyButton content={message.content} /></>)} 
         </div>
       </div>
     </div>
