@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 import {
@@ -15,6 +17,7 @@ import {
 
 export default function ProfileForm() {
   const [isEditable, setIsEditable] = useState(false);
+  const [showUserId, setShowUserId] = useState(false);
 
   const { control, handleSubmit, reset } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -71,7 +74,27 @@ export default function ProfileForm() {
           />
         </div>
 
-        <h1 className="text-xl md:text-3xl font-bold">John Doe</h1>
+        <div className="relative">
+          <h1 className="text-xl md:text-3xl font-bold">John Doe</h1>
+        </div>
+
+        <div className="mt-2 text-gray-500 relative cursor-pointer flex items-center gap-2 group">
+          <span className={showUserId ? 'text-black' : 'blur-sm'}>
+            {showUserId ? 'UserID: 123456' : 'UserID: ******'}
+          </span>
+          <button
+            type="button"
+            className={cn(
+              'text-gray-700 hover:text-black',
+              showUserId ? '' : 'blur-sm',
+              'group-hover:blur-none'
+            )}
+            onClick={() => setShowUserId((prev) => !prev)}
+          >
+            {showUserId ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
+
         <div className="md:ml-auto flex gap-4">
           <Button
             type="button"

@@ -27,7 +27,7 @@ export function PricingCard({ plan, isActive }: PricingCardProps) {
       )}
 
       {plan.special && (
-        <div className="absolute left-1 top-1  bg-green-600 text-white text-sm px-2 py-1 rounded-md">
+        <div className="absolute -left-0.5 -top-0.5  bg-green-600 text-white text-sm px-2 py-1 rounded-tl-lg rounded-br-lg">
           Recommended
         </div>
       )}
