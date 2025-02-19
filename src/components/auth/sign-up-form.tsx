@@ -1,21 +1,20 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 
-import apiCaller from '@/config/apiCaller';
-
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import {
   Form,
   FormControl,
@@ -30,8 +29,12 @@ import { OAuthButtons } from './outh-buttons';
 
 const formSchema = z
   .object({
-    first_name: z.string().min(2, 'First name must be at least 2 characters long'),
-    last_name: z.string().min(2, 'Last name must be at least 2 characters long'),
+    first_name: z
+      .string()
+      .min(2, 'First name must be at least 2 characters long'),
+    last_name: z
+      .string()
+      .min(2, 'Last name must be at least 2 characters long'),
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters long'),
     confirmPassword: z
@@ -49,7 +52,7 @@ export function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-const router = useRouter()
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,20 +69,29 @@ const router = useRouter()
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
-  
+
     try {
-      const response = await apiCaller('/api/users/register/', 'POST', {
-        first_name: values.first_name,
-        last_name: values.last_name,
-        email: values.email,
-        password: values.password,
-      }, {}, false, 'json');
-  
+      const response = await apiCaller(
+        '/api/users/register/',
+        'POST',
+        {
+          first_name: values.first_name,
+          last_name: values.last_name,
+          email: values.email,
+          password: values.password,
+        },
+        {},
+        false,
+        'json'
+      );
+
       if (response.status === 201) {
-        setSuccessMessage('Account created successfully! Please verify your email.');
+        setSuccessMessage(
+          'Account created successfully! Please verify your email.'
+        );
         form.reset();
         router.push(ROUTES.VERIFY_EMAIL);
-      } 
+      }
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         const { status, data } = error.response;
@@ -92,12 +104,11 @@ const router = useRouter()
         } else {
           setError(data.message || 'An unexpected error occurred.');
         }
-      } 
+      }
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <AuthFormLayout
@@ -118,7 +129,9 @@ const router = useRouter()
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          {successMessage && <p className="text-green-500 text-sm">{successMessage}</p>}
+          {successMessage && (
+            <p className="text-green-500 text-sm">{successMessage}</p>
+          )}
 
           {/* First Name & Last Name Row */}
           <div className="flex gap-4">

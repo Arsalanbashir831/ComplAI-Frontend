@@ -1,6 +1,8 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-type RequestData = Record<string, string | number | boolean | File | Blob> | FormData;
+type RequestData =
+  | Record<string, string | number | boolean | File | Blob>
+  | FormData;
 
 const apiCaller = async (
   url: string,
@@ -18,7 +20,7 @@ const apiCaller = async (
       ...(options.headers || {}), // Ensure headers are always an object
     },
   };
-config.headers = {}
+  config.headers = {};
   if (useAuth) {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -51,7 +53,7 @@ config.headers = {}
     return response;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      throw error
+      throw error;
     } else {
       throw { message: 'Network error or unknown error occurred' };
     }
