@@ -7,7 +7,7 @@ export function OAuthButtons() {
   const router = useRouter();
 
   const handleGoogleSignIn = () => {
-    // Handle Google Sign In
+    // Handle Google Sign Ins
     console.log('Google Sign In');
     router.push('/chat');
   };
