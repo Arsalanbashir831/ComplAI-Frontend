@@ -1,22 +1,47 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
+type RequestData = Record<string, string | number | boolean | File | Blob> | FormData;
+
 const apiCaller = async (
   url: string,
+  method: AxiosRequestConfig['method'] = 'GET',
+  data?: RequestData,
   options: AxiosRequestConfig = {},
-  useAuth: boolean = true
+  useAuth: boolean = true,
+  dataType: 'json' | 'formdata' = 'json' // Default to JSON
 ): Promise<AxiosResponse> => {
+  // Ensure headers object exists
   const config: AxiosRequestConfig = {
     ...options,
+    method,
     headers: {
-      ...(options.headers || {}),
+      ...(options.headers || {}), // Ensure headers are always an object
     },
   };
-
+config.headers = {}
   if (useAuth) {
     const token = localStorage.getItem('accessToken');
     if (token) {
-      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  // Handle data format (JSON or FormData)
+  if (data) {
+    if (dataType === 'json') {
+      config.data = data;
+      config.headers['Content-Type'] = 'application/json';
+    } else if (dataType === 'formdata') {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value instanceof File || value instanceof Blob) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, String(value));
+        }
+      });
+      config.data = formData;
+      delete config.headers['Content-Type']; // Let browser set content-type automatically
     }
   }
 
@@ -26,57 +51,10 @@ const apiCaller = async (
     return response;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-      switch (status) {
-        case 400:
-          console.error(
-            'Bad Request: The server could not understand the request.',
-            error.response?.data
-          );
-          break;
-        case 401:
-          console.error(
-            'Unauthorized: Invalid or missing authentication token.',
-            error.response?.data
-          );
-          break;
-        case 403:
-          console.error(
-            'Forbidden: You do not have permission to access this resource.',
-            error.response?.data
-          );
-          break;
-        case 404:
-          console.error(
-            'Not Found: The requested resource was not found.',
-            error.response?.data
-          );
-          break;
-        case 500:
-          console.error(
-            'Internal Server Error: Something went wrong on the server.',
-            error.response?.data
-          );
-          break;
-        case 503:
-          console.error(
-            'Service Unavailable: The server is currently unavailable.',
-            error.response?.data
-          );
-          break;
-        default:
-          console.error(
-            `Unexpected Error (Status: ${status}):`,
-            error.response?.data
-          );
-      }
+      throw error
     } else {
-      console.error(
-        'Network Error or Unknown Error:',
-        (error as Error).message
-      );
+      throw { message: 'Network error or unknown error occurred' };
     }
-    throw error;
   }
 };
 
