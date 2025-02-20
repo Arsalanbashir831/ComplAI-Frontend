@@ -1,16 +1,20 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 import { LockKeyhole, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -24,7 +28,7 @@ import { Separator } from '../ui/separator';
 import AuthFormLayout from './form-layout';
 import { OAuthButtons } from './outh-buttons';
 
-// no restriction on password length but password is reqquired
+// ✅ No restriction on password length but it is required
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
@@ -33,6 +37,9 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,11 +49,35 @@ export function LoginForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Handle form submission
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
+    setErrorMessage(null);
 
-    router.push(ROUTES.CHAT);
+    try {
+      const response = await apiCaller(
+        API_ROUTES.AUTH.LOGIN,
+        'POST',
+        { email: values.email, password: values.password },
+        {},
+        false,
+        'json'
+      );
+
+      if (response.status === 200) {
+        const { access,refresh } = response.data;
+        localStorage.setItem('accessToken', access);
+        localStorage.setItem('refreshToken', refresh);
+        router.push(ROUTES.DASHBOARD);
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        setErrorMessage(error.response.data?.message || 'Invalid email or password.');
+      } else {
+        setErrorMessage('A network error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,6 +95,9 @@ export function LoginForm() {
         <p className="text-xs text-gray-700">OR</p>
         <Separator className="bg-[#BABABA]" />
       </div>
+
+      {/* ✅ Display error message */}
+      {errorMessage && <p className="text-red-500 text-sm text-center">{errorMessage}</p>}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -110,7 +144,7 @@ export function LoginForm() {
               control={form.control}
               name="rememberMe"
               render={({ field }) => (
-                <div className="flex items-center space-x-2 ">
+                <div className="flex items-center space-x-2">
                   <Checkbox
                     id="rememberMe"
                     checked={field.value}
@@ -123,7 +157,7 @@ export function LoginForm() {
               )}
             />
             <Link
-              href={ROUTES.RESET_PASSWORD}
+              href={ROUTES.VERIFY_EMAIL}
               className="text-xs text-primary hover:underline"
             >
               Forgot Password?
@@ -131,8 +165,8 @@ export function LoginForm() {
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full">
-            Login
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
       </Form>
