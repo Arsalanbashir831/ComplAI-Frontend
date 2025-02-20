@@ -1,20 +1,20 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -64,14 +64,16 @@ export function LoginForm() {
       );
 
       if (response.status === 200) {
-        const { access,refresh } = response.data;
+        const { access, refresh } = response.data;
         localStorage.setItem('accessToken', access);
         localStorage.setItem('refreshToken', refresh);
         router.push(ROUTES.DASHBOARD);
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
-        setErrorMessage(error.response.data?.message || 'Invalid email or password.');
+        setErrorMessage(
+          error.response.data?.message || 'Invalid email or password.'
+        );
       } else {
         setErrorMessage('A network error occurred. Please try again.');
       }
@@ -97,7 +99,9 @@ export function LoginForm() {
       </div>
 
       {/* ✅ Display error message */}
-      {errorMessage && <p className="text-red-500 text-sm text-center">{errorMessage}</p>}
+      {errorMessage && (
+        <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

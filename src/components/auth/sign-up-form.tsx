@@ -1,21 +1,21 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import apiCaller from '@/config/apiCaller';
 
-import { API_ROUTES } from '@/constants/apiRoutes';
 import {
   Form,
   FormControl,
@@ -73,7 +73,7 @@ export function SignUpForm() {
 
     try {
       const response = await apiCaller(
-       API_ROUTES.AUTH.SIGNUP,
+        API_ROUTES.AUTH.SIGNUP,
         'POST',
         {
           first_name: values.first_name,
@@ -94,7 +94,9 @@ export function SignUpForm() {
         await apiCaller(API_ROUTES.AUTH.RESEND_VERIFICATION, 'POST', {
           email: values.email,
         });
-        router.push(`${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup`);
+        router.push(
+          `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup`
+        );
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {

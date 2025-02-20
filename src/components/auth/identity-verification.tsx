@@ -1,16 +1,17 @@
 'use client';
 
+import { useCallback, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
 import apiCaller from '@/config/apiCaller';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import axios from 'axios';
+import { Button } from '@/components/ui/button';
+
 import {
   Form,
   FormControl,
@@ -31,10 +32,13 @@ export function IdentityVerificationForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
-const type = searchParams.get('type')
+  const type = searchParams.get('type');
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -44,7 +48,7 @@ const type = searchParams.get('type')
   const resetMessage = useCallback(() => setMessage(null), []);
 
   const handleResponse = (status: number, successMsg: string) => {
-    if (status === 200 || status ===201) {
+    if (status === 200 || status === 201) {
       setMessage({ type: 'success', text: successMsg });
       return true;
     }
@@ -53,20 +57,29 @@ const type = searchParams.get('type')
 
   const handleError = (error: unknown, fallbackMsg: string) => {
     if (axios.isAxiosError(error) && error.response) {
-      setMessage({ type: 'error', text: error.response.data?.message || fallbackMsg });
+      setMessage({
+        type: 'error',
+        text: error.response.data?.message || fallbackMsg,
+      });
     } else {
-      setMessage({ type: 'error', text: 'A network error occurred. Please try again.' });
+      setMessage({
+        type: 'error',
+        text: 'A network error occurred. Please try again.',
+      });
     }
   };
 
   const onSubmit = async (value: z.infer<typeof formSchema>) => {
     if (!email || !type) {
-      return setMessage({ type: 'error', text: 'Email and type are required for verification.' });
+      return setMessage({
+        type: 'error',
+        text: 'Email and type are required for verification.',
+      });
     }
-  
+
     setLoading(true);
     resetMessage();
-  
+
     try {
       if (type === 'signup') {
         // ✅ Call API for signup verification
@@ -78,31 +91,51 @@ const type = searchParams.get('type')
           true,
           'json'
         );
-  
-        if (handleResponse(response.status, 'Verification successful! Redirecting to login...')) {
+
+        if (
+          handleResponse(
+            response.status,
+            'Verification successful! Redirecting to login...'
+          )
+        ) {
           setTimeout(() => router.push(ROUTES.LOGIN), 2000);
         }
       } else {
         // ✅ Directly route to reset password with email & OTP
-        router.push(`${ROUTES.RESET_PASSWORD}?email=${email}&otp=${value.code}`);
+        router.push(
+          `${ROUTES.RESET_PASSWORD}?email=${email}&otp=${value.code}`
+        );
       }
     } catch (error) {
       handleError(error, 'Invalid verification code');
-      form.setError('code', { type: 'manual', message: 'Invalid verification code' });
+      form.setError('code', {
+        type: 'manual',
+        message: 'Invalid verification code',
+      });
     } finally {
       setLoading(false);
     }
   };
-  
 
   const handleResend = async () => {
-    if (!email) return setMessage({ type: 'error', text: 'Email is required to resend verification.' });
+    if (!email)
+      return setMessage({
+        type: 'error',
+        text: 'Email is required to resend verification.',
+      });
 
     setResendLoading(true);
     resetMessage();
 
     try {
-      const response = await apiCaller(API_ROUTES.AUTH.RESEND_VERIFICATION, 'POST', { email }, {}, true, 'json');
+      const response = await apiCaller(
+        API_ROUTES.AUTH.RESEND_VERIFICATION,
+        'POST',
+        { email },
+        {},
+        true,
+        'json'
+      );
       handleResponse(response.status, 'Verification code resent successfully.');
     } catch (error) {
       handleError(error, 'Failed to resend verification code.');
@@ -120,7 +153,13 @@ const type = searchParams.get('type')
       handleFooterLinkClick={!resendLoading ? handleResend : undefined}
     >
       {/* ✅ Display success & error messages */}
-      {message && <p className={`text-sm text-center ${message.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>{message.text}</p>}
+      {message && (
+        <p
+          className={`text-sm text-center ${message.type === 'success' ? 'text-green-500' : 'text-red-500'}`}
+        >
+          {message.text}
+        </p>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
