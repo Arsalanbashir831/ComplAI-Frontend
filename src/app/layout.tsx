@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
-
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
+
 import './globals.css';
 
 const poppins = Poppins({
@@ -23,13 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans bg-background text-foreground ${poppins}`}>
-     <QueryProvider>
-     <AuthProvider>
-          {children}
-       </AuthProvider>
-     </QueryProvider>
-     
-         
+        <QueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

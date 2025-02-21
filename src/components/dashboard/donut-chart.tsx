@@ -15,7 +15,7 @@ interface DonutChartProps {
   total: number;
 }
 
-export function DonutChart({ used, remaining ,total }: DonutChartProps) {
+export function DonutChart({ used, remaining, total }: DonutChartProps) {
   const data = [
     { name: 'Total', value: total, fill: 'var(--color-used)' },
     { name: 'Used', value: used, fill: 'var(--color-remaining)' },

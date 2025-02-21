@@ -8,10 +8,10 @@ export const API_ROUTES = {
     RESET_PASSWORD: '/api/users/reset-password/',
     CHANGE_PASSWORD: '/api/users/reset-password/',
     FORGOT_PASSWORD: '/api/users/request-password-reset/',
-    VERIFY_TOKEN :'/api/token/verify/',
-    REFRESH_TOKEN :'/api/token/refresh/',
+    VERIFY_TOKEN: '/api/token/verify/',
+    REFRESH_TOKEN: '/api/token/refresh/',
   },
-  USER:{
-    GET_USER_DATA:'/api/users/profile/'
-  }
+  USER: {
+    GET_USER_DATA: '/api/users/profile/',
+  },
 } as const;

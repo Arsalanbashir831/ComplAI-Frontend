@@ -1,11 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
 
 import apiCaller from '@/config/apiCaller';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -48,7 +47,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           );
 
           if (refreshResponse.status === 200 && refreshResponse.data) {
-            const { accessToken: access, refreshToken: refresh } = refreshResponse.data;
+            const { accessToken: access, refreshToken: refresh } =
+              refreshResponse.data;
             // ✅ Update tokens in localStorage
             localStorage.setItem('accessToken', access);
             localStorage.setItem('refreshToken', refresh);

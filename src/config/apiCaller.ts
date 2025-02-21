@@ -11,14 +11,13 @@ const apiCaller = async (
   options: AxiosRequestConfig = {},
   useAuth: boolean = true,
   dataType: 'json' | 'formdata' = 'json',
-  onErrorRefresh : boolean = false
+  onErrorRefresh: boolean = false
 ): Promise<AxiosResponse> => {
-
   const config: AxiosRequestConfig = {
     ...options,
     method,
     headers: {
-      ...(options.headers || {}), 
+      ...(options.headers || {}),
     },
   };
   config.headers = {};
@@ -53,7 +52,7 @@ const apiCaller = async (
     return response;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      if(onErrorRefresh){
+      if (onErrorRefresh) {
         window.location.reload();
       }
       throw error;
