@@ -10,14 +10,15 @@ const apiCaller = async (
   data?: RequestData,
   options: AxiosRequestConfig = {},
   useAuth: boolean = true,
-  dataType: 'json' | 'formdata' = 'json' // Default to JSON
+  dataType: 'json' | 'formdata' = 'json',
+  onErrorRefresh : boolean = false
 ): Promise<AxiosResponse> => {
-  // Ensure headers object exists
+
   const config: AxiosRequestConfig = {
     ...options,
     method,
     headers: {
-      ...(options.headers || {}), // Ensure headers are always an object
+      ...(options.headers || {}), 
     },
   };
   config.headers = {};
@@ -28,7 +29,6 @@ const apiCaller = async (
     }
   }
 
-  // Handle data format (JSON or FormData)
   if (data) {
     if (dataType === 'json') {
       config.data = data;
@@ -43,7 +43,7 @@ const apiCaller = async (
         }
       });
       config.data = formData;
-      delete config.headers['Content-Type']; // Let browser set content-type automatically
+      delete config.headers['Content-Type'];
     }
   }
 
@@ -53,6 +53,9 @@ const apiCaller = async (
     return response;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
+      if(onErrorRefresh){
+        window.location.reload();
+      }
       throw error;
     } else {
       throw { message: 'Network error or unknown error occurred' };

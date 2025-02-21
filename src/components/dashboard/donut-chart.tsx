@@ -12,12 +12,13 @@ import {
 interface DonutChartProps {
   used: number;
   remaining: number;
+  total: number;
 }
 
-export function DonutChart({ used, remaining }: DonutChartProps) {
+export function DonutChart({ used, remaining ,total }: DonutChartProps) {
   const data = [
-    { name: 'Remaining', value: remaining, fill: 'var(--color-remaining)' },
-    { name: 'Used', value: used, fill: 'var(--color-used)' },
+    { name: 'Total', value: total, fill: 'var(--color-used)' },
+    { name: 'Used', value: used, fill: 'var(--color-remaining)' },
   ];
 
   return (
@@ -70,7 +71,7 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
                               y={viewBox.cy}
                               className="fill-foreground text-xl md:text-3xl font-bold"
                             >
-                              {used}
+                              {remaining}
                             </tspan>
                             <tspan
                               x={viewBox.cx}
