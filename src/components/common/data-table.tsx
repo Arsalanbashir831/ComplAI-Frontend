@@ -46,6 +46,9 @@ export function DataTable<TData, TValue>({
   pageSize = 5,
   isTabsPresent = true,
 }: DataTableProps<TData, TValue>) {
+  console.log('DataTable');
+  console.log('columns', columns);
+  console.log('data', data);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 

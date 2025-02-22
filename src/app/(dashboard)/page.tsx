@@ -1,6 +1,9 @@
 'use client';
 
-import useUserData from '@/hooks/useUserData';
+import { API_ROUTES } from '@/constants/apiRoutes';
+import { useQuery } from '@tanstack/react-query';
+
+import apiCaller from '@/config/apiCaller';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { ActivityTable } from '@/components/dashboard/activity-table/activity-table';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
@@ -8,64 +11,43 @@ import { DonutChart } from '@/components/dashboard/donut-chart';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { TokenChart } from '@/components/dashboard/token-chart';
 
-const mockActivities = [
-  {
-    serialNo: 1,
-    requestedAt: '10/2/2024 4:45:52 AM',
-    activityType: 'Document Upload',
-    tokensDeducted: 50,
-  },
-  {
-    serialNo: 2,
-    requestedAt: '10/1/2024 4:45:52 AM',
-    activityType: 'Query Mode',
-    tokensDeducted: 100,
-  },
-  {
-    serialNo: 3,
-    requestedAt: '9/27/2024 4:45:52 AM',
-    activityType: 'Document Upload',
-    tokensDeducted: 80,
-  },
-  {
-    serialNo: 4,
-    requestedAt: '9/25/2024 4:45:52 AM',
-    activityType: 'Document Upload',
-    tokensDeducted: 100,
-  },
-  {
-    serialNo: 5,
-    requestedAt: '9/23/2024 4:45:52 AM',
-    activityType: 'Query Mode',
-    tokensDeducted: 150,
-  },
-  {
-    serialNo: 6,
-    requestedAt: '9/23/2024 4:45:52 AM',
-    activityType: 'Query Mode',
-    tokensDeducted: 80,
-  },
-  {
-    serialNo: 7,
-    requestedAt: '9/23/2024 4:45:52 AM',
-    activityType: 'Document Upload',
-    tokensDeducted: 90,
-  },
-];
-
-const mockTrendData = Array.from({ length: 10 }, (_, i) => ({
-  date: `${i + 1} am`,
-  value: Math.floor(Math.random() * 60) + 30,
-}));
+type TokensSummary = {
+  remaining_tokens: number;
+  used_tokens: number;
+  total_tokens: number;
+};
 
 export default function DashboardPage() {
-  const { data: user, isLoading, error } = useUserData();
+  const fetchTokensSummary = async (): Promise<TokensSummary> => {
+    const response = await apiCaller(
+      API_ROUTES.USER.GET_TOKENS_SUMMARY,
+      'GET',
+      {},
+      {},
+      true,
+      'json'
+    );
+    return response.data;
+  };
 
-  if (isLoading) return <LoadingSpinner />;
+  const {
+    data: tokensSummary,
+    isLoading: isLoadingTokensSummary,
+    error: tokensSummaryError,
+  } = useQuery({
+    queryKey: ['tokensSummary'],
+    queryFn: fetchTokensSummary,
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
+  });
 
-  if (error)
+  if (isLoadingTokensSummary) return <LoadingSpinner />;
+
+  if (tokensSummaryError)
     return (
-      <p className="text-red-500 text-center mt-5">Error: {error.message}</p>
+      <p className="text-red-500 text-center mt-5">
+        Error: {tokensSummaryError?.message}
+      </p>
     );
 
   return (
@@ -75,30 +57,30 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full">
           <MetricCard
             title="Total Tokens"
-            value={user?.tokens || 500}
+            value={tokensSummary?.total_tokens || 0}
             type="total"
           />
           <MetricCard
             title="Used Tokens"
-            value={user?.total_credits_used || 0}
+            value={tokensSummary?.used_tokens || 0}
             type="used"
           />
           <MetricCard
             title="Remaining Tokens"
-            value={(user?.tokens || 0) - (user?.total_credits_used || 0)}
+            value={tokensSummary?.remaining_tokens || 0}
             type="remaining"
           />
         </div>
         <div className="grid gap-6 md:grid-cols-2 w-full">
           <DonutChart
-            used={user?.total_credits_used || 0}
-            remaining={(user?.tokens || 0) - (user?.total_credits_used || 0)}
-            total={user?.tokens || 0}
+            used={tokensSummary?.used_tokens || 0}
+            remaining={tokensSummary?.remaining_tokens || 0}
+            total={tokensSummary?.total_tokens || 0}
           />
-          <TokenChart data={mockTrendData} />
+          <TokenChart />
         </div>
         <div className="w-full overflow-x-auto">
-          <ActivityTable activities={mockActivities} showActions={false} />
+          <ActivityTable showActions={false} />
         </div>
       </div>
     </div>

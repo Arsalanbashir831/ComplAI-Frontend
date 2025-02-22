@@ -13,5 +13,10 @@ export const API_ROUTES = {
   },
   USER: {
     GET_USER_DATA: '/api/users/profile/',
+    GET_TOKENS_SUMMARY: '/api/users/tokens/',
+    GET_TOKENS_HISTORY: '/api/users/tokens-history/',
+  },
+  CHAT: {
+    GET_INTERACTION_HISTORY: '/api/chats/token-usage/',
   },
 } as const;
