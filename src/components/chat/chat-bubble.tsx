@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Markdown from 'react-markdown';
 
 import type { ChatMessage } from '@/types/chat';
 import { cn, formatDate } from '@/lib/utils';
@@ -12,7 +13,8 @@ interface ChatBubbleProps {
 }
 
 export function ChatBubble({ message }: ChatBubbleProps) {
-  const isBot = message.sender === 'bot';
+  console.log('message', message);
+  const isBot = message.is_system_message;
 
   return (
     <div className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}>
@@ -46,29 +48,28 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   </span>
                   <span className="text-black text-xs">
                     {' '}
-                    {formatDate(message.timestamp)}
+                    {formatDate(message.created_at)}
                   </span>
                 </div>
 
                 {/* Message Content */}
-                <p className="text-sm break-words text-black whitespace-pre-line">
-                  {message.content}
+                <p className="text-sm break-words text-black whitespace-pre-line text-justify">
+                  <Markdown>{message.content}</Markdown>
                 </p>
 
                 {/* Attachments */}
-                {message.attachments && message.attachments.length > 0 && (
+                {message.file && (
                   <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
                     <div className="flex w-max h-14 gap-2">
-                      {message.attachments.map((file) => (
-                        <FileCard
-                          key={file.id}
-                          file={file}
-                          showExtraInfo={false}
-                          titleColor="text-gray-dark"
-                          className="bg-gray-light h-10"
-                          hasShareButton={true}
-                        />
-                      ))}
+                      {/* {message.file.map((file) => ( */}
+                      <FileCard
+                        file={message.file}
+                        showExtraInfo={false}
+                        titleColor="text-gray-dark"
+                        className="bg-gray-light h-10"
+                        hasShareButton={true}
+                      />
+                      {/* ))} */}
                     </div>
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>
@@ -80,22 +81,21 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             {isBot && (
               <>
                 {/* Message Content */}
-                <p className="text-sm text-gray-900">{message.content}</p>
+                <p className="text-sm text-gray-900 text-justify">
+                  <Markdown>{message.content}</Markdown>
+                </p>
 
                 {/* Attachments */}
-                {message.attachments && message.attachments.length > 0 && (
+                {message.file && (
                   <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
                     <div className="flex w-max h-14 gap-2">
-                      {message.attachments.map((file) => (
-                        <FileCard
-                          key={file.id}
-                          file={file}
-                          showExtraInfo={false}
-                          titleColor="text-gray-dark"
-                          className="bg-gray-light h-10"
-                          hasShareButton={true}
-                        />
-                      ))}
+                      <FileCard
+                        file={message.file}
+                        showExtraInfo={false}
+                        titleColor="text-gray-dark"
+                        className="bg-gray-light h-10"
+                        hasShareButton={true}
+                      />
                     </div>
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>

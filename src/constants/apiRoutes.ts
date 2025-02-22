@@ -18,5 +18,12 @@ export const API_ROUTES = {
   },
   CHAT: {
     GET_INTERACTION_HISTORY: '/api/chats/token-usage/',
+    GET_USER_CHATS: '/api/chats/user/',
+    CREATE: '/api/chats/create/',
+    ADD_MESSAGE: (chatId: string) => `/api/chats/${chatId}/messages/add/`,
+    ADD_MESSAGE_STREAM: (chatId: string) =>
+      `/api/chats/${chatId}/messages/add-stream/`,
+    GET_MESSAGES: (chatId: string) => `/api/chats/${chatId}/messages/`,
+    DELETE: '/api/chats/delete/',
   },
 } as const;

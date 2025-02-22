@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; // Import useRouter
+
+import { ROUTES } from '@/constants/routes';
 import { Plus, PlusCircle, Send } from 'lucide-react';
 
 import { UploadedFile } from '@/types/upload';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/chat-hook';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -14,9 +16,15 @@ import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
 
-export function MessageInput({ isNewChat = false }: { isNewChat?: boolean }) {
+export function MessageInput({
+  chatId = undefined,
+  isNewChat = false,
+}: {
+  chatId?: string | undefined;
+  isNewChat?: boolean;
+}) {
   const router = useRouter();
-  const { createNewChat, currentChatId, addMessageToChat } = useChat();
+  const { createChat, sendMessage } = useChat();
 
   const [message, setMessage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -79,88 +87,30 @@ export function MessageInput({ isNewChat = false }: { isNewChat?: boolean }) {
     setIsModalOpen(false);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
+    // Do nothing if there's no message and no uploaded file.
     if (!message.trim() && uploadedFiles.length === 0) return;
 
-    let chatId = currentChatId;
+    // If no chat exists, create one and update chatId.
     if (!chatId) {
-      chatId = createNewChat(); // Create a new chat if none exists
+      const response = await createChat('Test'); // response is Chat
+      chatId = response.id;
     }
 
-    // Add the user's message with uploaded files
-    addMessageToChat(chatId, {
-      id: crypto.randomUUID(),
-      content: message,
-      sender: 'user',
-      timestamp: new Date().toISOString(),
-      attachments: uploadedFiles,
+    // Send the user's message using the unified mutation (non-streaming)
+    await sendMessage({
+      chatId,
+      content: message.trim(),
     });
 
-    // Simulate a bot response (Temporary)
-    setTimeout(() => {
-      // Define possible attachments
-      const possibleAttachments = [
-        {
-          id: crypto.randomUUID(),
-          lastModified: Date.now(),
-          name: 'compl-ai.pdf',
-          size: 1024,
-          type: 'application/pdf',
-          progress: 100,
-          arrayBuffer: async () => new ArrayBuffer(1024),
-          bytes: async () => new Uint8Array(1024),
-          slice: () => new Blob([]),
-          stream: () => new ReadableStream(),
-          text: () => Promise.resolve(''),
-          webkitRelativePath: '',
-        },
-        {
-          id: crypto.randomUUID(),
-          lastModified: Date.now(),
-          name: 'document.txt',
-          size: 2048,
-          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          progress: 100,
-          arrayBuffer: async () => new ArrayBuffer(2048),
-          bytes: async () => new Uint8Array(2048),
-          slice: () => new Blob([]),
-          stream: () => new ReadableStream(),
-          text: () => Promise.resolve(''),
-          webkitRelativePath: '',
-        },
-      ];
+    // If this is a new chat, navigate to the chat route.
+    if (isNewChat) {
+      router.push(ROUTES.CHAT_ID(chatId));
+    }
 
-      // Randomly decide whether to include an attachment (50% chance)
-      const shouldAttachFile = Math.random() < 0.5;
-
-      const randomAttachment = shouldAttachFile
-        ? [
-            possibleAttachments[
-              Math.floor(Math.random() * possibleAttachments.length)
-            ],
-          ]
-        : []; // No attachment if `shouldAttachFile` is false
-
-      // Set dynamic content based on whether a file is being sent
-      const content = shouldAttachFile
-        ? 'Here are the requested files:'
-        : `Prevent Nausea or Vomiting: Nebulizer treatments can sometimes cause coughing, which might lead to nausea if the patient has eaten just before the treatment.
-Relaxed Breathing: The medication from the nebulizer helps open the airways, making it easier for the patient to breathe and eat comfortably after the treatment.`;
-
-      // Add bot's message, with or without attachments
-      addMessageToChat(chatId, {
-        id: crypto.randomUUID(),
-        content,
-        sender: 'bot',
-        timestamp: new Date().toISOString(),
-        attachments: randomAttachment, // Include attachments only if applicable
-      });
-    }, 1000);
-
-    if (isNewChat) router.push(`/chat/${chatId}`);
-
+    // Clear the input and any uploaded files.
     setMessage('');
-    setUploadedFiles([]); // Clear the files after sending
+    setUploadedFiles([]);
   };
 
   return (

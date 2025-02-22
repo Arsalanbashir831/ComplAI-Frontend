@@ -7,6 +7,7 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
   CHAT: '/chat',
+  CHAT_ID: (id: string) => `/chat/${id}`,
   DASHBOARD: '/',
   COMPLIANCE_GPT: '/chat',
   HISTORY: '/history',

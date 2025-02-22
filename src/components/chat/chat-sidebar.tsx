@@ -10,8 +10,8 @@ import {
   Search,
 } from 'lucide-react';
 
-import type { SidebarProps } from '@/types/chat';
 import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
@@ -20,7 +20,8 @@ import LogoutButton from '../common/logout-button';
 import MenuToggleButton from '../common/menu-toggle-button';
 import { Input } from '../ui/input';
 
-export function ChatSidebar({ recentChats }: SidebarProps) {
+export function ChatSidebar() {
+  const { chats } = useChat();
   const [isOpen, setIsOpen] = useState(false);
   const value = 30;
 
@@ -61,19 +62,20 @@ export function ChatSidebar({ recentChats }: SidebarProps) {
         <div className="flex-1 overflow-auto px-6">
           <h2 className="mb-4 text-lg font-semibold">Recent</h2>
           <div className="space-y-2">
-            {recentChats.map((chat) => (
-              <Button
-                key={chat.id}
-                variant="ghost"
-                className="w-full justify-start text-left font-normal text-gray-dark "
-              >
-                <span>
-                  <MessageSquareText />
-                </span>
-                <span className="text-ellipsis overflow-hidden">
-                  {chat.message}
-                </span>
-              </Button>
+            {chats?.map((chat) => (
+              <Link href={ROUTES.CHAT_ID(chat.id)} key={chat.id}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-left font-normal text-gray-dark "
+                >
+                  <span>
+                    <MessageSquareText />
+                  </span>
+                  <span className="text-ellipsis overflow-hidden">
+                    {chat.name}
+                  </span>
+                </Button>
+              </Link>
             ))}
           </div>
         </div>
