@@ -21,10 +21,11 @@ export default function ProfileForm() {
   const [isEditable, setIsEditable] = useState(false);
   const [showUserId, setShowUserId] = useState(false);
 
-  const { control, handleSubmit, reset } = useForm<ProfileFormValues>({
+  const { control, handleSubmit, reset, watch } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     // Initial empty/default values (will be overridden by fetched data)
     defaultValues: {
+      id: '',
       username: '',
       email: '',
       phoneNumber: '',
@@ -35,6 +36,9 @@ export default function ProfileForm() {
       emailUpdates: false,
     },
   });
+
+  // Watch the "id" field so we can display it
+  const userId = watch('id');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -56,6 +60,7 @@ export default function ProfileForm() {
 
         // Reset the form with fetched data
         reset({
+          id: data.id,
           username: data.first_name,
           email: data.email,
           phoneNumber: data.phoneNumber,
@@ -137,7 +142,7 @@ export default function ProfileForm() {
 
         <div className="mt-2 text-gray-500 relative cursor-pointer flex items-center gap-2 group">
           <span className={showUserId ? 'text-black' : 'blur-sm'}>
-            {showUserId ? 'UserID: 123456' : 'UserID: ******'}
+            {showUserId ? `UserID: ${userId}` : 'UserID: ******'}
           </span>
           <button
             type="button"

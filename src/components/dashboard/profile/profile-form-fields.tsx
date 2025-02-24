@@ -16,6 +16,7 @@ import { DatePicker } from '@/components/common/date-picker';
 import { PhoneInput } from '@/components/dashboard/profile/phone-input';
 
 export const profileSchema = z.object({
+  id: z.string(),
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Invalid email address'),
 
