@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { API_ROUTES } from '@/constants/apiRoutes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import apiCaller from '@/config/apiCaller';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -21,23 +23,81 @@ export default function ProfileForm() {
 
   const { control, handleSubmit, reset } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
+    // Initial empty/default values (will be overridden by fetched data)
     defaultValues: {
-      username: 'johndoe',
-      email: 'john.doe@gmail.com',
-      phoneNumber: '+1 234567890',
-      jobTitle: 'Software Developer',
+      username: '',
+      email: '',
+      phoneNumber: '',
+      jobTitle: '',
       accountType: 'personal',
       creationDate: new Date(),
-      notificationsEnabled: true,
+      notificationsEnabled: false,
       emailUpdates: false,
     },
   });
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await apiCaller(
+          API_ROUTES.USER.GET_USER_DATA,
+          'GET',
+          {},
+          {},
+          true,
+          'json'
+        );
+        const data = response.data;
+        // Convert creationDate safely
+        const fetchedDate = new Date(data.creationDate);
+        const validDate = isNaN(fetchedDate.getTime())
+          ? new Date()
+          : fetchedDate;
+
+        // Reset the form with fetched data
+        reset({
+          username: data.first_name,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          jobTitle: data.jobTitle,
+          accountType: data.accountType,
+          creationDate: validDate,
+          notificationsEnabled: data.notificationsEnabled,
+          emailUpdates: data.emailUpdates,
+        });
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      }
+    };
+
+    fetchProfile();
+  }, [reset]);
+
   const toggleEdit = () => setIsEditable((prev) => !prev);
 
-  const onSubmit = (data: ProfileFormValues) => {
-    console.log(data);
-    toggleEdit(); // Toggle back to view mode after saving
+  const onSubmit = async (data: ProfileFormValues) => {
+    try {
+      const response = await apiCaller(
+        API_ROUTES.USER.GET_USER_DATA,
+        'PUT',
+        {
+          first_name: data.username,
+          email: data.email,
+          phone_number: data.phoneNumber,
+          job_title: data.jobTitle,
+          account_type: data.accountType,
+          notifications_enabled: data.notificationsEnabled,
+          email_updates: data.emailUpdates,
+        },
+        {},
+        true,
+        'json'
+      );
+      console.log('Profile updated:', response.data);
+      toggleEdit(); // Toggle back to view mode after saving
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    }
   };
 
   return (
@@ -48,7 +108,6 @@ export default function ProfileForm() {
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
         {/* Profile Image Container - Hover effect only in edit mode */}
         <div className={`relative w-16 h-16 ${isEditable ? 'group' : ''}`}>
-          {/* Profile Image */}
           <Image
             src="/user.png"
             alt="Profile Avatar"
@@ -57,14 +116,12 @@ export default function ProfileForm() {
             className="rounded-full object-cover"
           />
 
-          {/* Hover Overlay (Only visible in edit mode) */}
           {isEditable && (
             <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <span className="text-white text-sm font-medium">Change</span>
             </div>
           )}
 
-          {/* Hidden File Input - Disabled when not in edit mode */}
           <input
             type="file"
             disabled={!isEditable}
