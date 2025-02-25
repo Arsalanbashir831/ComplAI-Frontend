@@ -26,4 +26,14 @@ export const API_ROUTES = {
     GET_MESSAGES: (chatId: string) => `/api/chats/${chatId}/messages/`,
     DELETE: '/api/chats/delete/',
   },
+  BILLING: {
+    ADD_CARD: '/api/billing/add-card/',
+    LIST_CARDS: '/api/billing/list-cards/',
+    REMOVE_CARD: '/api/billing/delete-card/',
+    SUBSCRIBE: '/api/billing/subscribe/',
+    ITEMS: '/api/billing/items/',
+    CREATE_ONE_TIME_PAYMENT_INTENT:
+      '/api/billing/create-one-time-payment-intent/',
+    INVOICES: '/api/billing/invoices/',
+  },
 } as const;
