@@ -21,21 +21,27 @@ export default function ProfileForm() {
   const [isEditable, setIsEditable] = useState(false);
   const [showUserId, setShowUserId] = useState(false);
 
-  const { control, handleSubmit, reset, watch } = useForm<ProfileFormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    // formState: { errors },
+  } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    // Initial empty/default values (will be overridden by fetched data)
     defaultValues: {
       id: '',
       username: '',
       email: '',
       phoneNumber: '',
       jobTitle: '',
-      accountType: 'personal',
       creationDate: new Date(),
-      notificationsEnabled: false,
-      emailUpdates: false,
+      // notificationsEnabled and emailUpdates commented out
     },
   });
+
+  // For debugging, log errors
+  // console.log('Form errors:', errors);
 
   // Watch the "id" field so we can display it
   const userId = watch('id');
@@ -58,17 +64,14 @@ export default function ProfileForm() {
           ? new Date()
           : fetchedDate;
 
-        // Reset the form with fetched data
         reset({
-          id: data.id,
-          username: data.first_name,
+          id: data.id.toString(),
+          username: data.username,
           email: data.email,
-          phoneNumber: data.phoneNumber,
-          jobTitle: data.jobTitle,
-          accountType: data.accountType,
+          phoneNumber: data.phone_number,
+          jobTitle: data.job_title,
           creationDate: validDate,
-          notificationsEnabled: data.notificationsEnabled,
-          emailUpdates: data.emailUpdates,
+          // notificationsEnabled and emailUpdates omitted for now
         });
       } catch (error) {
         console.error('Failed to fetch profile:', error);
@@ -86,20 +89,18 @@ export default function ProfileForm() {
         API_ROUTES.USER.GET_USER_DATA,
         'PUT',
         {
-          first_name: data.username,
+          username: data.username,
           email: data.email,
           phone_number: data.phoneNumber,
           job_title: data.jobTitle,
-          account_type: data.accountType,
-          notifications_enabled: data.notificationsEnabled,
-          email_updates: data.emailUpdates,
+          // notifications_enabled and email_updates omitted
         },
         {},
         true,
         'json'
       );
       console.log('Profile updated:', response.data);
-      toggleEdit(); // Toggle back to view mode after saving
+      toggleEdit();
     } catch (error) {
       console.error('Failed to update profile:', error);
     }
@@ -111,7 +112,7 @@ export default function ProfileForm() {
       className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto"
     >
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-        {/* Profile Image Container - Hover effect only in edit mode */}
+        {/* Profile Image Container */}
         <div className={`relative w-16 h-16 ${isEditable ? 'group' : ''}`}>
           <Image
             src="/user.png"
@@ -172,7 +173,17 @@ export default function ProfileForm() {
           >
             {isEditable ? 'Cancel' : 'Edit Info'}
           </Button>
-          {isEditable && <Button type="submit">Save Changes</Button>}
+          {isEditable && (
+            <Button type="submit" asChild={false}>
+              Save Changes
+            </Button>
+          )}
+          {/* For debugging, try using a native button:
+          {isEditable && (
+            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
+              Save Changes
+            </button>
+          )} */}
         </div>
       </div>
 

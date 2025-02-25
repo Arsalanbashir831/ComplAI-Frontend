@@ -28,8 +28,11 @@ export const API_ROUTES = {
   },
   BILLING: {
     ADD_CARD: '/api/billing/add-card/',
+    DEFAULT_CARD: '/api/billing/default-card/',
+    EDIT_CARD: '/api/billing/edit-card/',
+    DELETE_CARD: '/api/billing/delete-card/',
+    STRIPE_CUSTOMER: '/api/billing/stripe-customer/',
     LIST_CARDS: '/api/billing/list-cards/',
-    REMOVE_CARD: '/api/billing/delete-card/',
     SUBSCRIBE: '/api/billing/subscribe/',
     ITEMS: '/api/billing/items/',
     CREATE_ONE_TIME_PAYMENT_INTENT:

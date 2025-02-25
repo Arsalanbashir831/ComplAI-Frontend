@@ -13,6 +13,8 @@ export interface Plan {
 }
 
 export interface PaymentCard {
+  exp_year: number | undefined;
+  exp_month: number | undefined;
   id: string;
   type: 'credit' | 'debit';
   brand: 'mastercard' | 'visa';

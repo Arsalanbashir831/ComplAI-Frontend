@@ -30,12 +30,9 @@ import { OAuthButtons } from './outh-buttons';
 
 const formSchema = z
   .object({
-    first_name: z
+    username: z
       .string()
       .min(2, 'First name must be at least 2 characters long'),
-    last_name: z
-      .string()
-      .min(2, 'Last name must be at least 2 characters long'),
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters long'),
     confirmPassword: z
@@ -57,8 +54,7 @@ export function SignUpForm() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: '',
-      last_name: '',
+      username: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -76,8 +72,7 @@ export function SignUpForm() {
         API_ROUTES.AUTH.SIGNUP,
         'POST',
         {
-          first_name: values.first_name,
-          last_name: values.last_name,
+          username: values.username,
           email: values.email,
           password: values.password,
         },
@@ -139,41 +134,23 @@ export function SignUpForm() {
             <p className="text-green-500 text-sm">{successMessage}</p>
           )}
 
-          {/* First Name & Last Name Row */}
-          <div className="flex gap-4">
-            <FormField
-              control={form.control}
-              name="first_name"
-              render={({ field }) => (
-                <FormItem className="w-1/2">
-                  <FormControl>
-                    <Input
-                      placeholder="First Name"
-                      startIcon={<User2 className="h-4 w-4" />}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="last_name"
-              render={({ field }) => (
-                <FormItem className="w-1/2">
-                  <FormControl>
-                    <Input
-                      placeholder="Last Name"
-                      startIcon={<User2 className="h-4 w-4" />}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          {/* Username Field */}
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    placeholder="Username"
+                    startIcon={<User2 className="h-4 w-4" />}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* Email Field */}
           <FormField
