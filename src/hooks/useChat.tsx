@@ -75,6 +75,8 @@ const useChat = () => {
       if (document) {
         payload.document = document;
       }
+
+      console.log('payload', payload);
       // Send the message using the non-streaming endpoint.
       const endpoint = API_ROUTES.CHAT.ADD_MESSAGE(chatId);
       const sendResponse = await apiCaller(

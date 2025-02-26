@@ -53,9 +53,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 </div>
 
                 {/* Message Content */}
-                <p className="text-sm break-words text-black whitespace-pre-line text-justify">
+                <div className="text-sm break-words text-black whitespace-pre-line text-justify">
                   <Markdown>{message.content}</Markdown>
-                </p>
+                </div>
 
                 {/* Attachments */}
                 {message.file && (
@@ -81,9 +81,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             {isBot && (
               <>
                 {/* Message Content */}
-                <p className="text-sm text-gray-900 text-justify">
+                <div className="text-sm break-words text-black whitespace-pre-line text-justify">
                   <Markdown>{message.content}</Markdown>
-                </p>
+                </div>
 
                 {/* Attachments */}
                 {message.file && (

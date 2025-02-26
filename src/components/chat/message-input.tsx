@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
-
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { Plus, PlusCircle, Send } from 'lucide-react';
 
@@ -26,18 +26,19 @@ export function MessageInput({
   const router = useRouter();
   const { createChat, sendMessage } = useChat();
 
+  // State for the main message text
   const [message, setMessage] = useState('');
+  // State for file upload modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Keep track of all uploaded files (though we'll only send the first one)
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
-  const maxChars = 1000;
+  // State for showing the mention menu (the dropdown)
+  const [showMentionMenu, setShowMentionMenu] = useState(false);
+  // State for which mention is selected: 'pdf', 'docx', or null
+  const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
 
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const input = event.target.value;
-    if (input.length <= maxChars) {
-      setMessage(input);
-    }
-  };
+  const maxChars = 1000;
 
   // Temporary function to simulate file upload progress
   const simulateUpload = (fileId: string) => {
@@ -57,79 +58,181 @@ export function MessageInput({
           clearInterval(interval);
           resolve();
         }
-      }, 200); // Simulate progress every 200ms
+      }, 200);
     });
   };
 
+  /**
+   * Handle file uploads. We allow only one file in the UI.
+   * We store the original File in the `rawFile` property.
+   */
   const handleUpload = async (files: File[]) => {
-    const newFiles: UploadedFile[] = files.map((file) => ({
-      id: crypto.randomUUID(), // Unique identifier
+    // Just take the first file
+    const file = files[0];
+    if (!file) return;
+
+    const newFile: UploadedFile = {
+      id: crypto.randomUUID(),
       lastModified: file.lastModified,
       name: file.name,
       size: file.size,
       type: file.type,
       webkitRelativePath: file.webkitRelativePath,
-      progress: 0, // Optional property for tracking upload progress
+      progress: 0,
+      rawFile: file, // <--- store the original File object here
       arrayBuffer: file.arrayBuffer,
       bytes: async () => new Uint8Array(await file.arrayBuffer()),
       slice: file.slice,
       stream: file.stream,
       text: file.text,
-    }));
+    };
 
-    setUploadedFiles((prev) => [...prev, ...newFiles]);
+    // Replace any previously uploaded file
+    setUploadedFiles([newFile]);
 
-    // Simulate file upload and update progress
-    await Promise.all(newFiles.map((file) => simulateUpload(file.id)));
+    // Simulate file upload
+    await simulateUpload(newFile.id);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
+  /**
+   * Send the message + the first file (if any) to the backend.
+   * We pass the real File (rawFile) to the sendMessage API.
+   */
   const handleSendMessage = async () => {
-    // Do nothing if there's no message and no uploaded file.
+    // Do nothing if there's no message and no uploaded file
     if (!message.trim() && uploadedFiles.length === 0) return;
 
-    // If no chat exists, create one and update chatId.
-    if (!chatId) {
-      const response = await createChat(message.trim()); // response is Chat
-      chatId = response.id;
+    // If no chat exists, create one
+    let currentChatId = chatId;
+    if (!currentChatId) {
+      const response = await createChat(message.trim());
+      currentChatId = response.id;
     }
+
+    // We'll send only the first file, if any, as a File object.
+    const docToSend =
+      uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
 
     await sendMessage({
-      chatId,
+      chatId: currentChatId,
       content: message.trim(),
+      document: docToSend, // Pass the actual File here
     });
 
-    // If this is a new chat, navigate to the chat route.
-    if (isNewChat) {
-      router.push(ROUTES.CHAT_ID(chatId));
+    // If this is a new chat, navigate to the chat route
+    if (isNewChat && currentChatId) {
+      router.push(ROUTES.CHAT_ID(currentChatId));
     }
 
-    // Clear the input and any uploaded files.
+    // Clear the input and any uploaded files
     setMessage('');
     setUploadedFiles([]);
+    setMentionType(null);
+  };
+
+  // Whenever the user types in the textarea
+  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const input = event.target.value;
+    // If the user just typed "@" at the end, show the mention menu
+    if (input.endsWith('@')) {
+      setShowMentionMenu(true);
+    }
+    // Enforce max length
+    if (input.length <= maxChars) {
+      setMessage(input);
+    }
+  };
+
+  // If the user presses backspace, remove the mention pill if the textarea is empty
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Backspace') {
+      // If there's no text and a mention is set, remove the mention pill
+      if (message.length === 0 && mentionType) {
+        event.preventDefault();
+        setMentionType(null);
+      }
+    }
+
+    // Allow Ctrl+Enter to send
+    if (event.ctrlKey && event.key === 'Enter') {
+      event.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // When the user selects an option from the mention menu
+  const handleSelectMention = (type: 'pdf' | 'docx') => {
+    setMentionType(type);
+    // Remove the trailing "@" from the text
+    setMessage((prev) => prev.replace(/@$/, ''));
+    // Hide the menu
+    setShowMentionMenu(false);
   };
 
   return (
     <div>
-      <div className="py-4  ">
-        <div className="relative bg-gray-light rounded-xl p-4">
-          <div></div>
-          <Textarea
-            placeholder="Message Compl-AI"
-            value={message}
-            onChange={handleChange}
-            onKeyDown={(event) => {
-              if (event.ctrlKey && event.key === 'Enter') {
-                event.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            className="resize-none pr-20 border-none bg-transparent shadow-none focus-visible:ring-0"
-          />
-          <div className="flex justify-between items-center gap-2 mt-2">
+      <div className="relative py-4">
+        {/* MENTION MENU (positions above the input) */}
+        {showMentionMenu && (
+          <div className="absolute -top-20 left-0 z-10 w-[200px] rounded-md border border-gray-300 bg-white shadow-md">
+            {/* PDF option */}
+            <div
+              className="flex cursor-pointer items-center gap-2 px-2 py-2 hover:bg-gray-100"
+              onClick={() => handleSelectMention('pdf')}
+            >
+              <Image
+                src="/icons/pdf-document.svg"
+                width={20}
+                height={20}
+                alt="PDF icon"
+              />
+              <span className="text-sm text-gray-700">PDF DOCUMENT</span>
+            </div>
+            {/* DOCX option */}
+            <div
+              className="flex cursor-pointer items-center gap-2 px-2 py-2 hover:bg-gray-100"
+              onClick={() => handleSelectMention('docx')}
+            >
+              <Image
+                src="/icons/word-document.svg"
+                width={20}
+                height={20}
+                alt="DOCX icon"
+              />
+              <span className="text-sm text-gray-700">DOCX DOCUMENT</span>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-gray-light rounded-xl p-4">
+          {/* If mentionType is set, show a pill on the left; otherwise, just the textarea */}
+          <div className="flex items-start space-x-2">
+            {mentionType && (
+              <div
+                className={cn(
+                  'mt-1 rounded-full px-3 py-1 text-sm text-white',
+                  mentionType === 'pdf' ? 'bg-[#B1362F]' : 'bg-[#07378C]'
+                )}
+              >
+                {mentionType === 'pdf' ? '@PDF' : '@DOCX'}
+              </div>
+            )}
+
+            <Textarea
+              placeholder="Message Compl-AI"
+              value={message}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              className="min-h-[40px] flex-1 resize-none border-none bg-transparent pr-20 shadow-none focus-visible:ring-0"
+            />
+          </div>
+
+          <div className="mt-2 flex items-center justify-between gap-2">
+            {/* File attachments */}
             <div className="flex items-center">
               {uploadedFiles.length > 0 && (
                 <ScrollArea className="whitespace-nowrap w-full max-w-[160px] min-[425px]:max-w-[250px] md:max-w-[600px]">
@@ -141,7 +244,7 @@ export function MessageInput({
                         showExtraInfo={false}
                         onRemove={(id) =>
                           setUploadedFiles((prev) =>
-                            prev.filter((file) => file.id !== id)
+                            prev.filter((f) => f.id !== id)
                           )
                         }
                       />
@@ -172,6 +275,7 @@ export function MessageInput({
               </Button>
             </div>
 
+            {/* Character count & send button */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-dark">
                 {message.length} / {maxChars}
@@ -179,7 +283,7 @@ export function MessageInput({
               <Button
                 size="icon"
                 className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
-                onClick={handleSendMessage} // Handle message send
+                onClick={handleSendMessage}
               >
                 <Send className="h-4 w-4" />
                 <span className="sr-only">Send message</span>
@@ -187,7 +291,8 @@ export function MessageInput({
             </div>
           </div>
         </div>
-        <p className="text-center mt-2 text-gray-500 italic">
+
+        <p className="mt-2 text-center text-gray-500 italic">
           Compl-AI is intended for informational purposes only. It may contain
           errors and does not constitute legal advice
         </p>

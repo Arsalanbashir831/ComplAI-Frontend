@@ -60,9 +60,12 @@ export function ChatSidebar() {
   const totalTokens = Math.max(tokensSummary?.total_tokens || 0, 0);
   const remainingTokens = Math.max(tokensSummary?.remaining_tokens || 0, 0);
 
+  console.log('totalTokens', totalTokens);
+  console.log('remainingTokens', remainingTokens);
+
   // Calculate progress percentage safely
   const progressValue =
-    totalTokens > 0 ? (remainingTokens / totalTokens) * 100 : 0;
+    totalTokens > 0 ? ((totalTokens - remainingTokens) / totalTokens) * 100 : 0;
 
   return (
     <div>
@@ -124,7 +127,7 @@ export function ChatSidebar() {
               value={progressValue}
               className="bg-white"
               indicatorClassName={cn(
-                progressValue > 50 ? 'bg-red-500' : 'bg-green-500'
+                progressValue > 80 ? 'bg-red-500' : 'bg-green-500'
               )}
             />
             <p className="mb-1 text-sm opacity-90 text-center">

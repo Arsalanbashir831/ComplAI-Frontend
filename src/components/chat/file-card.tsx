@@ -14,14 +14,16 @@ export function FileCard({
   className,
 }: FileCardProps) {
   const getIconPath = (fileType: string): string => {
+    console.log('fileType', fileType);
     const fileTypeMap: Record<string, string> = {
       pdf: 'pdf-document',
       plain: 'plain-document',
+      docx: 'word-document',
       'vnd.openxmlformats-officedocument.wordprocessingml.document':
         'word-document',
     };
 
-    const key = fileType.split('/')[1]; // Extract suffix from MIME type
+    const key = fileType?.split('/')[1]; // Extract suffix from MIME type
     return `/icons/${fileTypeMap[key] || 'plain-document'}.svg`; // Fallback to 'plain-document'
   };
 
@@ -39,7 +41,7 @@ export function FileCard({
     >
       <div className="flex items-center gap-3">
         <Image
-          src={getIconPath(file.type)}
+          src={getIconPath(file.type ?? file.split('.').pop())}
           width={30}
           height={30}
           alt="Document"
