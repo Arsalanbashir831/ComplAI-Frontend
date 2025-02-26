@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation'; // Import useRouter
+import { useState } from 'react';
 
 import { ROUTES } from '@/constants/routes';
 import { Plus, PlusCircle, Send } from 'lucide-react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -93,11 +93,10 @@ export function MessageInput({
 
     // If no chat exists, create one and update chatId.
     if (!chatId) {
-      const response = await createChat('Test'); // response is Chat
+      const response = await createChat(message.trim()); // response is Chat
       chatId = response.id;
     }
 
-    // Send the user's message using the unified mutation (non-streaming)
     await sendMessage({
       chatId,
       content: message.trim(),
