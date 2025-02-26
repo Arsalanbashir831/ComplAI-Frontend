@@ -1,23 +1,23 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
+import { useQuery } from '@tanstack/react-query';
 import {
   Command,
   LayoutDashboard,
   MessageSquareText,
   Search,
 } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
 
 import apiCaller from '@/config/apiCaller';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { useQuery } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
 import MenuToggleButton from '../common/menu-toggle-button';
