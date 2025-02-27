@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -65,79 +65,101 @@ const useChat = () => {
       chatId,
       content,
       document,
+      onChunkUpdate, // ✅ Callback function to update UI in real-time
     }: {
       chatId: string;
       content: string;
       document?: File | Blob;
+      onChunkUpdate?: (chunk: string) => void; 
     }): Promise<ChatMessage> => {
-      // Build payload with optional document
-      const payload: Record<string, string | File | Blob> = { content };
+      const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
+  
+      // Prepare FormData for sending the message with optional file
+      const formData = new FormData();
+      formData.append("content", content);
       if (document) {
-        payload.document = document;
+        formData.append("document", document);
       }
-
-      console.log('payload', payload);
-      // Send the message using the non-streaming endpoint.
-      const endpoint = API_ROUTES.CHAT.ADD_MESSAGE(chatId);
-      const sendResponse = await apiCaller(
-        endpoint,
-        'POST',
-        payload,
-        {},
-        true,
-        'formdata'
-      );
-      if (!sendResponse) {
-        throw new Error('Failed to send message');
-      }
-
-      return sendResponse.data;
-
-      // Open an EventSource for the streaming response.
-
-      // const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
-      // return new Promise<ChatMessage>((resolve, reject) => {
-      //   const eventSource = new EventSource(streamUrl);
-      //   let aiResponse = '';
-      //   eventSource.onmessage = (event) => {
-      //     try {
-      //       const data = JSON.parse(event.data);
-      //       if (data.chunk) {
-      //         aiResponse += data.chunk;
-      //       }
-      //     } catch (err) {
-      //       console.error('Error parsing event data', err);
-      //     }
-      //   };
-      //   eventSource.onerror = (err: Event) => {
-      //     console.error('Error in streaming', err);
-      //     eventSource.close();
-      //     reject(new Error('Error in streaming'));
-      //   };
-      //   // Listen for a custom "done" event indicating the stream is complete.
-      //   eventSource.addEventListener('done', () => {
-      //     eventSource.close();
-      //     // Construct the final ChatMessage.
-      //     const finalMessage: ChatMessage = {
-      //       id: Date.now(), // Replace with a proper unique ID if available.
-      //       chat: Number(chatId),
-      //       user: null,
-      //       content: aiResponse,
-      //       created_at: new Date().toISOString(),
-      //       is_system_message: false,
-      //       file: null,
-      //     };
-      //     resolve(finalMessage);
-      //   });
-      // });
+  
+      return new Promise<ChatMessage>(async (resolve, reject) => {
+        try {
+          // ✅ Step 1: Send message and initiate streaming
+          const sendResponse = await fetch(streamUrl, {
+            method: "POST",
+            body: formData,
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+              Accept: "*/*", // ✅ Ensures correct streaming format
+            },
+          });
+  
+          if (!sendResponse.ok || !sendResponse.body) {
+            const errorData = await sendResponse.json();
+            throw new Error(errorData.error || "Failed to send message");
+          }
+  
+          // ✅ Step 2: Read the streaming response in chunks
+          const reader = sendResponse.body.getReader();
+          let aiResponse = "";
+  
+          const readStream = async () => {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+  
+              // Convert the chunk to string
+              const textChunk = new TextDecoder().decode(value);
+              try {
+                const jsonChunks = textChunk.split("\n").filter(Boolean);
+                jsonChunks.forEach((chunk) => {
+                  const data = JSON.parse(chunk.trim());
+  
+                  // ✅ Live update UI with each chunk
+                  if (data.chunk && data.chunk.trim() !== "") {
+                    aiResponse += data.chunk;
+                    if (onChunkUpdate) {
+                      onChunkUpdate(aiResponse); // ✅ Live UI update callback
+                    }
+                  }
+  
+                  // ✅ If summary is received, finalize and resolve
+                  if (data.summary) {
+                    const finalMessage: ChatMessage = {
+                      id: data.summary.id,
+                      chat: data.summary.chat,
+                      user: data.summary.user,
+                      content: aiResponse.trim(),
+                      created_at: data.summary.created_at,
+                      tokens_used: data.summary.tokens_used,
+                      is_system_message: true,
+                      file: null,
+                    };
+                    resolve(finalMessage);
+                  }
+                });
+              } catch (error) {
+                console.error("Error parsing streaming response:", error);
+              }
+            }
+          };
+  
+          await readStream();
+        } catch (error) {
+          console.error("Error sending message:", error);
+          reject(error);
+        }
+      });
     },
     onSuccess: (_, variables) => {
-      // Invalidate chat messages query to force refetch of updated messages.
       queryClient.invalidateQueries({
-        queryKey: ['chatMessages', variables.chatId],
+        queryKey: ["chatMessages", variables.chatId],
       });
     },
   });
+  
+  
+  
+  
 
   // Mutation: Delete chat
   const deleteChatMutation = useMutation({
@@ -190,3 +212,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

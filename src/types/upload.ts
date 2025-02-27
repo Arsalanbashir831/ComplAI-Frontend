@@ -1,5 +1,5 @@
 export interface UploadedFile extends File {
-  rawFile: File;
+  rawFile: File ;
   id: string;
   progress?: number;
 }
@@ -19,7 +19,7 @@ export interface UploadModalProps {
 }
 
 export interface FileCardProps {
-  file: UploadedFile;
+  file: UploadedFile | File;
   showExtraInfo?: boolean;
   onRemove?: (id: string) => void;
   titleColor?: string;

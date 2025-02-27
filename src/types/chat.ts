@@ -21,9 +21,11 @@ export interface ChatMessage {
   content: string;
   created_at: string;
   is_system_message: boolean;
-  file: UploadedFile | null;
+  file: UploadedFile | File | null;
   userName?: string;
   avatarUrl?: string;
+
+  tokens_used:number;
 }
 
 export interface Chat {
@@ -32,6 +34,7 @@ export interface Chat {
   user: string;
   createdAt: string;
   updatedAt: string;
+ 
 }
 
 export interface ChatState {

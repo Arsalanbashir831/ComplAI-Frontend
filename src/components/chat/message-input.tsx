@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -19,12 +19,14 @@ import { UploadModal } from './upload-modal';
 export function MessageInput({
   chatId = undefined,
   isNewChat = false,
+  onSendMessage,
 }: {
   chatId?: string | undefined;
   isNewChat?: boolean;
+  onSendMessage: (content: string, document?: File) => void;
 }) {
   const router = useRouter();
-  const { createChat, sendMessage } = useChat();
+  const { createChat } = useChat();
 
   // State for the main message text
   const [message, setMessage] = useState('');
@@ -98,10 +100,7 @@ export function MessageInput({
     setIsModalOpen(false);
   };
 
-  /**
-   * Send the message + the first file (if any) to the backend.
-   * We pass the real File (rawFile) to the sendMessage API.
-   */
+  
   const handleSendMessage = async () => {
     // Do nothing if there's no message and no uploaded file
     if (!message.trim() && uploadedFiles.length === 0) return;
@@ -113,19 +112,14 @@ export function MessageInput({
       currentChatId = response.id;
     }
 
-    // We'll send only the first file, if any, as a File object.
-    const docToSend =
-      uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
+    if (!message.trim() && uploadedFiles.length === 0) return;
 
-    await sendMessage({
-      chatId: currentChatId,
-      content: message.trim(),
-      document: docToSend, // Pass the actual File here
-    });
-
-    // If this is a new chat, navigate to the chat route
+    const documentToSend = uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
+    
+    onSendMessage(message.trim(), documentToSend);
     if (isNewChat && currentChatId) {
       router.push(ROUTES.CHAT_ID(currentChatId));
+    
     }
 
     // Clear the input and any uploaded files

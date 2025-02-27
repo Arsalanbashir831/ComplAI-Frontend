@@ -1,9 +1,16 @@
-import Image from 'next/image';
 import { DownloadIcon, X } from 'lucide-react';
+import Image from 'next/image';
 
-import type { FileCardProps } from '@/types/upload';
-import { cn, convertSizeToReadable } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn, convertSizeToReadable } from '@/lib/utils';
+import type { FileCardProps, UploadedFile } from '@/types/upload';
+
+/**
+ * Type guard to check if a file is an UploadedFile
+ */
+const isUploadedFile = (file: UploadedFile | File): file is UploadedFile => {
+  return (file as UploadedFile).progress !== undefined;
+};
 
 export function FileCard({
   file,
@@ -13,18 +20,22 @@ export function FileCard({
   hasShareButton,
   className,
 }: FileCardProps) {
-  const getIconPath = (fileType: string): string => {
-    console.log('fileType', fileType);
+  /**
+   * Determine the correct icon path based on the file type
+   */
+  const getIconPath = (file: UploadedFile | File): string => {
     const fileTypeMap: Record<string, string> = {
       pdf: 'pdf-document',
       plain: 'plain-document',
       docx: 'word-document',
-      'vnd.openxmlformats-officedocument.wordprocessingml.document':
-        'word-document',
+      'vnd.openxmlformats-officedocument.wordprocessingml.document': 'word-document',
     };
 
-    const key = fileType?.split('/')[1]; // Extract suffix from MIME type
-    return `/icons/${fileTypeMap[key] || 'plain-document'}.svg`; // Fallback to 'plain-document'
+    // Extract MIME type suffix
+    const fileType = file.type || (typeof file === 'string' ? file.split('.').pop() : '');
+    const key = fileType?.split('/')[1]; // Get the part after "application/" or "text/"
+
+    return `/icons/${fileTypeMap[key] || 'plain-document'}.svg`; // Default to plain-document icon
   };
 
   return (
@@ -34,33 +45,41 @@ export function FileCard({
         file.type === 'application/pdf'
           ? 'bg-[#B1362F]'
           : file.type === 'text/plain'
-            ? 'bg-[#372297bf]'
-            : 'bg-[#07378C]',
+          ? 'bg-[#372297bf]'
+          : 'bg-[#07378C]',
         className
       )}
     >
       <div className="flex items-center gap-3">
+        {/* File Icon */}
         <Image
-          src={getIconPath(file.type ?? file.split('.').pop())}
+          src={getIconPath(file)}
           width={30}
           height={30}
           alt="Document"
         />
+
         <div className="flex flex-col">
+          {/* File Name */}
           <span className={cn('font-normal text-sm text-white', titleColor)}>
             {file.name}
           </span>
+
+          {/* File Size & Upload Status */}
           {showExtraInfo && (
             <span className="text-xs text-white">
               {convertSizeToReadable(file.size)}
               <span className="ml-2">
-                {(file.progress ?? 100) < 100 ? ` Uploading...` : 'Completed'}
+                {isUploadedFile(file) && file.progress !== undefined && file.progress < 100
+                  ? ` Uploading...`
+                  : ' Completed'}
               </span>
             </span>
           )}
         </div>
       </div>
 
+      {/* Action Buttons: Share or Remove */}
       {hasShareButton ? (
         <Button
           variant="ghost"
