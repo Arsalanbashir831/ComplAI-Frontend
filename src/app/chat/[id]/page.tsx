@@ -1,22 +1,21 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
+import type { ChatMessage } from '@/types/chat';
+import { useChat, useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
-import { useChat, useChatMessages } from '@/hooks/useChat';
-
-import type { ChatMessage } from '@/types/chat';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
   const chatId = id as string;
-  
+
   const { data: chatMessages } = useChatMessages(chatId);
   const { sendMessage } = useChat();
-  
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   // Initialize messages when API data is loaded
@@ -26,14 +25,13 @@ export default function SpecificChatPage() {
     }
   }, [chatMessages]);
 
- 
   const handleSendMessage = async (content: string, document?: File) => {
     if (!content.trim() && !document) return;
 
     const userMessage: ChatMessage = {
-      id: Date.now(), 
+      id: Date.now(),
       chat: Number(chatId),
-      user: "You",
+      user: 'You',
       content,
       created_at: new Date().toISOString(),
       tokens_used: 0,
@@ -41,16 +39,15 @@ export default function SpecificChatPage() {
       file: document || null,
     };
 
-
     setMessages((prev) => [...prev, userMessage]);
 
-    const aiMessageId = Date.now() + 1; 
+    const aiMessageId = Date.now() + 1;
 
     const aiMessage: ChatMessage = {
       id: aiMessageId,
       chat: Number(chatId),
-      user: "AI",
-      content: "", 
+      user: 'AI',
+      content: '',
       created_at: new Date().toISOString(),
       tokens_used: 0,
       is_system_message: true,

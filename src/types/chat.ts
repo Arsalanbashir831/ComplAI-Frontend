@@ -25,7 +25,7 @@ export interface ChatMessage {
   userName?: string;
   avatarUrl?: string;
 
-  tokens_used:number;
+  tokens_used: number;
 }
 
 export interface Chat {
@@ -34,7 +34,6 @@ export interface Chat {
   user: string;
   createdAt: string;
   updatedAt: string;
- 
 }
 
 export interface ChatState {

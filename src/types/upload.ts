@@ -1,5 +1,5 @@
 export interface UploadedFile extends File {
-  rawFile: File ;
+  rawFile: File;
   id: string;
   progress?: number;
 }

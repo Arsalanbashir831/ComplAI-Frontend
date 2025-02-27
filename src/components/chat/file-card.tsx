@@ -1,9 +1,9 @@
-import { DownloadIcon, X } from 'lucide-react';
 import Image from 'next/image';
+import { DownloadIcon, X } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { cn, convertSizeToReadable } from '@/lib/utils';
 import type { FileCardProps, UploadedFile } from '@/types/upload';
+import { cn, convertSizeToReadable } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 /**
  * Type guard to check if a file is an UploadedFile
@@ -28,11 +28,13 @@ export function FileCard({
       pdf: 'pdf-document',
       plain: 'plain-document',
       docx: 'word-document',
-      'vnd.openxmlformats-officedocument.wordprocessingml.document': 'word-document',
+      'vnd.openxmlformats-officedocument.wordprocessingml.document':
+        'word-document',
     };
 
     // Extract MIME type suffix
-    const fileType = file.type || (typeof file === 'string' ? file.split('.').pop() : '');
+    const fileType =
+      file.type || (typeof file === 'string' ? file.split('.').pop() : '');
     const key = fileType?.split('/')[1]; // Get the part after "application/" or "text/"
 
     return `/icons/${fileTypeMap[key] || 'plain-document'}.svg`; // Default to plain-document icon
@@ -45,19 +47,14 @@ export function FileCard({
         file.type === 'application/pdf'
           ? 'bg-[#B1362F]'
           : file.type === 'text/plain'
-          ? 'bg-[#372297bf]'
-          : 'bg-[#07378C]',
+            ? 'bg-[#372297bf]'
+            : 'bg-[#07378C]',
         className
       )}
     >
       <div className="flex items-center gap-3">
         {/* File Icon */}
-        <Image
-          src={getIconPath(file)}
-          width={30}
-          height={30}
-          alt="Document"
-        />
+        <Image src={getIconPath(file)} width={30} height={30} alt="Document" />
 
         <div className="flex flex-col">
           {/* File Name */}
@@ -70,7 +67,9 @@ export function FileCard({
             <span className="text-xs text-white">
               {convertSizeToReadable(file.size)}
               <span className="ml-2">
-                {isUploadedFile(file) && file.progress !== undefined && file.progress < 100
+                {isUploadedFile(file) &&
+                file.progress !== undefined &&
+                file.progress < 100
                   ? ` Uploading...`
                   : ' Completed'}
               </span>

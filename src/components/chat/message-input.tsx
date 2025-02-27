@@ -1,16 +1,16 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { Plus, PlusCircle, Send } from 'lucide-react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { Plus, PlusCircle, Send } from 'lucide-react';
 
+import { UploadedFile } from '@/types/upload';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -100,7 +100,6 @@ export function MessageInput({
     setIsModalOpen(false);
   };
 
-  
   const handleSendMessage = async () => {
     // Do nothing if there's no message and no uploaded file
     if (!message.trim() && uploadedFiles.length === 0) return;
@@ -114,12 +113,12 @@ export function MessageInput({
 
     if (!message.trim() && uploadedFiles.length === 0) return;
 
-    const documentToSend = uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
-    
+    const documentToSend =
+      uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
+
     onSendMessage(message.trim(), documentToSend);
     if (isNewChat && currentChatId) {
       router.push(ROUTES.CHAT_ID(currentChatId));
-    
     }
 
     // Clear the input and any uploaded files
