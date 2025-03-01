@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { Plus, PlusCircle, Send } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ROUTES } from '@/constants/routes';
-import { Plus, PlusCircle, Send } from 'lucide-react';
+import { useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
+import { ROUTES } from '@/constants/routes';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
@@ -26,7 +26,7 @@ export function MessageInput({
   onSendMessage: (content: string, document?: File) => void;
 }) {
   const router = useRouter();
-  const { createChat } = useChat();
+  const { createChat  , sendMessage , addMessageNoStream } = useChat();
 
   // State for the main message text
   const [message, setMessage] = useState('');
@@ -116,12 +116,39 @@ export function MessageInput({
     const documentToSend =
       uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
 
-    onSendMessage(message.trim(), documentToSend);
     if (isNewChat && currentChatId) {
-      router.push(ROUTES.CHAT_ID(currentChatId));
+      if(!mentionType){
+        await sendMessage({
+          chatId:currentChatId,
+           content: message.trim(),
+           document: documentToSend,
+           onChunkUpdate: (chunk) => {
+             console.log(chunk);}
+         });
+      }else{
+        await addMessageNoStream({
+          chatId:currentChatId,
+           content: message.trim(),
+           document: documentToSend,
+           return_type: mentionType,
+        })
+      }
+    
+      router.push(ROUTES.CHAT_ID(currentChatId)); 
+    }else{
+      if(!mentionType){
+        onSendMessage(message.trim(), documentToSend);
+      }else{
+        await addMessageNoStream({
+          chatId:currentChatId,
+           content: message.trim(),
+           document: documentToSend,
+           return_type: mentionType,
+        })
+      }
+    
     }
 
-    // Clear the input and any uploaded files
     setMessage('');
     setUploadedFiles([]);
     setMentionType(null);

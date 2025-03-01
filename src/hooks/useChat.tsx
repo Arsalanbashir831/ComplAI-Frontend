@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -53,6 +53,70 @@ const useChat = () => {
     },
   });
 
+  const addMessageMutation = useMutation({
+    mutationFn: async ({
+      chatId,
+      content,
+      document,
+      return_type,
+    }: {
+      chatId: string;
+      content: string;
+      document?: File | Blob;
+      return_type?: 'docx' | 'pdf' | null;
+    }): Promise<ChatMessage> => {
+      try {
+        // ✅ Create FormData
+        const formData = new FormData();
+        formData.append('content', content);
+  
+        // ✅ Append document only if it exists
+        if (document) {
+          formData.append('document', document);
+        }
+  
+        // ✅ Append return_type only if it exists
+        if (return_type) {
+          formData.append('return_type', return_type);
+        }
+  
+        // ✅ Send API request using fetch
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE(chatId)}`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+  
+        // ✅ Handle non-OK responses
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to send message');
+        }
+  
+        // ✅ Parse JSON response
+        const responseData = await response.json();
+        return responseData as ChatMessage;
+      } catch (error) {
+        console.error('Error adding message to chat:', error);
+        throw error;
+      }
+    },
+    onSuccess: (newMessage, variables) => {
+      const { chatId } = variables;
+  
+      // ✅ Update the chat messages cache immediately
+      queryClient.setQueryData<ChatMessage[]>(['chatMessages', chatId], (oldMessages = []) => [
+        ...oldMessages,
+        newMessage,
+      ]);
+  
+      // ✅ Invalidate the query to ensure fresh data from the server
+      queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
+    },
+  });
+  
   /**
    * Unified mutation to send a message.
    *
@@ -183,6 +247,7 @@ const useChat = () => {
     createChat: createChatMutation.mutateAsync,
     sendMessage: sendMessageMutation.mutateAsync,
     deleteChat: deleteChatMutation.mutateAsync,
+    addMessageNoStream: addMessageMutation.mutateAsync,
   };
 };
 
@@ -208,3 +273,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+
