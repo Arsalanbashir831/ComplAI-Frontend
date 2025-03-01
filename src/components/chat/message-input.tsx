@@ -1,17 +1,17 @@
 'use client';
 
-import { Plus, PlusCircle, Send } from 'lucide-react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { Plus, PlusCircle, Send } from 'lucide-react';
 
+import { UploadedFile } from '@/types/upload';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
 
-import { ROUTES } from '@/constants/routes';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
@@ -26,7 +26,7 @@ export function MessageInput({
   onSendMessage: (content: string, document?: File) => void;
 }) {
   const router = useRouter();
-  const { createChat  , sendMessage , addMessageNoStream } = useChat();
+  const { createChat, sendMessage, addMessageNoStream } = useChat();
 
   // State for the main message text
   const [message, setMessage] = useState('');
@@ -117,36 +117,36 @@ export function MessageInput({
       uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
 
     if (isNewChat && currentChatId) {
-      if(!mentionType){
+      if (!mentionType) {
         await sendMessage({
-          chatId:currentChatId,
-           content: message.trim(),
-           document: documentToSend,
-           onChunkUpdate: (chunk) => {
-             console.log(chunk);}
-         });
-      }else{
+          chatId: currentChatId,
+          content: message.trim(),
+          document: documentToSend,
+          onChunkUpdate: (chunk) => {
+            console.log(chunk);
+          },
+        });
+      } else {
         await addMessageNoStream({
-          chatId:currentChatId,
-           content: message.trim(),
-           document: documentToSend,
-           return_type: mentionType,
-        })
+          chatId: currentChatId,
+          content: message.trim(),
+          document: documentToSend,
+          return_type: mentionType,
+        });
       }
-    
-      router.push(ROUTES.CHAT_ID(currentChatId)); 
-    }else{
-      if(!mentionType){
+
+      router.push(ROUTES.CHAT_ID(currentChatId));
+    } else {
+      if (!mentionType) {
         onSendMessage(message.trim(), documentToSend);
-      }else{
+      } else {
         await addMessageNoStream({
-          chatId:currentChatId,
-           content: message.trim(),
-           document: documentToSend,
-           return_type: mentionType,
-        })
+          chatId: currentChatId,
+          content: message.trim(),
+          document: documentToSend,
+          return_type: mentionType,
+        });
       }
-    
     }
 
     setMessage('');

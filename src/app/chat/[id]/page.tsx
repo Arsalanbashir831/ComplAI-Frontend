@@ -1,13 +1,13 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
+import type { ChatMessage } from '@/types/chat';
+import { useChat, useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
-import { useChat, useChatMessages } from '@/hooks/useChat';
-import type { ChatMessage } from '@/types/chat';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
@@ -26,7 +26,6 @@ export default function SpecificChatPage() {
   }, [chatMessages]);
 
   const handleSendMessage = async (content: string, document?: File) => {
-  
     if (!content.trim() && !document) return;
     const userMessage: ChatMessage = {
       id: Date.now(),
