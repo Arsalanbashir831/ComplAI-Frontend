@@ -1,8 +1,9 @@
 export interface User {
   id: number;
   email: string;
-  first_name: string;
-  last_name: string;
+  username: string;
+  profile_picture: string | null;
+  phone_number: string;
   created_at: string;
   credits_used_today: number;
   total_credits_used: number;

@@ -15,6 +15,7 @@ export const API_ROUTES = {
     GET_USER_DATA: '/api/users/profile/',
     GET_TOKENS_SUMMARY: '/api/users/tokens/',
     GET_TOKENS_HISTORY: '/api/users/tokens-history/',
+    UPDATE_PROFILE_IMAGE: '/api/users/add-profile-picture/',
   },
   CHAT: {
     GET_INTERACTION_HISTORY: '/api/chats/token-usage/',

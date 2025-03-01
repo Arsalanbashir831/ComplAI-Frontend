@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
-import { Plus, PlusCircle, Send } from 'lucide-react';
+import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
 
 import { UploadedFile } from '@/types/upload';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,7 @@ export function MessageInput({
 }: {
   chatId?: string | undefined;
   isNewChat?: boolean;
-  onSendMessage: (content: string, document?: File) => void;
+  onSendMessage?: (content: string, document?: File) => Promise<void>;
 }) {
   const router = useRouter();
   const { createChat, sendMessage, addMessageNoStream } = useChat();
@@ -34,6 +34,8 @@ export function MessageInput({
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Keep track of all uploaded files (though we'll only send the first one)
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  // State to disable input while sending message and show loader
+  const [isSending, setIsSending] = useState(false);
 
   // State for showing the mention menu (the dropdown)
   const [showMentionMenu, setShowMentionMenu] = useState(false);
@@ -101,57 +103,76 @@ export function MessageInput({
   };
 
   const handleSendMessage = async () => {
+    // Prevent duplicate send if already sending
+    if (isSending) return;
     // Do nothing if there's no message and no uploaded file
     if (!message.trim() && uploadedFiles.length === 0) return;
 
-    // If no chat exists, create one
-    let currentChatId = chatId;
-    if (!currentChatId) {
-      const response = await createChat(message.trim());
-      currentChatId = response.id;
-    }
-
-    if (!message.trim() && uploadedFiles.length === 0) return;
-
-    const documentToSend =
-      uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
-
-    if (isNewChat && currentChatId) {
-      if (!mentionType) {
-        await sendMessage({
-          chatId: currentChatId,
-          content: message.trim(),
-          document: documentToSend,
-          onChunkUpdate: (chunk) => {
-            console.log(chunk);
-          },
-        });
-      } else {
-        await addMessageNoStream({
-          chatId: currentChatId,
-          content: message.trim(),
-          document: documentToSend,
-          return_type: mentionType,
-        });
+    setIsSending(true);
+    try {
+      let currentChatId = chatId;
+      if (!currentChatId) {
+        const response = await createChat(message.trim());
+        currentChatId = response.id;
       }
 
-      router.push(ROUTES.CHAT_ID(currentChatId));
-    } else {
-      if (!mentionType) {
-        onSendMessage(message.trim(), documentToSend);
-      } else {
-        await addMessageNoStream({
-          chatId: currentChatId,
-          content: message.trim(),
-          document: documentToSend,
-          return_type: mentionType,
-        });
-      }
-    }
+      const documentToSend =
+        uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
 
-    setMessage('');
-    setUploadedFiles([]);
-    setMentionType(null);
+      // If onSendMessage is provided, use it exclusively and return.
+      if (onSendMessage) {
+        await onSendMessage(message.trim(), documentToSend);
+        setMessage('');
+        setUploadedFiles([]);
+        setMentionType(null);
+        return;
+      } else if (isNewChat && currentChatId) {
+        if (!mentionType) {
+          await sendMessage({
+            chatId: currentChatId,
+            content: message.trim(),
+            document: documentToSend,
+            onChunkUpdate: (chunk) => {
+              console.log(chunk);
+            },
+          });
+        } else {
+          await addMessageNoStream({
+            chatId: currentChatId,
+            content: message.trim(),
+            document: documentToSend,
+            return_type: mentionType,
+          });
+        }
+        router.push(ROUTES.CHAT_ID(currentChatId));
+      } else {
+        if (!mentionType) {
+          await sendMessage({
+            chatId: currentChatId,
+            content: message.trim(),
+            document: documentToSend,
+            onChunkUpdate: (chunk) => {
+              console.log(chunk);
+            },
+          });
+        } else {
+          await addMessageNoStream({
+            chatId: currentChatId,
+            content: message.trim(),
+            document: documentToSend,
+            return_type: mentionType,
+          });
+        }
+      }
+
+      setMessage('');
+      setUploadedFiles([]);
+      setMentionType(null);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   // Whenever the user types in the textarea
@@ -196,6 +217,13 @@ export function MessageInput({
   return (
     <div>
       <div className="relative py-4">
+        {/* Loader shown in the top-right when sending */}
+        {isSending && (
+          <div className="absolute top-10 right-6">
+            <LoaderCircle className="animate-spin h-5 w-5 text-gray-700" />
+          </div>
+        )}
+
         {/* MENTION MENU (positions above the input) */}
         {showMentionMenu && (
           <div className="absolute -top-20 left-0 z-10 w-[200px] rounded-md border border-gray-300 bg-white shadow-md">
@@ -247,6 +275,7 @@ export function MessageInput({
               value={message}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
+              disabled={isSending}
               className="min-h-[40px] flex-1 resize-none border-none bg-transparent pr-20 shadow-none focus-visible:ring-0"
             />
           </div>
@@ -278,6 +307,7 @@ export function MessageInput({
                 variant={uploadedFiles.length > 0 ? 'default' : 'ghost'}
                 size={uploadedFiles.length > 0 ? 'icon' : 'default'}
                 onClick={() => setIsModalOpen(true)}
+                disabled={isSending}
                 className={cn(
                   uploadedFiles.length > 0
                     ? 'text-white rounded-full p-1 w-fit h-fit'
@@ -304,6 +334,7 @@ export function MessageInput({
                 size="icon"
                 className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
                 onClick={handleSendMessage}
+                disabled={isSending}
               >
                 <Send className="h-4 w-4" />
                 <span className="sr-only">Send message</span>

@@ -83,6 +83,7 @@ body {
   height: 100%;
   background: url('../../public/icons/circle.svg') no-repeat left 0 top 0;
   background-size: 30%;
+  z-index: -1;
 }
 
 .query-limit-card::after {
@@ -94,6 +95,7 @@ body {
   background: url('../../public/icons/circle-bg-2.svg') no-repeat right 0 bottom
     0;
   background-size: 25%;
+  z-index: -1;
 }
 .text-gradient {
   background: -webkit-linear-gradient(#020f26 0%, #07378c 100%);

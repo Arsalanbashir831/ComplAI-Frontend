@@ -4,6 +4,7 @@ import Markdown from 'react-markdown';
 import type { ChatMessage } from '@/types/chat';
 import { cn, formatDate } from '@/lib/utils';
 
+import DisplayUsername from '../common/display-username';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
@@ -44,7 +45,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 {/* User Name */}
                 <div className="flex flex-col md:flex-row md:gap-2 md:items-center">
                   <span className="text-sm text-black font-medium md:border-r border-gray md:pr-2">
-                    {message.userName || 'John William'}
+                    <DisplayUsername />
                   </span>
                   <span className="text-black text-xs">
                     {' '}
@@ -81,7 +82,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             {isBot && (
               <>
                 {/* Message Content */}
-                <div className="text-sm break-words text-black whitespace-pre-line text-justify">
+                <div className="text-sm text-black text-justify">
                   <Markdown>{message.content}</Markdown>
                 </div>
 

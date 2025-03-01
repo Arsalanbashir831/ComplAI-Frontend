@@ -13,6 +13,7 @@ const apiCaller = async (
   dataType: 'json' | 'formdata' = 'json',
   onErrorRefresh: boolean = false
 ): Promise<AxiosResponse> => {
+  console.log('formdata', data);
   const config: AxiosRequestConfig = {
     ...options,
     method,

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { useQuery } from '@tanstack/react-query';
@@ -26,6 +27,10 @@ import { Input } from '../ui/input';
 export function ChatSidebar() {
   const { chats } = useChat();
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Extract the active chat id from the pathname
+  const currentChatId = pathname.split('/').pop();
 
   type TokensSummary = {
     remaining_tokens: number;
@@ -59,9 +64,6 @@ export function ChatSidebar() {
   // Ensure non-negative token values
   const totalTokens = Math.max(tokensSummary?.total_tokens || 0, 0);
   const remainingTokens = Math.max(tokensSummary?.remaining_tokens || 0, 0);
-
-  console.log('totalTokens', totalTokens);
-  console.log('remainingTokens', remainingTokens);
 
   // Calculate progress percentage safely
   const progressValue =
@@ -104,7 +106,11 @@ export function ChatSidebar() {
               <Link href={ROUTES.CHAT_ID(chat.id)} key={chat.id}>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-left font-normal text-gray-dark "
+                  className={cn(
+                    'w-full justify-start text-left font-normal text-gray-dark',
+                    // Add highlight class if the chat is active
+                    currentChatId === String(chat.id) && 'bg-accent text-black'
+                  )}
                 >
                   <span>
                     <MessageSquareText />
@@ -119,7 +125,7 @@ export function ChatSidebar() {
         </div>
 
         <div className="p-6 pb-4">
-          <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative">
+          <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative z-10">
             <h3 className="mb-1 font-semibold text-xs">
               Daily query limit is almost reached
             </h3>
@@ -133,12 +139,14 @@ export function ChatSidebar() {
             <p className="mb-1 text-sm opacity-90 text-center">
               Enjoy working with advanced search experience and much more
             </p>
-            <Button
-              variant="secondary"
-              className="w-3/4 text-primary cursor-pointer z-10"
-            >
-              Upgrade
-            </Button>
+            <Link href={ROUTES.SUPSCRIPTION} className="w-3/4 mx-auto block">
+              <Button
+                variant="secondary"
+                className="w-full text-primary cursor-pointer z-10"
+              >
+                Upgrade
+              </Button>
+            </Link>
           </div>
 
           <div className="border-t pt-4">
