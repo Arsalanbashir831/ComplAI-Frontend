@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -66,21 +66,21 @@ const useChat = () => {
       return_type?: 'docx' | 'pdf' | null;
     }): Promise<ChatMessage> => {
       try {
-        // ✅ Create FormData
+        // Create FormData
         const formData = new FormData();
         formData.append('content', content);
-
-        // ✅ Append document only if it exists
+  
+        // Append document only if it exists
         if (document) {
           formData.append('document', document);
         }
-
-        // ✅ Append return_type only if it exists
+  
+        // Append return_type only if it exists
         if (return_type) {
           formData.append('return_type', return_type);
         }
-
-        // ✅ Send API request using fetch
+  
+        // Send API request using fetch
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE(chatId)}`,
           {
@@ -91,16 +91,46 @@ const useChat = () => {
             },
           }
         );
-
-        // ✅ Handle non-OK responses
+  
+        // Handle non-OK responses
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to send message');
         }
-
-        // ✅ Parse JSON response
-        const responseData = await response.json();
-        return responseData as ChatMessage;
+  
+        // Check the content-type to decide how to process the response.
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          // If JSON, parse and return it as ChatMessage.
+          const responseData = await response.json();
+          return responseData as ChatMessage;
+        } else {
+          // Assume binary response.
+          const blob = await response.blob();
+          const disposition = response.headers.get('Content-Disposition');
+          let fileName = 'download';
+          if (disposition && disposition.includes('filename=')) {
+            const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (match && match[1]) {
+              fileName = match[1].replace(/['"]/g, '');
+            }
+          }
+          // Create a File object from the blob.
+          const fileObject = new File([blob], fileName, {
+            type: blob.type || 'application/octet-stream',
+          });
+          // Build a ChatMessage object with the file attached.
+          return {
+            id: Date.now(),
+            chat: Number(chatId),
+            user: 'AI',
+            content: 'File received',
+            created_at: new Date().toISOString(),
+            tokens_used: 0,
+            is_system_message: true,
+            file: fileObject,
+          } as ChatMessage;
+        }
       } catch (error) {
         console.error('Error adding message to chat:', error);
         throw error;
@@ -108,17 +138,18 @@ const useChat = () => {
     },
     onSuccess: (newMessage, variables) => {
       const { chatId } = variables;
-
-      // ✅ Update the chat messages cache immediately
+  
+      // Update the chat messages cache immediately.
       queryClient.setQueryData<ChatMessage[]>(
         ['chatMessages', chatId],
         (oldMessages = []) => [...oldMessages, newMessage]
       );
-
-      // ✅ Invalidate the query to ensure fresh data from the server
+  
+      // Invalidate the query to ensure fresh data from the server.
       queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
     },
   });
+  
 
   /**
    * Unified mutation to send a message.
@@ -276,3 +307,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

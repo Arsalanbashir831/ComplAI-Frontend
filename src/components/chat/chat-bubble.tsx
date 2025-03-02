@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Markdown from 'react-markdown';
 
-import type { ChatMessage } from '@/types/chat';
 import { cn, formatDate } from '@/lib/utils';
+import type { ChatMessage } from '@/types/chat';
 
 import DisplayUsername from '../common/display-username';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';

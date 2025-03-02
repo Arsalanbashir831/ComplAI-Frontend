@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -13,6 +12,7 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import {
   Pagination,
@@ -81,6 +81,32 @@ export function DataTable<TData, TValue>({
       }
     }
   }, [isTabsPresent, activeFilter, table]);
+
+  const totalPages = table.getPageCount();
+  const currentPage = table.getState().pagination.pageIndex + 1;
+
+  // Compute dynamic pagination pages:
+  // - If total pages ≤ 5, show all pages.
+  // - If currentPage ≤ 3, show pages 1, 2, 3, ellipsis, last.
+  // - If currentPage ≥ totalPages - 2, show ellipsis, then last 3 pages.
+  // - Otherwise (middle), hide the first page and show: ellipsis, (currentPage-1, currentPage, currentPage+1), ellipsis, last.
+  const getPaginationPages = (): (number | 'ellipsis')[] => {
+    const total = totalPages;
+    const current = currentPage;
+    let pages: (number | 'ellipsis')[] = [];
+    if (total <= 5) {
+      pages = Array.from({ length: total }, (_, i) => i + 1);
+    } else if (current <= 3) {
+      pages = [1, 2, 3, 'ellipsis', total];
+    } else if (current >= total - 2) {
+      pages = ['ellipsis', total - 2, total - 1, total];
+    } else {
+      pages = ['ellipsis', current - 1, current, current + 1, 'ellipsis', total];
+    }
+    return pages;
+  };
+
+  const pagesToShow = getPaginationPages();
 
   return (
     <div>
@@ -156,10 +182,6 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-center px-2 py-4 bg-[#F7F9FC] rounded-xl">
-        {/* <div className="flex-1 text-sm text-muted-foreground">
-          Page {table.getState().pagination.pageIndex + 1} of{' '}
-          {table.getPageCount()}
-        </div> */}
         <Pagination className="justify-end">
           <PaginationContent>
             <PaginationItem>
@@ -174,24 +196,34 @@ export function DataTable<TData, TValue>({
                 className="border border-[#DFE3E8] pr-2.5 text-[#667085]"
               />
             </PaginationItem>
-            {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map(
-              (page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      table.setPageIndex(page - 1);
-                    }}
-                    isActive={
-                      table.getState().pagination.pageIndex + 1 === page
-                    }
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            )}
+
+            {pagesToShow.map((page, index) => {
+              if (page === 'ellipsis') {
+                return (
+                  <PaginationItem key={`ellipsis-${index}`}>
+                    <span className="px-3 py-2">...</span>
+                  </PaginationItem>
+                );
+              } else {
+                return (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        table.setPageIndex(page - 1);
+                      }}
+                      isActive={
+                        table.getState().pagination.pageIndex + 1 === page
+                      }
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              }
+            })}
+
             <PaginationItem>
               <PaginationNext
                 showLabel={false}
