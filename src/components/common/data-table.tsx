@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -12,7 +13,6 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 import {
   Pagination,
@@ -101,7 +101,14 @@ export function DataTable<TData, TValue>({
     } else if (current >= total - 2) {
       pages = ['ellipsis', total - 2, total - 1, total];
     } else {
-      pages = ['ellipsis', current - 1, current, current + 1, 'ellipsis', total];
+      pages = [
+        'ellipsis',
+        current - 1,
+        current,
+        current + 1,
+        'ellipsis',
+        total,
+      ];
     }
     return pages;
   };

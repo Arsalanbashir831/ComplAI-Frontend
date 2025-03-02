@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import type { Chat, ChatMessage } from '@/types/chat';
+import apiCaller from '@/config/apiCaller';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -69,17 +69,17 @@ const useChat = () => {
         // Create FormData
         const formData = new FormData();
         formData.append('content', content);
-  
+
         // Append document only if it exists
         if (document) {
           formData.append('document', document);
         }
-  
+
         // Append return_type only if it exists
         if (return_type) {
           formData.append('return_type', return_type);
         }
-  
+
         // Send API request using fetch
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE(chatId)}`,
@@ -91,13 +91,13 @@ const useChat = () => {
             },
           }
         );
-  
+
         // Handle non-OK responses
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to send message');
         }
-  
+
         // Check the content-type to decide how to process the response.
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
@@ -110,7 +110,9 @@ const useChat = () => {
           const disposition = response.headers.get('Content-Disposition');
           let fileName = 'download';
           if (disposition && disposition.includes('filename=')) {
-            const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            const match = disposition.match(
+              /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+            );
             if (match && match[1]) {
               fileName = match[1].replace(/['"]/g, '');
             }
@@ -138,18 +140,17 @@ const useChat = () => {
     },
     onSuccess: (newMessage, variables) => {
       const { chatId } = variables;
-  
+
       // Update the chat messages cache immediately.
       queryClient.setQueryData<ChatMessage[]>(
         ['chatMessages', chatId],
         (oldMessages = []) => [...oldMessages, newMessage]
       );
-  
+
       // Invalidate the query to ensure fresh data from the server.
       queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
     },
   });
-  
 
   /**
    * Unified mutation to send a message.
@@ -307,4 +308,3 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
-

@@ -1,18 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
 
-import { DateRangePicker } from '@/components/common/date-range-picker';
-import LoadingSpinner from '@/components/common/loading-spinner';
-import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
+import type { ActivityItem } from '@/types/dashboard';
+import apiCaller from '@/config/apiCaller';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
-import type { ActivityItem } from '@/types/dashboard';
+import { DateRangePicker } from '@/components/common/date-range-picker';
+import LoadingSpinner from '@/components/common/loading-spinner';
+import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
