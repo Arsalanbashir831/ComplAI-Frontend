@@ -1,26 +1,25 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-
-import { Card, CardContent } from '@/components/ui/card';
 import { useLoader } from '@/contexts/loader-context';
-import { useChat } from '@/hooks/useChat';
+
 import type { PromptCardProps } from '@/types/chat';
+import { useChat } from '@/hooks/useChat';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function PromptCard({ icon, title, className }: PromptCardProps) {
   const { sendMessage, createChat } = useChat();
   const router = useRouter();
-const {setLoading} = useLoader()
+  const { setLoading } = useLoader();
   const handleClick = async () => {
     const response = await createChat(title);
     const chatId = response.id;
-setLoading(true)
+    setLoading(true);
     const res = await sendMessage({ chatId, content: title });
     if (res) {
       router.push(`/chat/${chatId}`);
-    setLoading(false)
+      setLoading(false);
     }
-
   };
   return (
     <Card

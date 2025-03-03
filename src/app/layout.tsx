@@ -1,10 +1,10 @@
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
+import { LoaderProvider } from '@/contexts/loader-context';
 import { UserProvider } from '@/contexts/user-context';
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
-import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
 
-import { LoaderProvider } from '@/contexts/loader-context';
 import './globals.css';
 
 const poppins = Poppins({
@@ -28,7 +28,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <LoaderProvider>
-            <UserProvider>{children}</UserProvider>
+              <UserProvider>{children}</UserProvider>
             </LoaderProvider>
           </AuthProvider>
         </QueryProvider>

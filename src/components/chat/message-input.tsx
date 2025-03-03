@@ -1,18 +1,18 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { useLoader } from '@/contexts/loader-context';
+import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
 
+import { UploadedFile } from '@/types/upload';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
 
-import { useLoader } from '@/contexts/loader-context';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
@@ -35,7 +35,7 @@ export function MessageInput({
 }) {
   const router = useRouter();
   const { createChat, sendMessage, addMessageNoStream } = useChat();
-  const {isLoading}=useLoader()
+  const { isLoading } = useLoader();
 
   // State for the main message text
   const [message, setMessage] = useState('');
@@ -228,11 +228,12 @@ export function MessageInput({
     <div>
       <div className="relative py-4">
         {/* Loader shown in the top-right when sending */}
-        {isSending || isLoading && (
-          <div className="absolute top-10 right-6">
-            <LoaderCircle className="animate-spin h-5 w-5 text-gray-700" />
-          </div>
-        )}
+        {isSending ||
+          (isLoading && (
+            <div className="absolute top-10 right-6">
+              <LoaderCircle className="animate-spin h-5 w-5 text-gray-700" />
+            </div>
+          ))}
 
         {/* MENTION MENU (positions above the input) */}
         {showMentionMenu && (

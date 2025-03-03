@@ -1,7 +1,7 @@
 'use client';
 
-import { CheckCircle, Copy } from 'lucide-react';
 import { useState } from 'react';
+import { CheckCircle, Copy } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -11,21 +11,23 @@ interface CopyButtonProps {
 
 // A simple helper to remove common markdown formatting
 const stripMarkdown = (markdown: string): string => {
-  return markdown
-    // Remove markdown headers (e.g., "# Heading")
-    .replace(/^#{1,6}\s+/gm, '')
-    // Remove bold and italic markers
-    .replace(/(\*\*|__)(.*?)\1/g, '$2')
-    .replace(/(\*|_)(.*?)\1/g, '$2')
-    // Remove strikethroughs
-    .replace(/~~(.*?)~~/g, '$1')
-    // Remove inline code markers
-    .replace(/`([^`]+)`/g, '$1')
-    // Convert markdown links [text](url) to just text
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    // Remove image markdown ![alt](url)
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .trim();
+  return (
+    markdown
+      // Remove markdown headers (e.g., "# Heading")
+      .replace(/^#{1,6}\s+/gm, '')
+      // Remove bold and italic markers
+      .replace(/(\*\*|__)(.*?)\1/g, '$2')
+      .replace(/(\*|_)(.*?)\1/g, '$2')
+      // Remove strikethroughs
+      .replace(/~~(.*?)~~/g, '$1')
+      // Remove inline code markers
+      .replace(/`([^`]+)`/g, '$1')
+      // Convert markdown links [text](url) to just text
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+      // Remove image markdown ![alt](url)
+      .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .trim()
+  );
 };
 
 const CopyButton: React.FC<CopyButtonProps> = ({ content }) => {
@@ -38,7 +40,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ content }) => {
     try {
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
-     
+
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);

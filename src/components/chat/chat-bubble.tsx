@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import Markdown from 'react-markdown';
 
-import { cn, formatDate } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
+import { cn, formatDate } from '@/lib/utils';
 
 import DisplayUsername from '../common/display-username';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -19,7 +19,7 @@ interface User {
 
 interface ChatBubbleProps {
   message: ChatMessage;
-  user?: User | null ; // Allow user to be null or undefined
+  user?: User | null; // Allow user to be null or undefined
 }
 
 export function ChatBubble({ message, user }: ChatBubbleProps) {
@@ -37,7 +37,9 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
       >
         <div className="flex items-start gap-3">
           <Image
-            src={isBot ? '/favicon.svg' : user?.profile_picture || '/avatar.png'}
+            src={
+              isBot ? '/favicon.svg' : user?.profile_picture || '/avatar.png'
+            }
             alt={isBot ? 'Compt-AI' : user?.username || 'User'}
             width={isBot ? 20 : 30}
             height={isBot ? 20 : 30}
