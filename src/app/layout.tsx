@@ -5,6 +5,8 @@ import { UserProvider } from '@/contexts/user-context';
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
 
+import { Toaster } from '@/components/ui/sonner';
+
 import './globals.css';
 
 const poppins = Poppins({
@@ -29,6 +31,7 @@ export default function RootLayout({
           <AuthProvider>
             <LoaderProvider>
               <UserProvider>{children}</UserProvider>
+              <Toaster />
             </LoaderProvider>
           </AuthProvider>
         </QueryProvider>

@@ -27,7 +27,7 @@ export function VideoCard({ video }: VideoCardProps) {
       >
         <div className="relative aspect-video">
           <Image
-            src={video.thumbnail || '/placeholder.svg'}
+            src={video.thumbnail || '/placeholders/thumbnail.svg'}
             alt={video.title}
             fill
             className="object-cover"

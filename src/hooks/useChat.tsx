@@ -140,13 +140,11 @@ const useChat = () => {
     },
     onSuccess: (newMessage, variables) => {
       const { chatId } = variables;
-
       // Update the chat messages cache immediately.
       queryClient.setQueryData<ChatMessage[]>(
         ['chatMessages', chatId],
         (oldMessages = []) => [...oldMessages, newMessage]
       );
-
       // Invalidate the query to ensure fresh data from the server.
       queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
     },
@@ -164,7 +162,7 @@ const useChat = () => {
       chatId,
       content,
       document,
-      onChunkUpdate, // ✅ Callback function to update UI in real-time
+      onChunkUpdate,
     }: {
       chatId: string;
       content: string;
@@ -182,13 +180,13 @@ const useChat = () => {
 
       return new Promise<ChatMessage>(async (resolve, reject) => {
         try {
-          // ✅ Step 1: Send message and initiate streaming
+          // Step 1: Send message and initiate streaming
           const sendResponse = await fetch(streamUrl, {
             method: 'POST',
             body: formData,
             headers: {
               Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-              Accept: '*/*', // ✅ Ensures correct streaming format
+              Accept: '*/*',
             },
           });
 
@@ -197,7 +195,7 @@ const useChat = () => {
             throw new Error(errorData.error || 'Failed to send message');
           }
 
-          // ✅ Step 2: Read the streaming response in chunks
+          // Step 2: Read the streaming response in chunks
           const reader = sendResponse.body.getReader();
           let aiResponse = '';
 
@@ -213,15 +211,15 @@ const useChat = () => {
                 jsonChunks.forEach((chunk) => {
                   const data = JSON.parse(chunk.trim());
 
-                  // ✅ Live update UI with each chunk
+                  // Live update UI with each chunk
                   if (data.chunk && data.chunk.trim() !== '') {
                     aiResponse += data.chunk;
                     if (onChunkUpdate) {
-                      onChunkUpdate(aiResponse); // ✅ Live UI update callback
+                      onChunkUpdate(aiResponse);
                     }
                   }
 
-                  // ✅ If summary is received, finalize and resolve
+                  // If summary is received, finalize and resolve
                   if (data.summary) {
                     const finalMessage: ChatMessage = {
                       id: data.summary.id,

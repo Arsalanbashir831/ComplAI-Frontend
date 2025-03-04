@@ -1,4 +1,4 @@
-export type PlanType = 'pay-as-you-use' | 'professional' | 'enterprise';
+export type PlanType = 'free' | 'subscription' | 'enterprise';
 
 export interface Plan {
   type: PlanType;

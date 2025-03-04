@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { DateRange } from 'react-day-picker';
 
 import type { ActivityItem } from '@/types/dashboard';
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
+import { cn, getDefaultDateRange } from '@/lib/utils';
+import useTokensHistory from '@/hooks/useTokensHistory';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,6 +28,14 @@ export function ActivityTable({
   showActions = true,
 }: ActivityTableProps) {
   const [activeTab, setActiveTab] = useState('all');
+  const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
+  const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
+
+  console.log(data);
+
+  useEffect(() => {
+    refetch();
+  }, [dateRange, refetch]);
 
   // Modal state
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(
@@ -41,29 +48,6 @@ export function ActivityTable({
     setSelectedActivity(activity);
     setIsModalOpen(true);
   };
-
-  const fetchHistory = async (): Promise<ActivityItem> => {
-    const response = await apiCaller(
-      API_ROUTES.CHAT.GET_INTERACTION_HISTORY,
-      'GET',
-      {},
-      {},
-      true,
-      'json'
-    );
-    return response.data;
-  };
-
-  const {
-    data: activities,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['history'],
-    queryFn: fetchHistory,
-    staleTime: 1000 * 60 * 5,
-    retry: 1,
-  });
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -89,7 +73,10 @@ export function ActivityTable({
           )}
 
           <div className="flex flex-col items-start md:flex-row md:items-center gap-4">
-            <DateRangePicker value={undefined} onChange={() => {}} />
+            <DateRangePicker
+              value={dateRange}
+              onChange={(newRange) => newRange && setDateRange(newRange)}
+            />
             <Tabs
               defaultValue="all"
               onValueChange={(value) => setActiveTab(value)}
@@ -118,9 +105,9 @@ export function ActivityTable({
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <DataTable
+          <DataTable<ActivityItem, unknown>
             columns={createColumns(showActions, handleView)}
-            data={activities || []}
+            data={Array.isArray(data) ? data : []}
             activeFilter={activeTab}
             pageSize={pageSize}
             isTabsPresent={true}

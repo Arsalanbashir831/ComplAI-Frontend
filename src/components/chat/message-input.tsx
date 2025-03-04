@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useLoader } from '@/contexts/loader-context';
+import { useIsMutating } from '@tanstack/react-query';
 import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
 
 import { UploadedFile } from '@/types/upload';
@@ -36,23 +37,48 @@ export function MessageInput({
   const router = useRouter();
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { isLoading } = useLoader();
+  // Use global mutating state as our "isSending" indicator.
+  const isSending = useIsMutating() > 0;
 
-  // State for the main message text
+  // Main message text.
   const [message, setMessage] = useState('');
-  // State for file upload modal
+  // File upload modal state.
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Keep track of all uploaded files (though we'll only send the first one)
+  // Track uploaded files.
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  // State to disable input while sending message and show loader
-  const [isSending, setIsSending] = useState(false);
-  // State for showing the mention menu (the dropdown)
+  // Show/hide the mention menu.
   const [showMentionMenu, setShowMentionMenu] = useState(false);
-  // State for which mention is selected: 'pdf', 'docx', or null
+  // The currently selected mention type (if any).
   const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
+  // For keyboard navigation within the menu.
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
 
   const maxChars = 10000;
 
-  // Temporary function to simulate file upload progress
+  // Define available mention options.
+  const mentionOptions = [
+    { value: 'pdf', label: 'PDF DOCUMENT', icon: '/icons/pdf-document.svg' },
+    { value: 'docx', label: 'DOCX DOCUMENT', icon: '/icons/word-document.svg' },
+  ];
+
+  // Ref for the mention menu container.
+  const mentionMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        mentionMenuRef.current &&
+        !mentionMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowMentionMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Temporary file upload simulation.
   const simulateUpload = (fileId: string) => {
     return new Promise<void>((resolve) => {
       let progress = 0;
@@ -64,8 +90,7 @@ export function MessageInput({
               : file
           )
         );
-        progress += 10; // Increment progress
-
+        progress += 10;
         if (progress > 100) {
           clearInterval(interval);
           resolve();
@@ -75,11 +100,9 @@ export function MessageInput({
   };
 
   /**
-   * Handle file uploads. We allow only one file in the UI.
-   * We store the original File in the `rawFile` property.
+   * Handle file uploads. Only one file is stored.
    */
   const handleUpload = async (files: File[]) => {
-    // Just take the first file
     const file = files[0];
     if (!file) return;
 
@@ -91,7 +114,7 @@ export function MessageInput({
       type: file.type,
       webkitRelativePath: file.webkitRelativePath,
       progress: 0,
-      rawFile: file, // <--- store the original File object here
+      rawFile: file,
       arrayBuffer: file.arrayBuffer,
       bytes: async () => new Uint8Array(await file.arrayBuffer()),
       slice: file.slice,
@@ -99,10 +122,7 @@ export function MessageInput({
       text: file.text,
     };
 
-    // Replace any previously uploaded file
     setUploadedFiles([newFile]);
-
-    // Simulate file upload
     await simulateUpload(newFile.id);
   };
 
@@ -111,45 +131,29 @@ export function MessageInput({
   };
 
   const handleSendMessage = async () => {
-    // Prevent duplicate send if already sending
     if (isSending) return;
-    // Do nothing if there's no message and no uploaded file
     if (!message.trim() && uploadedFiles.length === 0) return;
 
-    setIsSending(true);
     try {
       let currentChatId = chatId;
       if (!currentChatId) {
         const response = await createChat(message.trim());
         currentChatId = response.id;
       }
-
       const documentToSend =
         uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
 
-      // If onSendMessage is provided, use it exclusively and return.
       if (onSendMessage) {
-        console.log('mention', mentionType);
         if (!mentionType) {
           await onSendMessage(message.trim(), documentToSend);
-        } else {
-          // await addMessageNoStream({
-          //   chatId: currentChatId,
-          //   content: message.trim(),
-          //   document: documentToSend,
-          //   return_type: mentionType,
-          // });
-          if (noStreamSendMessage) {
-            await noStreamSendMessage(
-              currentChatId,
-              message.trim(),
-              documentToSend,
-              mentionType
-            );
-          }
+        } else if (noStreamSendMessage) {
+          await noStreamSendMessage(
+            currentChatId,
+            message.trim(),
+            documentToSend,
+            mentionType
+          );
         }
-
-        // await onSendMessage(message.trim(), documentToSend);
         setMessage('');
         setUploadedFiles([]);
         setMentionType(null);
@@ -180,95 +184,132 @@ export function MessageInput({
       setMentionType(null);
     } catch (error) {
       console.error('Error sending message:', error);
-    } finally {
-      setIsSending(false);
     }
   };
 
-  // Whenever the user types in the textarea
+  // When the user types, check for a mention trigger.
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = event.target.value;
-    // If the user just typed "@" at the end, show the mention menu
-    if (input.endsWith('@')) {
+    const mentionMatch = input.match(/@(\w*)$/);
+    if (mentionMatch) {
+      // If there's text after @, show the menu.
       setShowMentionMenu(true);
+      const query = mentionMatch[1].toLowerCase();
+      // Auto-select if an option exactly matches or starts with the query.
+      const foundIndex = mentionOptions.findIndex((option) =>
+        option.value.startsWith(query)
+      );
+      setSelectedMentionIndex(foundIndex !== -1 ? foundIndex : 0);
+    } else {
+      setShowMentionMenu(false);
     }
-    // Enforce max length
     if (input.length <= maxChars) {
       setMessage(input);
     }
   };
 
-  // If the user presses backspace, remove the mention pill if the textarea is empty
+  // Handle key events for both the textarea and mention menu.
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Backspace') {
-      // If there's no text and a mention is set, remove the mention pill
-      if (message.length === 0 && mentionType) {
+    // Close mention menu on Esc.
+    if (event.key === 'Escape' && showMentionMenu) {
+      event.preventDefault();
+      setShowMentionMenu(false);
+      return;
+    }
+    // If the mention menu is open, handle navigation and selection.
+    if (showMentionMenu) {
+      if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setMentionType(null);
+        setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setSelectedMentionIndex(
+          (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
+        );
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        // Check if the user typed a complete mention (e.g. @docx or @pdf).
+        const match = message.match(/@(\w+)$/);
+        let selectedOption: string;
+        if (match) {
+          const query = match[1].toLowerCase();
+          // If query exactly matches one of our options, use it.
+          const found = mentionOptions.find((option) => option.value === query);
+          selectedOption = found
+            ? found.value
+            : mentionOptions[selectedMentionIndex].value;
+        } else {
+          selectedOption = mentionOptions[selectedMentionIndex].value;
+        }
+        handleSelectMention(selectedOption as 'pdf' | 'docx');
+        return;
       }
     }
 
-    // Allow Ctrl+Enter to send
+    // Remove mention pill with backspace if textarea is empty.
+    if (event.key === 'Backspace' && message.length === 0 && mentionType) {
+      event.preventDefault();
+      setMentionType(null);
+    }
+
+    // Allow Ctrl+Enter to send message.
     if (event.ctrlKey && event.key === 'Enter') {
       event.preventDefault();
       handleSendMessage();
     }
   };
 
-  // When the user selects an option from the mention menu
+  // When an option is selected, remove the mention trigger text and set the mention.
   const handleSelectMention = (type: 'pdf' | 'docx') => {
     setMentionType(type);
-    // Remove the trailing "@" from the text
-    setMessage((prev) => prev.replace(/@$/, ''));
-    // Hide the menu
+    setMessage((prev) => prev.replace(/@(\w+)$/i, '').trim());
     setShowMentionMenu(false);
   };
 
   return (
     <div>
       <div className="relative py-4">
-        {/* Loader shown in the top-right when sending */}
-        {isSending ||
-          (isLoading && (
-            <div className="absolute top-10 right-6">
-              <LoaderCircle className="animate-spin h-5 w-5 text-gray-700" />
-            </div>
-          ))}
+        {(isSending || isLoading) && (
+          <div className="absolute top-10 right-6">
+            <LoaderCircle className="animate-spin h-5 w-5 text-gray-700" />
+          </div>
+        )}
 
-        {/* MENTION MENU (positions above the input) */}
         {showMentionMenu && (
-          <div className="absolute -top-20 left-0 z-10 w-[200px] rounded-md border border-gray-300 bg-white shadow-md">
-            {/* PDF option */}
-            <div
-              className="flex cursor-pointer items-center gap-2 px-2 py-2 hover:bg-gray-100"
-              onClick={() => handleSelectMention('pdf')}
-            >
-              <Image
-                src="/icons/pdf-document.svg"
-                width={20}
-                height={20}
-                alt="PDF icon"
-              />
-              <span className="text-sm text-gray-700">PDF DOCUMENT</span>
-            </div>
-            {/* DOCX option */}
-            <div
-              className="flex cursor-pointer items-center gap-2 px-2 py-2 hover:bg-gray-100"
-              onClick={() => handleSelectMention('docx')}
-            >
-              <Image
-                src="/icons/word-document.svg"
-                width={20}
-                height={20}
-                alt="DOCX icon"
-              />
-              <span className="text-sm text-gray-700">DOCX DOCUMENT</span>
-            </div>
+          <div
+            ref={mentionMenuRef}
+            className="absolute -top-20 left-0 z-10 w-[200px] rounded-md border border-gray-300 bg-white shadow-md"
+          >
+            {mentionOptions.map((option, index) => (
+              <div
+                key={option.value}
+                className={cn(
+                  'flex cursor-pointer items-center gap-2 px-2 py-2',
+                  index === selectedMentionIndex
+                    ? 'bg-gray-200'
+                    : 'hover:bg-gray-100'
+                )}
+                onClick={() =>
+                  handleSelectMention(option.value as 'pdf' | 'docx')
+                }
+              >
+                <Image
+                  src={option.icon}
+                  width={20}
+                  height={20}
+                  alt={`${option.label} icon`}
+                />
+                <span className="text-sm text-gray-700">{option.label}</span>
+              </div>
+            ))}
           </div>
         )}
 
         <div className="bg-gray-light rounded-xl p-4">
-          {/* If mentionType is set, show a pill on the left; otherwise, just the textarea */}
           <div className="flex items-start space-x-2">
             {mentionType && (
               <div
@@ -292,7 +333,6 @@ export function MessageInput({
           </div>
 
           <div className="mt-2 flex items-center justify-between gap-2">
-            {/* File attachments */}
             <div className="flex items-center">
               {uploadedFiles.length > 0 && (
                 <ScrollArea className="whitespace-nowrap w-full max-w-[160px] min-[425px]:max-w-[250px] md:max-w-[600px]">
@@ -336,7 +376,6 @@ export function MessageInput({
               </Button>
             </div>
 
-            {/* Character count & send button */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-dark">
                 {message.length} / {maxChars}

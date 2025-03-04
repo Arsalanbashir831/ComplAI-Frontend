@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { useQuery } from '@tanstack/react-query';
 import type { DateRange } from 'react-day-picker';
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
-import apiCaller from '@/config/apiCaller';
+import { getDefaultDateRange } from '@/lib/utils';
+import useTokensHistory from '@/hooks/useTokensHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -17,48 +16,9 @@ import {
 import { DateRangePicker } from '../common/date-range-picker';
 import LoadingSpinner from '../common/loading-spinner';
 
-interface TokenHistoryProps {
-  data: { usage_date: string; tokens_used: number }[];
-}
-
-// Function to get the default date range (one month before today)
-const getDefaultDateRange = (): DateRange => {
-  const today = new Date();
-  today.setDate(today.getDate() + 1);
-  const oneMonthAgo = new Date(today);
-  oneMonthAgo.setMonth(today.getMonth() - 1);
-
-  return { from: oneMonthAgo, to: today };
-};
-
 export function TokenChart() {
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
-
-  const fetchHistory = async (): Promise<TokenHistoryProps> => {
-    if (!dateRange?.from || !dateRange?.to) return { data: [] };
-
-    const queryParams = `?start_date=${
-      dateRange.from.toISOString().split('T')[0]
-    }&end_date=${dateRange.to.toISOString().split('T')[0]}`;
-
-    const response = await apiCaller(
-      `${API_ROUTES.USER.GET_TOKENS_HISTORY}${queryParams}`,
-      'GET',
-      {},
-      {},
-      true,
-      'json'
-    );
-    return response.data;
-  };
-
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['history', dateRange],
-    queryFn: fetchHistory,
-    staleTime: 1000 * 60 * 5,
-    retry: 1,
-    enabled: !!dateRange?.from && !!dateRange?.to,
-  });
+  const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
 
   // Refetch data when component mounts (ensures initial date range is used)
   useEffect(() => {
@@ -94,7 +54,7 @@ export function TokenChart() {
             }}
           >
             <LineChart
-              data={data}
+              data={Array.isArray(data) ? data : []}
               margin={{
                 top: 5,
                 right: 10,

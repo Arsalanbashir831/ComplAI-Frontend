@@ -2,9 +2,16 @@
 
 import { useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
+import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useIsMutating,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import type { PaymentCard, Plan } from '@/types/subscription';
 import apiCaller from '@/config/apiCaller';
@@ -58,7 +65,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
   if (products && products.length > 0) {
     const product = products[0];
     plansArray.push({
-      type: 'pay-as-you-use',
+      type: 'free',
       title: product.name,
       price: `£${(product.price / 100).toFixed(0)}`,
       description: product.description,
@@ -71,7 +78,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
   if (subscription_plans && subscription_plans.length > 0) {
     const subPlan = subscription_plans[0];
     plansArray.push({
-      type: 'professional',
+      type: 'subscription',
       title: subPlan.name,
       price: `£${(subPlan.price / 100).toFixed(0)}`,
       interval: subPlan.interval,
@@ -97,9 +104,28 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
   return plansArray;
 };
 
+// Fetch the stripe customer info, which includes the default card ID
+const fetchStripeCustomer = async (): Promise<{
+  default_payment_method: string;
+}> => {
+  const response = await apiCaller(
+    API_ROUTES.BILLING.STRIPE_CUSTOMER,
+    'GET',
+    {},
+    {},
+    true,
+    'json'
+  );
+  return response.data;
+};
+
 export default function SubscriptionPage() {
-  const [autoRenew, setAutoRenew] = useState(false);
+  const { user } = useUserContext();
   const queryClient = useQueryClient();
+  const isSubscribing = useIsMutating() > 0;
+  const [autoRenew, setAutoRenew] = useState(true);
+
+  console.log('isSubscribing', isSubscribing);
 
   const { data: paymentCards = [], isLoading: cardsLoading } = useQuery<
     PaymentCard[]
@@ -116,6 +142,13 @@ export default function SubscriptionPage() {
       staleTime: 1000 * 60 * 5,
     }
   );
+
+  // Query to fetch the stripe customer info
+  const { data: stripeCustomer, refetch: refetchCustomer } = useQuery({
+    queryKey: ['stripeCustomer'],
+    queryFn: fetchStripeCustomer,
+    staleTime: 1000 * 60 * 5,
+  });
 
   const purchaseTokensMutation = useMutation({
     mutationFn: async () => {
@@ -142,22 +175,18 @@ export default function SubscriptionPage() {
       return response.data;
     },
     onSuccess: () => {
-      alert('Token purchase successful!');
+      toast.success('Token purchase successful!');
     },
     onError: () => {
-      alert('Token purchase failed, please try again.');
+      toast.error('Token purchase failed, please try again.');
     },
   });
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {
-      let paymentMethodId: string | undefined;
-      const defaultCard = paymentCards.find((card) => card.isDefault);
-      if (defaultCard) {
-        paymentMethodId = defaultCard.id;
-      } else if (paymentCards.length > 0) {
-        paymentMethodId = paymentCards[0].id;
-      }
+      const paymentMethodId = stripeCustomer?.default_payment_method;
+
+      console.log('paymentMethodId', paymentMethodId);
       if (!paymentMethodId) {
         throw new Error('Please add a payment method before subscribing.');
       }
@@ -175,21 +204,24 @@ export default function SubscriptionPage() {
       return response.data;
     },
     onSuccess: () => {
-      alert('Subscription successful!');
+      toast.success('Subscription successful!');
     },
     onError: (error) => {
-      console.error('Subscription error:', error);
-      alert('Subscription failed, please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Subscription failed, please try again.'
+      );
     },
   });
 
   const plansWithActions = fetchedPlans.map((plan) => {
-    if (plan.type === 'pay-as-you-use') {
+    if (plan.type === 'free') {
       return {
         ...plan,
         buttonAction: () => purchaseTokensMutation.mutate(),
       };
-    } else if (plan.type === 'professional') {
+    } else if (plan.type === 'subscription') {
       return {
         ...plan,
         buttonAction: () => subscribeMutation.mutate(),
@@ -201,7 +233,32 @@ export default function SubscriptionPage() {
       };
   });
 
+  const handleAutoRenewChange = useMutation({
+    mutationFn: async () => {
+      const response = await apiCaller(
+        API_ROUTES.BILLING.CANCEL_AUTO_RENEW,
+        'POST',
+        {},
+        {},
+        true,
+        'json'
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      setAutoRenew(!autoRenew);
+      toast.success('Auto-renewal settings updated successfully.');
+    },
+    onError: () => {
+      toast.error('Failed to update auto-renewal settings.');
+    },
+  });
+
   const handleAddCard = () => {
+    queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
+  };
+
+  const handleUpdateCard = () => {
     queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
   };
 
@@ -225,7 +282,10 @@ export default function SubscriptionPage() {
                   <PricingCard
                     key={plan.type}
                     plan={plan}
-                    isActive={plan.type === 'pay-as-you-use'}
+                    isActive={plan.type === user?.subscription_type}
+                    isDisbaled={
+                      isSubscribing || plan.type === user?.subscription_type
+                    }
                   />
                 ))}
               </div>
@@ -233,16 +293,19 @@ export default function SubscriptionPage() {
           </div>
 
           <SubscriptionInfo
-            plan="Pay as you use"
+            plan={user?.subscription_type || 'Free'}
             startDate="10-01-2024"
             renewalDate="10-02-2024"
             autoRenew={autoRenew}
-            onAutoRenewChange={setAutoRenew}
+            onAutoRenewChange={handleAutoRenewChange.mutate}
           />
 
           <PaymentMethod
+            stripeCustomer={stripeCustomer}
+            refetchCustomer={refetchCustomer}
             cards={paymentCards}
             onCardAdded={handleAddCard}
+            onCardUpdated={handleUpdateCard}
             onCardRemoved={handleRemoveCard}
             isLoading={cardsLoading}
           />

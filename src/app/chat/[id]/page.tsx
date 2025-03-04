@@ -157,6 +157,7 @@ export default function SpecificChatPage() {
 
       <div className="px-6 flex flex-col justify-center h-[90%]">
         <ChatMessages messages={messages} />
+
         <div className="mx-auto md:max-w-[80%] w-full">
           <MessageInput
             chatId={chatId}

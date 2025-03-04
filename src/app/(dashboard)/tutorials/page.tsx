@@ -1,102 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Filter, SortDesc } from 'lucide-react';
+import { API_ROUTES } from '@/constants/apiRoutes';
+import { useQuery } from '@tanstack/react-query';
 
-import { Button } from '@/components/ui/button';
+import { Video } from '@/types/video';
+import apiCaller from '@/config/apiCaller';
 import { Separator } from '@/components/ui/separator';
+import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { SearchInput } from '@/components/dashboard/tutorials/search-input';
 import { VideoSection } from '@/components/dashboard/tutorials/video-section';
 
-const MOCK_DATA = {
-  recommendedVideos: {
-    title: 'Recommended Videos',
-    subtitle: 'Top picks for You',
-    videos: [
-      {
-        id: '1',
-        title: 'VUE JS SCRATCH COURSE',
-        studio: 'Kitani Studio',
-        description:
-          'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
-        thumbnail: '/placeholders/tutorial-1.svg',
-        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
-        tags: ['vue', 'javascript'],
-      },
-      {
-        id: '2',
-        title: 'UI DESIGN FOR BEGINNERS',
-        studio: 'Kitani Studio',
-        description:
-          'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
-        thumbnail: '/placeholders/tutorial-2.svg',
-        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
-        tags: ['design', 'ui'],
-      },
-      {
-        id: '3',
-        title: 'UI DESIGN FOR BEGINNERS',
-        studio: 'Kitani Studio',
-        description:
-          'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
-        thumbnail: '/placeholders/tutorial-3.svg',
-        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
-        tags: ['design', 'ui'],
-      },
-      {
-        id: '4',
-        title: 'UI DESIGN FOR BEGINNERS',
-        studio: 'Kitani Studio',
-        description:
-          'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
-        thumbnail: '/placeholders/tutorial-1.svg',
-        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
-        tags: ['design', 'ui'],
-      },
-      {
-        id: '5',
-        title: 'UI DESIGN FOR BEGINNERS',
-        studio: 'Kitani Studio',
-        description:
-          'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
-        thumbnail: '/placeholders/tutorial-1.svg',
-        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
-        tags: ['design', 'ui'],
-      },
-    ],
-  },
-  recommendedTutorials: {
-    title: 'Recommended Tutorials',
-    subtitle: 'Top picks for You',
-    videos: [
-      {
-        id: '3',
-        title: 'MOBILE DEV REACT NATIVE',
-        studio: 'Kitani Studio',
-        description:
-          'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
-        thumbnail: '/placeholders/tutorial-1.svg',
-        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
-        tags: ['react', 'mobile'],
-      },
-      {
-        id: '4',
-        title: 'WEBSITE DEV ZERO TO HERO',
-        studio: 'Kitani Studio',
-        description:
-          'More than 8yr Experience as Illustrator. Learn how to becoming professional Illustrator Now...',
-        thumbnail: '/placeholders/tutorial-2.svg',
-        url: 'https://www.youtube.com/watch?v=Wy9q22isx3U',
-        tags: ['web', 'development'],
-      },
-      // Add more tutorials as needed
-    ],
-  },
+const fetchVideos = async (): Promise<Video[]> => {
+  const response = await apiCaller(
+    API_ROUTES.TUTORIALS.GET,
+    'GET',
+    {},
+    {},
+    true,
+    'json'
+  );
+  return response.data;
 };
 
 export default function TutorialsPage() {
   const [search, setSearch] = useState('');
+
+  const { data: videos = [], isLoading } = useQuery<Video[]>({
+    queryKey: ['videos'],
+    queryFn: fetchVideos,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-8">
@@ -112,7 +51,7 @@ export default function TutorialsPage() {
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <SearchInput value={search} onChange={setSearch} />
 
-          <div className="ml-auto flex items-center gap-2">
+          {/* <div className="ml-auto flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -130,12 +69,20 @@ export default function TutorialsPage() {
               Sort by
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-          </div>
+          </div> */}
         </div>
 
-        <VideoSection section={MOCK_DATA.recommendedVideos} />
+        <VideoSection
+          title="Recommended Videos"
+          subtitle="Top picks for You"
+          videos={videos}
+        />
         <Separator />
-        <VideoSection section={MOCK_DATA.recommendedTutorials} />
+        <VideoSection
+          title="Recommended Tutorials"
+          subtitle="Top picks for You"
+          videos={videos}
+        />
       </div>
     </div>
   );

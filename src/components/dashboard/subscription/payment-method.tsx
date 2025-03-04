@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
-import { useQuery } from '@tanstack/react-query';
 import {
   Check,
   CircleCheckBig,
@@ -12,6 +11,7 @@ import {
   Plus,
   Trash,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import type { PaymentCard } from '@/types/subscription';
 import apiCaller from '@/config/apiCaller';
@@ -23,16 +23,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ConfirmationModal } from '@/components/common/confirmation-modal';
 
 import { PaymentCardModal } from './payment-card-modal';
-
-interface PaymentMethodProps {
-  cards: PaymentCard[];
-  onCardAdded?: (newCard: PaymentCard) => void;
-  onCardUpdated?: (updatedCard: PaymentCard) => void;
-  onCardRemoved?: (cardId: string) => void;
-  isLoading: boolean;
-}
 
 type ModalState = {
   open: boolean;
@@ -40,22 +33,19 @@ type ModalState = {
   card?: PaymentCard;
 };
 
-// Fetch the stripe customer info, which includes the default card ID
-const fetchStripeCustomer = async (): Promise<{
-  default_payment_method: string;
-}> => {
-  const response = await apiCaller(
-    API_ROUTES.BILLING.STRIPE_CUSTOMER,
-    'GET',
-    {},
-    {},
-    true,
-    'json'
-  );
-  return response.data;
-};
+interface PaymentMethodProps {
+  stripeCustomer: { default_payment_method: string | null } | undefined;
+  refetchCustomer: () => void;
+  cards: PaymentCard[];
+  onCardAdded?: (newCard: PaymentCard) => void;
+  onCardUpdated?: (updatedCard: PaymentCard) => void;
+  onCardRemoved?: (cardId: string) => void;
+  isLoading: boolean;
+}
 
 export function PaymentMethod({
+  stripeCustomer,
+  refetchCustomer,
   cards,
   onCardAdded,
   onCardUpdated,
@@ -66,13 +56,8 @@ export function PaymentMethod({
     open: false,
     mode: 'add',
   });
-
-  // Query to fetch the stripe customer info
-  const { data: stripeCustomer, refetch: refetchCustomer } = useQuery({
-    queryKey: ['stripeCustomer'],
-    queryFn: fetchStripeCustomer,
-    staleTime: 1000 * 60 * 5,
-  });
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [cardId, setCardId] = useState<string>('');
 
   // Open modal in "add" mode
   const handleAddCardClick = () => {
@@ -91,6 +76,10 @@ export function PaymentMethod({
   // This callback is triggered on both successful add and edit operations.
   const handleModalSuccess = (card: PaymentCard) => {
     if (modalState.mode === 'add') {
+      // If there is no default card, automatically make the newly added card default.
+      if (!stripeCustomer?.default_payment_method) {
+        handleMakeDefault(card.id);
+      }
       if (onCardAdded) onCardAdded(card);
     } else if (modalState.mode === 'edit') {
       if (onCardUpdated) onCardUpdated(card);
@@ -109,15 +98,24 @@ export function PaymentMethod({
         true,
         'json'
       );
-      alert('Default card set successfully.');
+      toast.success('Default card set successfully.');
       refetchCustomer();
-    } catch (error) {
-      console.error('Failed to set default card:', error);
-      alert('Failed to set default card.');
+    } catch {
+      toast.error('Failed to set default card.');
     }
   };
 
+  // Prevent deletion of the default card.
   const handleDeleteCard = async (cardId: string) => {
+    if (stripeCustomer?.default_payment_method === cardId) {
+      toast.error('You must change the default card first.');
+      return;
+    }
+    setCardId(cardId);
+    setIsConfirmationModalOpen(true);
+  };
+
+  const confirmDeleteCard = async () => {
     try {
       await apiCaller(
         API_ROUTES.BILLING.DELETE_CARD,
@@ -128,16 +126,15 @@ export function PaymentMethod({
         'json'
       );
       if (onCardRemoved) onCardRemoved(cardId);
-      alert('Card deleted successfully.');
+      toast.success('Card deleted successfully.');
       refetchCustomer();
-    } catch (error) {
-      console.error('Failed to delete card:', error);
-      alert('Failed to delete card.');
+    } catch {
+      toast.error('Failed to delete card.');
+    } finally {
+      setIsConfirmationModalOpen(false);
+      setCardId('');
     }
   };
-
-  console.log('stripeCustomer', stripeCustomer);
-  console.log('cards', cards);
 
   return (
     <>
@@ -247,6 +244,14 @@ export function PaymentMethod({
             : {})}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        title="Delete Card"
+        description="Are you sure you want to delete this card?"
+        onConfirm={confirmDeleteCard}
+        onCancel={() => setIsConfirmationModalOpen(false)}
+      />
     </>
   );
 }

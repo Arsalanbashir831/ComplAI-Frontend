@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,6 +10,8 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 
+import { ConfirmationModal } from '../common/confirmation-modal';
+
 interface ChatHeaderProps {
   currentChatId: string;
 }
@@ -16,10 +19,10 @@ interface ChatHeaderProps {
 export function ChatHeader({ currentChatId }: ChatHeaderProps) {
   const { deleteChat } = useChat();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   const handleDelete = async () => {
     if (!currentChatId) return;
-    if (!confirm('Are you sure you want to delete this chat?')) return;
     try {
       await deleteChat(currentChatId);
 
@@ -54,11 +57,21 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
           variant="ghost"
           className="text-gray-600 hover:text-gray-800 p-2 rounded-lg"
           aria-label="Delete"
-          onClick={handleDelete}
+          onClick={() => setOpen(true)}
         >
           <Trash2 className="h-5 w-5" />
         </Button>
       </div>
+
+      <ConfirmationModal
+        isOpen={open}
+        onOpenChange={setOpen}
+        title="Delete Confirmation"
+        description="Are you sure you want to delete this chat? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDelete}
+      />
     </header>
   );
 }

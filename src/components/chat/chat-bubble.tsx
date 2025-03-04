@@ -2,8 +2,10 @@
 
 import Image from 'next/image';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import type { ChatMessage } from '@/types/chat';
+import { User } from '@/types/user';
 import { cn, formatDate } from '@/lib/utils';
 
 import DisplayUsername from '../common/display-username';
@@ -11,15 +13,9 @@ import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
-interface User {
-  email: string;
-  profile_picture: string;
-  username: string;
-}
-
 interface ChatBubbleProps {
   message: ChatMessage;
-  user?: User | null; // Allow user to be null or undefined
+  user?: User | null;
 }
 
 export function ChatBubble({ message, user }: ChatBubbleProps) {
@@ -63,7 +59,9 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
 
                 {/* Message Content */}
                 <div className="text-sm break-words text-black whitespace-pre-line text-justify">
-                  <Markdown>{message.content}</Markdown>
+                  <Markdown remarkPlugins={[remarkGfm]}>
+                    {message.content}
+                  </Markdown>
                 </div>
 
                 {/* Attachments */}
@@ -89,7 +87,9 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
               <>
                 {/* Message Content */}
                 <div className="text-sm text-black text-justify">
-                  <Markdown>{message.content}</Markdown>
+                  <Markdown remarkPlugins={[remarkGfm]}>
+                    {message.content}
+                  </Markdown>
                 </div>
 
                 {/* Attachments */}

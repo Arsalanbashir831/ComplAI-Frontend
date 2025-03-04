@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
+import { DateRange } from 'react-day-picker';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -94,4 +95,14 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
+};
+
+// Function to get the default date range (one month before today)
+export const getDefaultDateRange = (): DateRange => {
+  const today = new Date();
+  today.setDate(today.getDate() + 1);
+  const oneMonthAgo = new Date(today);
+  oneMonthAgo.setMonth(today.getMonth() - 1);
+
+  return { from: oneMonthAgo, to: today };
 };

@@ -39,5 +39,9 @@ export const API_ROUTES = {
     CREATE_ONE_TIME_PAYMENT_INTENT:
       '/api/billing/create-one-time-payment-intent/',
     INVOICES: '/api/billing/invoices/',
+    CANCEL_AUTO_RENEW: '/api/billing/cancel-subscription/',
+  },
+  TUTORIALS: {
+    GET: '/api/videos/',
   },
 } as const;

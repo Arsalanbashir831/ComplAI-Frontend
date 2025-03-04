@@ -12,6 +12,7 @@ export interface ActivityItem {
   description: string;
   ai_response_document: string;
   query: string;
+  user_id: string;
 }
 
 export interface TokenUsageTrend {
