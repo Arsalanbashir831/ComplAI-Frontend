@@ -27,7 +27,7 @@ export function VideoCard({ video }: VideoCardProps) {
       >
         <div className="relative aspect-video">
           <Image
-            src={video.thumbnail || '/placeholders/thumbnail.svg'}
+            src={video.thumbnail_url ?? '/placeholders/thumbnail.svg'}
             alt={video.title}
             fill
             className="object-cover"
@@ -71,7 +71,10 @@ export function VideoCard({ video }: VideoCardProps) {
           closeButtonClass="bg-white rounded-full p-1 opacity-0 group-hover:opacity-100"
           aria-describedby="video-description"
         >
-          <VideoPlayer videoUrl={video.url} thumbnail={video.thumbnail} />
+          <VideoPlayer
+            videoUrl={video.video_url}
+            thumbnail={video.thumbnail_url ?? '/placeholders/thumbnail.svg'}
+          />
         </DialogContent>
       </Dialog>
     </>

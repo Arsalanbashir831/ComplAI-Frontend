@@ -10,7 +10,7 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
     return {
       id: 0,
       usage_date: '',
-      activityType: '',
+      activity_type: '',
       tokens_used: 0,
       description: '',
       user_id: '',

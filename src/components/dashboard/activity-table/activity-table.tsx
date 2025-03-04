@@ -31,8 +31,6 @@ export function ActivityTable({
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
   const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
 
-  console.log(data);
-
   useEffect(() => {
     refetch();
   }, [dateRange, refetch]);
@@ -83,7 +81,7 @@ export function ActivityTable({
             >
               <TabsList className="bg-white border border-[#E0E2E7]">
                 <TabsTrigger
-                  value="Query Mode"
+                  value="query"
                   className="text-[#667085] data-[state=active]:bg-[#0F9B5A1F] data-[state=active]:text-[#09B975]"
                 >
                   Query Mode

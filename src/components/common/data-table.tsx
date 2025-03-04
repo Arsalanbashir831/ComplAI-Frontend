@@ -46,9 +46,6 @@ export function DataTable<TData, TValue>({
   pageSize = 5,
   isTabsPresent = true,
 }: DataTableProps<TData, TValue>) {
-  console.log('DataTable');
-  console.log('columns', columns);
-  console.log('data', data);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
@@ -75,9 +72,9 @@ export function DataTable<TData, TValue>({
   useEffect(() => {
     if (isTabsPresent) {
       if (activeFilter !== 'all') {
-        table.getColumn('activityType')?.setFilterValue(activeFilter);
+        table.getColumn('activity_type')?.setFilterValue(activeFilter);
       } else {
-        table.getColumn('activityType')?.setFilterValue('');
+        table.getColumn('activity_type')?.setFilterValue('');
       }
     }
   }, [isTabsPresent, activeFilter, table]);

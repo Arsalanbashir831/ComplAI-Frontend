@@ -35,15 +35,22 @@ export function VideoSection({ title, subtitle, videos }: VideoSection) {
       </div>
 
       <div className="group relative">
+        {/* Fixed height container */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-4 overflow-x-hidden scroll-smooth w-full"
+          className="flex gap-4 overflow-x-hidden scroll-smooth w-full h-[285px]"
         >
-          <div className="flex gap-4 min-w-max">
-            {videos.map((video) => (
-              <VideoCard key={video.id} video={video} />
-            ))}
-          </div>
+          {videos && videos.length > 0 ? (
+            <div className="flex gap-4 min-w-max">
+              {videos.map((video) => (
+                <VideoCard key={video.id} video={video} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-full h-full bg-gray-100 rounded-xl">
+              No videos found
+            </div>
+          )}
         </div>
 
         <Button

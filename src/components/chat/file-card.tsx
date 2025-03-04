@@ -71,7 +71,6 @@ export function FileCard({
 
   // Determine the icon path based on the file type.
   const getIconPath = (details: { name: string; type: string }) => {
-    console.log('details', details);
     const fileTypeMap: Record<string, string> = {
       pdf: 'pdf-document',
       plain: 'plain-document',
@@ -91,8 +90,6 @@ export function FileCard({
 
     return `/icons/${fileTypeMap[key] || 'plain-document'}.svg`;
   };
-
-  console.log('fileData', fileData);
 
   return (
     <div

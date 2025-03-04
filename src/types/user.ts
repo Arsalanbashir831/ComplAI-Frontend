@@ -12,6 +12,6 @@ export interface User {
   last_reset_date: string;
   email_verified: boolean;
   reset_cooldown: string | null;
-  subscription_type: 'free' | 'premium' | 'enterprise';
+  subscription_type: 'free' | 'subscription' | 'enterprise';
   tokens: number;
 }

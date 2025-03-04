@@ -122,7 +122,6 @@ export default function ProfileForm() {
         true,
         'json'
       );
-      console.log('Profile updated:', response.data);
       // Update the user context with the new data
       setUser(response.data);
       toggleEdit();

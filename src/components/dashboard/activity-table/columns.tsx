@@ -44,17 +44,19 @@ export const createColumns = (
       },
     },
     {
-      accessorKey: 'activityType',
+      accessorKey: 'activity_type',
       header: 'Activity Type',
       enableSorting: true,
-      // cell: ({ row }) => {
-      //   const activityType = row.getValue('activityType') as string;
-      //   return <div className="font-medium text-[#667085]">{activityType}</div>;
-      // },
-      cell: () => {
-        return <div className="font-medium text-[#667085]">Query Mode</div>;
+      cell: ({ row }) => {
+        const activityType = row.getValue('activity_type') as string;
+        return (
+          <div className="font-medium text-[#667085] capitalize">
+            {activityType}
+          </div>
+        );
       },
     },
+
     {
       accessorKey: 'tokens_used',
       header: 'Tokens Deducted',
@@ -88,5 +90,5 @@ export const createColumns = (
     });
   }
 
-  return baseColumns;
+  return baseColumns.filter(Boolean) as ColumnDef<ActivityItem, unknown>[];
 };

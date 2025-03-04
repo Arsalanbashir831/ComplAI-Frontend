@@ -32,6 +32,7 @@ export default function BillingPage() {
             amount_paid: number;
             lines?: { data?: { description?: string }[] };
             status: string;
+            invoice_pdf: string;
           }) => ({
             id: inv.id,
             invoiceId: inv.number || inv.id,
@@ -39,6 +40,7 @@ export default function BillingPage() {
             amount: inv.amount_paid / 100,
             plan: inv.lines?.data?.[0]?.description || 'N/A',
             status: inv.status,
+            downloadLink: inv.invoice_pdf,
           })
         );
         setInvoices(transformed);

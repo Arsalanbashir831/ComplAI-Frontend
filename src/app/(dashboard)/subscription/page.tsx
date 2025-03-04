@@ -125,8 +125,6 @@ export default function SubscriptionPage() {
   const isSubscribing = useIsMutating() > 0;
   const [autoRenew, setAutoRenew] = useState(true);
 
-  console.log('isSubscribing', isSubscribing);
-
   const { data: paymentCards = [], isLoading: cardsLoading } = useQuery<
     PaymentCard[]
   >({
@@ -186,7 +184,6 @@ export default function SubscriptionPage() {
     mutationFn: async () => {
       const paymentMethodId = stripeCustomer?.default_payment_method;
 
-      console.log('paymentMethodId', paymentMethodId);
       if (!paymentMethodId) {
         throw new Error('Please add a payment method before subscribing.');
       }
@@ -284,7 +281,8 @@ export default function SubscriptionPage() {
                     plan={plan}
                     isActive={plan.type === user?.subscription_type}
                     isDisbaled={
-                      isSubscribing || plan.type === user?.subscription_type
+                      isSubscribing ||
+                      user?.subscription_type === 'subscription'
                     }
                   />
                 ))}

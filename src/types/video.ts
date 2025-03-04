@@ -2,10 +2,11 @@ export interface Video {
   id: string;
   title: string;
   description: string;
-  thumbnail: string;
+  thumbnail_url: string;
   studio: string;
-  url: string;
+  video_url: string;
   tags: string[];
+  video_type: 'video' | 'tutorial';
 }
 
 export interface VideoSection {
