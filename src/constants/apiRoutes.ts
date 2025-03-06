@@ -10,6 +10,7 @@ export const API_ROUTES = {
     FORGOT_PASSWORD: '/api/users/request-password-reset/',
     VERIFY_TOKEN: '/api/token/verify/',
     REFRESH_TOKEN: '/api/token/refresh/',
+    GOOGLE_LOGIN: '/api/users/google-auth/',
   },
   USER: {
     GET_USER_DATA: '/api/users/profile/',
