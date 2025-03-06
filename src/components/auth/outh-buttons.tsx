@@ -1,24 +1,57 @@
-import Image from 'next/image';
+import { API_ROUTES } from '@/constants/apiRoutes';
+import { ROUTES } from '@/constants/routes';
+import { GoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import apiCaller from '@/config/apiCaller';
 
 export function OAuthButtons() {
   const router = useRouter();
 
-  const handleGoogleSignIn = () => {
-    // Handle Google Sign Ins
-    console.log('Google Sign In');
-    router.push('/chat');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleGoogleSignIn = async (response: any) => {
+    try {
+      const googleToken = response.credential;
+
+      const apiResponse = await apiCaller(
+        API_ROUTES.AUTH.GOOGLE_LOGIN,
+        'POST',
+        { id_token: googleToken },
+        {},
+        false,
+        'json'
+      );
+
+      if (apiResponse.status === 200) {
+        const { access, refresh } = apiResponse.data;
+
+        // Store tokens in localStorage
+        localStorage.setItem('accessToken', access);
+        localStorage.setItem('refreshToken', refresh);
+
+        toast.success('Google sign-in successful');
+        router.push(ROUTES.DASHBOARD);
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(
+          error.response.data?.message ||
+            'An error occurred during Google sign-in'
+        );
+      } else {
+        toast.error('A network error occurred. Please try again.');
+      }
+    }
   };
+
   return (
-    <Button
-      variant="outline"
-      onClick={handleGoogleSignIn}
-      className="w-full justify-center gap-2 border border-[#73726D] py-5 rounded-xl"
-    >
-      <Image src="/icons/google.svg" alt="Google" width={20} height={20} />
-      Continue with Google
-    </Button>
+    <div>
+      <GoogleLogin
+        onSuccess={handleGoogleSignIn}
+        onError={() => toast.error('An error occurred during Google sign-in')}
+      />
+    </div>
   );
 }

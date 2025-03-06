@@ -4,6 +4,7 @@ import { PromptCard as PromptCardType } from '@/types/chat';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageInput } from '@/components/chat/message-input';
 import { PromptCard } from '@/components/chat/prompt-card';
+import DisplayUsername from '@/components/common/display-username';
 
 const promptCards: PromptCardType[] = [
   {
@@ -34,7 +35,7 @@ export default function ChatPage() {
       <ScrollArea className=" flex flex-col justify-center">
         <div className="mb-8">
           <h1 className="mb-2 text-4xl font-bold text-gradient">
-            Hi there, John
+            Hi there, <DisplayUsername />
           </h1>
           <h2 className="mb-4 text-4xl font-bold text-gradient">
             How can I help?

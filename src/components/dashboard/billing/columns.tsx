@@ -1,36 +1,37 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
+import { Download } from 'lucide-react';
 
 import type { Invoice } from '@/types/invoice';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 
 export const columns: ColumnDef<Invoice>[] = [
-  {
-    id: 'select',
-    // header: ({ table }) => (
-    //   <Checkbox
-    //     checked={
-    //       table.getIsAllPageRowsSelected() ||
-    //       (table.getIsSomePageRowsSelected() && 'indeterminate')
-    //     }
-    //     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-    //     aria-label="Select all"
-    //   />
-    // ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="border-[#B6C2E2] ml-8"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  // id: 'select',
+  // header: ({ table }) => (
+  //   <Checkbox
+  //     checked={
+  //       table.getIsAllPageRowsSelected() ||
+  //       (table.getIsSomePageRowsSelected() && 'indeterminate')
+  //     }
+  //     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //     aria-label="Select all"
+  //   />
+  // ),
+  // cell: ({ row }) => (
+  //   <Checkbox
+  //     checked={row.getIsSelected()}
+  //     onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //     aria-label="Select row"
+  //     className="border-[#B6C2E2] ml-8"
+  //   />
+  // ),
+  // enableSorting: false,
+  // enableHiding: false,
+  // },
   {
     accessorKey: 'invoiceId',
     header: 'Invoice',
@@ -102,5 +103,26 @@ export const columns: ColumnDef<Invoice>[] = [
         </Badge>
       );
     },
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => (
+      <div className="flex items-center justify-start">
+        <Button
+          variant="default"
+          className="gap-2"
+          onClick={() => {
+            const downloadUrl = row.original.downloadLink;
+            window.open(downloadUrl, '_blank');
+          }}
+        >
+          <Download className="h-4 w-4" />
+          Download
+        </Button>
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
   },
 ];

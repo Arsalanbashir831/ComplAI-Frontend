@@ -8,16 +8,18 @@ import { Card, CardContent } from '@/components/ui/card';
 interface PricingCardProps {
   plan: Plan;
   isActive?: boolean;
+  isDisbaled?: boolean;
 }
 
-export function PricingCard({ plan, isActive }: PricingCardProps) {
-  const isPayAsYouUse = plan.type === 'pay-as-you-use';
+export function PricingCard({ plan, isActive, isDisbaled }: PricingCardProps) {
+  const isPayAsYouUse = plan.type === 'free';
 
   return (
     <Card
       className={cn(
         'w-full h-full flex flex-col relative border-2',
-        !isPayAsYouUse ? 'bg-blue-dark ' : 'bg-[#fafffa] border-green-400'
+        !isPayAsYouUse ? 'bg-blue-dark ' : 'bg-[#fafffa',
+        isActive && 'border-[#008000]'
       )}
     >
       {isActive && (
@@ -78,6 +80,7 @@ export function PricingCard({ plan, isActive }: PricingCardProps) {
             <Button
               onClick={plan.buttonAction}
               variant="outline"
+              disabled={isDisbaled}
               className={cn(
                 'w-fit',
                 !isPayAsYouUse

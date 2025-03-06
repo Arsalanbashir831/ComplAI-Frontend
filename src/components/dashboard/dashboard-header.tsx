@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
+import { useUserContext } from '@/contexts/user-context';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
@@ -13,6 +16,7 @@ export default function DashboardHeader({
   subtitle?: string;
   badgeTitle?: string;
 }) {
+  const { user } = useUserContext();
   return (
     <div className="flex items-start justify-between w-full ">
       <div className="flex items-center justify-center gap-5 ml-4 md:ml-0">
@@ -36,11 +40,13 @@ export default function DashboardHeader({
           className="flex items-center gap-2 hover:bg-gray-300 p-2 rounded-md transition-all duration-200"
         >
           <Avatar className="transition-all duration-200 transform hover:scale-105">
-            <AvatarImage src="https://github.com/shadcn.png" />
+            <AvatarImage src={user?.profile_picture || '/user.png'} />
             <AvatarFallback>JW</AvatarFallback>
           </Avatar>
           <div className="hidden md:flex flex-col">
-            <p className="text-sm font-medium">John William</p>
+            <p className="text-sm font-medium">
+              {user?.username || 'Username'}
+            </p>
             <p className="text-xs text-gray-500">User</p>
           </div>
         </Link>

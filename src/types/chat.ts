@@ -1,10 +1,5 @@
 import { UploadedFile } from './upload';
 
-export interface RecentChat {
-  id: string;
-  message: string;
-}
-
 export interface PromptCard {
   id: string;
   icon: React.ReactNode;
@@ -15,27 +10,30 @@ export interface ChatLayoutProps {
   children: React.ReactNode;
 }
 
-export interface SidebarProps {
-  recentChats: RecentChat[];
-}
-
 export interface PromptCardProps extends PromptCard {
   className?: string;
 }
 
 export interface ChatMessage {
-  id: string;
+  id: number;
+  chat: number;
+  user: string | null;
   content: string;
-  sender: 'user' | 'bot';
-  timestamp: string;
+  created_at: string;
+  is_system_message: boolean;
+  file: UploadedFile | File | null;
   userName?: string;
   avatarUrl?: string;
-  attachments?: UploadedFile[];
+
+  tokens_used: number;
 }
 
 export interface Chat {
   id: string;
-  messages: ChatMessage[];
+  name: string;
+  user: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ChatState {

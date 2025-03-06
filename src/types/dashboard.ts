@@ -5,10 +5,14 @@ export interface MetricCard {
 }
 
 export interface ActivityItem {
-  serialNo: number;
-  requestedAt: string;
-  activityType: string;
-  tokensDeducted: number;
+  id: number;
+  usage_date: string;
+  activity_type: string;
+  tokens_used: number;
+  description: string;
+  ai_response_document: string;
+  query: string;
+  user_id: string;
 }
 
 export interface TokenUsageTrend {

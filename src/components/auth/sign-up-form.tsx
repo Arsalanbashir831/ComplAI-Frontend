@@ -1,13 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -26,12 +30,14 @@ import { OAuthButtons } from './outh-buttons';
 
 const formSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters long'),
+    username: z
+      .string()
+      .min(2, 'First name must be at least 2 characters long'),
     email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters long'),
+    password: z.string().min(8, 'Password must be at least 8 characters long'),
     confirmPassword: z
       .string()
-      .min(6, 'Confirm Password must be at least 6 characters long'),
+      .min(8, 'Confirm Password must be at least 8 characters long'),
     acceptTerms: z.boolean(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -40,12 +46,15 @@ const formSchema = z
   });
 
 export function SignUpForm() {
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      username: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -53,10 +62,53 @@ export function SignUpForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Handle form submission
-    console.log(values);
-    router.push(ROUTES.VERIFY_EMAIL);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await apiCaller(
+        API_ROUTES.AUTH.SIGNUP,
+        'POST',
+        {
+          username: values.username,
+          email: values.email,
+          password: values.password,
+        },
+        {},
+        false,
+        'json'
+      );
+
+      if (response.status === 201) {
+        setSuccessMessage(
+          'Account created successfully! Please verify your email.'
+        );
+        form.reset();
+        await apiCaller(API_ROUTES.AUTH.RESEND_VERIFICATION, 'POST', {
+          email: values.email,
+        });
+        router.push(
+          `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup`
+        );
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          if (data.email) setError(data.email[0]);
+          else if (data.password) setError(data.password[0]);
+          else setError('Invalid input. Please check your details.');
+        } else if (status === 401) {
+          setError('Not Found Resources');
+        } else {
+          setError(data.message || 'An unexpected error occurred.');
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,15 +129,20 @@ export function SignUpForm() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Name Field */}
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {successMessage && (
+            <p className="text-green-500 text-sm">{successMessage}</p>
+          )}
+
+          {/* Username Field */}
           <FormField
             control={form.control}
-            name="name"
+            name="username"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <Input
-                    placeholder="Enter your full name"
+                    placeholder="Username"
                     startIcon={<User2 className="h-4 w-4" />}
                     {...field}
                   />
@@ -163,22 +220,6 @@ export function SignUpForm() {
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
-                  {/* <FormLabel htmlFor="agreeTerms">
-                    I agree to the{' '}
-                    <Link
-                      href={ROUTES.TERMS}
-                      className="text-primary hover:underline"
-                    >
-                      Terms of Service
-                    </Link>{' '}
-                    and{' '}
-                    <Link
-                      href={ROUTES.PRIVACY}
-                      className="text-primary hover:underline"
-                    >
-                      Privacy Policy
-                    </Link>
-                  </FormLabel> */}
                   <FormLabel htmlFor="acceptTerms" className="text-xs">
                     Remember me
                   </FormLabel>
@@ -194,8 +235,8 @@ export function SignUpForm() {
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full">
-            Sign up
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Signing up...' : 'Sign up'}
           </Button>
         </form>
       </Form>

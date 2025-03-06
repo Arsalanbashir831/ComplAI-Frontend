@@ -1,3 +1,5 @@
+'use client';
+
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 
 export default function ChatLayout({

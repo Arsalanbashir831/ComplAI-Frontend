@@ -1,15 +1,39 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { Plus, Trash2 } from 'lucide-react';
 
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 
-export function ChatHeader() {
+import { ConfirmationModal } from '../common/confirmation-modal';
+
+interface ChatHeaderProps {
+  currentChatId: string;
+}
+
+export function ChatHeader({ currentChatId }: ChatHeaderProps) {
+  const { deleteChat } = useChat();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
+  const handleDelete = async () => {
+    if (!currentChatId) return;
+    try {
+      await deleteChat(currentChatId);
+
+      router.push(ROUTES.CHAT);
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+    }
+  };
+
   return (
-    <header className="flex justify-end md:justify-between items-center py-4 md:px-4 border-b-gray-100 border-b-2 bottom-1">
+    <header className="flex justify-end md:justify-between items-center py-4 md:px-4 border-b-gray-100 border-b-2">
       {/* Logo Section */}
       <div className="items-center space-x-2 hidden md:flex">
         <Image src="/favicon.svg" alt="Compl-AI-v1" width={40} height={40} />
@@ -33,10 +57,21 @@ export function ChatHeader() {
           variant="ghost"
           className="text-gray-600 hover:text-gray-800 p-2 rounded-lg"
           aria-label="Delete"
+          onClick={() => setOpen(true)}
         >
           <Trash2 className="h-5 w-5" />
         </Button>
       </div>
+
+      <ConfirmationModal
+        isOpen={open}
+        onOpenChange={setOpen}
+        title="Delete Confirmation"
+        description="Are you sure you want to delete this chat? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDelete}
+      />
     </header>
   );
 }

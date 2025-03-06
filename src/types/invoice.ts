@@ -8,4 +8,5 @@ export interface Invoice {
   amount: number;
   plan: PlanType;
   status: InvoiceStatus;
+  downloadLink: string;
 }
