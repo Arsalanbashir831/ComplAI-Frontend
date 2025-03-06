@@ -1,8 +1,8 @@
+import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import apiCaller from '@/config/apiCaller';
