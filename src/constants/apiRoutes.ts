@@ -40,6 +40,7 @@ export const API_ROUTES = {
       '/api/billing/create-one-time-payment-intent/',
     INVOICES: '/api/billing/invoices/',
     CANCEL_AUTO_RENEW: '/api/billing/cancel-subscription/',
+    USER_SUBSCRIPTIONS: '/api/billing/detailed-subscription/',
   },
   TUTORIALS: {
     GET: '/api/videos/',

@@ -53,12 +53,15 @@ export function UserQueryModal({
             <p className="font-semibold">AI Response Document:</p>
             {activity.ai_response_document ? (
               <a
-                href={activity.ai_response_document}
+                href={
+                  process.env.NEXT_PUBLIC_BACKEND_URL +
+                  activity.ai_response_document
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 underline"
               >
-                ai_response.txt
+                {activity.ai_response_document.split('/').pop()}
               </a>
             ) : (
               'N/A'

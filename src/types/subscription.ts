@@ -21,3 +21,14 @@ export interface PaymentCard {
   lastFour: string;
   isDefault?: boolean;
 }
+
+export interface Subscription {
+  id: string;
+  status: 'active' | 'canceled' | 'incomplete' | 'past_due' | 'trialing';
+  start_date: string;
+  end_date: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  stripe_subscription_id: string;
+  stripe_customer_email: string;
+}

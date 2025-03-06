@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
@@ -13,8 +13,9 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import type { PaymentCard, Plan } from '@/types/subscription';
+import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
 import apiCaller from '@/config/apiCaller';
+import { formatDate } from '@/lib/utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
@@ -119,6 +120,18 @@ const fetchStripeCustomer = async (): Promise<{
   return response.data;
 };
 
+const fetchUserSubscriptions = async (): Promise<Subscription[]> => {
+  const response = await apiCaller(
+    API_ROUTES.BILLING.USER_SUBSCRIPTIONS,
+    'GET',
+    {},
+    {},
+    true,
+    'json'
+  );
+  return response.data;
+};
+
 export default function SubscriptionPage() {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
@@ -147,6 +160,22 @@ export default function SubscriptionPage() {
     queryFn: fetchStripeCustomer,
     staleTime: 1000 * 60 * 5,
   });
+
+  // New query to fetch user subscriptions data
+  const { data: userSubscriptions, isLoading: subscriptionsLoading } = useQuery(
+    {
+      queryKey: ['userSubscriptions'],
+      queryFn: fetchUserSubscriptions,
+      staleTime: 1000 * 60 * 5,
+    }
+  );
+
+  // Log the subscriptions data when it becomes available
+  useEffect(() => {
+    if (userSubscriptions) {
+      console.log('User Subscriptions:', userSubscriptions);
+    }
+  }, [userSubscriptions]);
 
   const purchaseTokensMutation = useMutation({
     mutationFn: async () => {
@@ -223,11 +252,12 @@ export default function SubscriptionPage() {
         ...plan,
         buttonAction: () => subscribeMutation.mutate(),
       };
-    } else
+    } else {
       return {
         ...plan,
         buttonAction: () => {},
       };
+    }
   });
 
   const handleAutoRenewChange = useMutation({
@@ -271,7 +301,7 @@ export default function SubscriptionPage() {
         <div className="flex flex-col justify-center flex-1 w-full bg-white rounded-xl p-8 space-y-8 mt-3">
           <div>
             <h1 className="text-2xl font-semibold mb-6">Plans</h1>
-            {plansLoading ? (
+            {plansLoading || subscriptionsLoading ? (
               <LoadingSpinner />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -292,8 +322,18 @@ export default function SubscriptionPage() {
 
           <SubscriptionInfo
             plan={user?.subscription_type || 'Free'}
-            startDate="10-01-2024"
-            renewalDate="10-02-2024"
+            startDate={
+              userSubscriptions?.slice(-1)[0]?.start_date
+                ? formatDate(userSubscriptions?.slice(-1)[0]?.start_date)
+                : 'N/A'
+            }
+            renewalDate={
+              userSubscriptions?.slice(-1)[0]?.current_period_end
+                ? formatDate(
+                    userSubscriptions?.slice(-1)[0]?.current_period_end
+                  )
+                : 'N/A'
+            }
             autoRenew={autoRenew}
             onAutoRenewChange={handleAutoRenewChange.mutate}
           />

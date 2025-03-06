@@ -87,7 +87,7 @@ export function ActivityTable({
                   Query Mode
                 </TabsTrigger>
                 <TabsTrigger
-                  value="Document Upload"
+                  value="document"
                   className="text-[#667085] data-[state=active]:bg-[#0F9B5A1F] data-[state=active]:text-[#09B975]"
                 >
                   Document Upload

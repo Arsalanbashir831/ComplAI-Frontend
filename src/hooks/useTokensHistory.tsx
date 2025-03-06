@@ -30,7 +30,19 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
     true,
     'json'
   );
-  return response.data;
+  return response.data.map((item: ActivityItem) => ({
+    ...item,
+    activity_type:
+      item.activity_type.includes('.docx') ||
+      item.activity_type.includes('.pdf')
+        ? 'document'
+        : item.activity_type,
+    ai_response_document:
+      item.activity_type.includes('.docx') ||
+      item.activity_type.includes('.pdf')
+        ? item.activity_type
+        : null,
+  }));
 };
 
 const useTokensHistory = (dateRange: DateRange) => {
