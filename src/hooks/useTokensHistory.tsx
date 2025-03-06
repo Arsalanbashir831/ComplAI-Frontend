@@ -2,8 +2,8 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 import { DateRange } from 'react-day-picker';
 
-import { ActivityItem } from '@/types/dashboard';
 import apiCaller from '@/config/apiCaller';
+import { ActivityItem } from '@/types/dashboard';
 
 const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
   if (!dateRange?.from || !dateRange?.to)
@@ -23,7 +23,7 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
   }&end_date=${dateRange.to.toISOString().split('T')[0]}`;
 
   const response = await apiCaller(
-    `${API_ROUTES.USER.GET_TOKENS_HISTORY}${queryParams}`,
+    `${API_ROUTES.CHAT.GET_INTERACTION_HISTORY}${queryParams}`,
     'GET',
     {},
     {},

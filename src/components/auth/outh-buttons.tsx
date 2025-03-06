@@ -1,8 +1,8 @@
-import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import apiCaller from '@/config/apiCaller';
@@ -18,7 +18,7 @@ export function OAuthButtons() {
       const apiResponse = await apiCaller(
         API_ROUTES.AUTH.GOOGLE_LOGIN,
         'POST',
-        { token: googleToken },
+        { id_token: googleToken },
         {},
         false,
         'json'
