@@ -1,12 +1,11 @@
-'use client';
-
 import Image from 'next/image';
+import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn, formatDate } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn, formatDate } from '@/lib/utils';
 
 import DisplayUsername from '../common/display-username';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -18,14 +17,87 @@ interface ChatBubbleProps {
   user?: User | null;
 }
 
+// Define a type for the props of our code component override
+interface CodeProps {
+  inline?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}
+
 export function ChatBubble({ message, user }: ChatBubbleProps) {
   const isBot = message.is_system_message;
+
+  // Customized markdown components with proper types.
+  const markdownComponents: Components = {
+    h1: ({  ...props }) => (
+      <h1 className="mt-6 mb-4 text-3xl font-bold tracking-wide" {...props} />
+    ),
+    h2: ({ ...props }) => (
+      <h2 className="mt-5 mb-3 text-2xl font-bold tracking-wide" {...props} />
+    ),
+    h3: ({  ...props }) => (
+      <h3 className="mt-4 mb-2 text-xl font-semibold tracking-wide" {...props} />
+    ),
+    hr: ({  ...props }) => (
+      <hr className="my-4 border-t border-gray-300" {...props} />
+    ),
+    p: ({  ...props }) => (
+      <p className="mt-2 mb-2 text-lg leading-relaxed tracking-normal" {...props} />
+    ),
+    ul: ({ ...props }) => (
+      <ul className="mt-2 mb-2 ml-6 list-disc text-lg leading-relaxed tracking-normal" {...props} />
+    ),
+    ol: ({  ...props }) => (
+      <ol className="mt-2 mb-2 ml-6 list-decimal text-lg leading-relaxed tracking-normal" {...props} />
+    ),
+    li: ({  ...props }) => (
+      <li className="mb-1 text-lg leading-relaxed tracking-normal" {...props} />
+    ),
+    blockquote: ({ ...props }) => (
+      <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4 text-lg leading-relaxed tracking-normal" {...props} />
+    ),
+    code: ({  inline, className, children, ...props }: CodeProps) => {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline ? (
+        <pre
+          className="bg-gray-100 p-4 my-4 overflow-auto rounded text-lg leading-relaxed"
+          {...props}
+        >
+          <code className={match ? `language-${match[1]}` : ''}>{children}</code>
+        </pre>
+      ) : (
+        <code className="bg-gray-100 p-1 rounded text-lg" {...props}>
+          {children}
+        </code>
+      );
+    },
+    table: ({  ...props }) => (
+      <table className="min-w-full border-collapse my-4 text-md" {...props} />
+    ),
+    thead: ({  ...props }) => (
+      <thead className="bg-blue-800" {...props} />
+    ),
+    tbody: ({  ...props }) => (
+      <tbody className="bg-white" {...props} />
+    ),
+    tr: ({  ...props }) => (
+      <tr className="border-b" {...props} />
+    ),
+    th: ({  ...props }) => (
+      <th className="px-4 py-2 text-left font-medium text-white" {...props} />
+    ),
+    td: ({ ...props }) => (
+      <td className="px-4 py-2 text-black" {...props} />
+    )
+  };
 
   return (
     <div className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}>
       <div
         className={cn(
-          `flex flex-col gap-2 rounded-2xl py-4 items-center justify-center ${isBot ? 'px-0' : 'px-4 md:px-8'} md:max-w-[66.666667%]`,
+          `flex flex-col gap-2 rounded-2xl py-4 items-center justify-center ${
+            isBot ? 'px-0' : 'px-4 md:px-8'
+          } md:max-w-[66.666667%]`,
           isBot
             ? 'bg-white'
             : 'bg-blue-light text-white border-gray-light border-2 shadow-md'
@@ -33,38 +105,28 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
       >
         <div className="flex items-start gap-3">
           <Image
-            src={
-              isBot ? '/favicon.svg' : user?.profile_picture || '/avatar.png'
-            }
+            src={isBot ? '/favicon.svg' : user?.profile_picture || '/avatar.png'}
             alt={isBot ? 'Compt-AI' : user?.username || 'User'}
             width={isBot ? 20 : 30}
             height={isBot ? 20 : 30}
             className="rounded-full w-8 h-8"
           />
-
-          {/* Content Section */}
           <div className="flex flex-col gap-2">
-            {/* User Message */}
             {!isBot && (
               <>
-                {/* User Name and Timestamp */}
                 <div className="flex flex-col md:flex-row md:gap-2 md:items-center">
-                  <span className="text-sm text-black font-medium md:border-r border-gray md:pr-2">
+                  <span className="text-lg text-black font-medium md:border-r border-gray md:pr-2">
                     <DisplayUsername />
                   </span>
-                  <span className="text-black text-xs">
+                  <span className="text-black text-sm">
                     {formatDate(message.created_at)}
                   </span>
                 </div>
-
-                {/* Message Content */}
-                <div className="text-sm break-words text-black whitespace-pre-line text-justify">
-                  <Markdown remarkPlugins={[remarkGfm]}>
+                <div className="break-words text-black text-justify">
+                  <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                     {message.content}
                   </Markdown>
                 </div>
-
-                {/* Attachments */}
                 {message.file && (
                   <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
                     <div className="flex w-max h-14 gap-2">
@@ -81,18 +143,13 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
                 )}
               </>
             )}
-
-            {/* Bot Message */}
             {isBot && (
               <>
-                {/* Message Content */}
-                <div className="text-sm text-black text-justify">
-                  <Markdown remarkPlugins={[remarkGfm]}>
+                <div className="text-black text-justify">
+                  <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                     {message.content}
                   </Markdown>
                 </div>
-
-                {/* Attachments */}
                 {message.file && (
                   <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
                     <div className="flex w-max h-14 gap-2">
@@ -109,8 +166,6 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
                 )}
               </>
             )}
-
-            {/* Copy Button */}
             <CopyButton content={message.content} />
           </div>
         </div>
