@@ -3,9 +3,9 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn, formatDate } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn, formatDate } from '@/lib/utils';
 
 import DisplayUsername from '../common/display-username';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -113,24 +113,24 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
         )}
       >
         <div className="flex items-start gap-3">
-        {isBot ? (
-  <Image
-    src="/favicon.svg"
-    alt="Compt-AI"
-    width={40}
-    height={40}
-    className="rounded-full object-cover"
-  />
-) : (
-  <div className="relative w-8 h-8">
-    <Image
-      src={user?.profile_picture || '/avatar.png'}
-      alt={user?.username || 'User'}
-      fill
-      className="rounded-full object-cover"
-    />
-  </div>
-)}
+          {isBot ? (
+            <Image
+              src="/favicon.svg"
+              alt="Compt-AI"
+              width={40}
+              height={40}
+              className="rounded-full object-cover"
+            />
+          ) : (
+            <div className="relative w-8 h-8">
+              <Image
+                src={user?.profile_picture || '/avatar.png'}
+                alt={user?.username || 'User'}
+                fill
+                className="rounded-full object-cover"
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             {!isBot && (

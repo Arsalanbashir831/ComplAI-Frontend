@@ -1,8 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useUserContext } from '@/contexts/user-context';
-import Link from 'next/link';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
