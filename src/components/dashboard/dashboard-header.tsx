@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useUserContext } from '@/contexts/user-context';
+import Link from 'next/link';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
@@ -33,14 +33,16 @@ export default function DashboardHeader({
           </Badge>
         )}
       </div>
-      {/* test */}
       <div>
         <Link
           href={ROUTES.PROFILE}
           className="flex items-center gap-2 hover:bg-gray-300 p-2 rounded-md transition-all duration-200"
         >
-          <Avatar className="transition-all duration-200 transform hover:scale-105">
-            <AvatarImage src={user?.profile_picture || '/user.png'} />
+          <Avatar className="w-10 h-10 transition-all duration-200 transform hover:scale-105">
+            <AvatarImage
+              src={user?.profile_picture || '/user.png'}
+              className="object-cover rounded-full"
+            />
             <AvatarFallback>JW</AvatarFallback>
           </Avatar>
           <div className="hidden md:flex flex-col">

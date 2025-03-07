@@ -1,15 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
-import { useUserContext } from '@/contexts/user-context'; // Ensure your context provides both user and setUser
+import { useUserContext } from '@/contexts/user-context';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -17,6 +15,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import apiCaller from '@/config/apiCaller';
+import { cn } from '@/lib/utils';
 
 import {
   ProfileFormFields,
@@ -142,14 +142,12 @@ export default function ProfileForm() {
       className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto"
     >
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-        {/* Profile Image Container */}
-        <div className="relative w-16 h-16 group overflow-hidden rounded-full">
+        {/* Responsive Profile Image Container */}
+        <div className="relative aspect-square w-16 md:w-20 lg:w-24 group overflow-hidden rounded-full">
           <Image
-            // Use the updated image from user context if available
             src={user?.profile_picture || '/user.png'}
             alt="Profile Avatar"
-            width={64}
-            height={64}
+            fill
             className="rounded-full object-cover"
           />
           {/* Overlay shown on hover */}
