@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
@@ -11,16 +10,17 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDate } from '@/lib/utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import apiCaller from '@/config/apiCaller';
+import { formatDate, formatDateLocal } from '@/lib/utils';
+import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -66,6 +66,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
   if (products && products.length > 0) {
     const product = products[0];
     plansArray.push({
+      id: product.id,
       type: 'free',
       title: product.name,
       price: `£${(product.price / 100).toFixed(0)}`,
@@ -79,6 +80,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
   if (subscription_plans && subscription_plans.length > 0) {
     const subPlan = subscription_plans[0];
     plansArray.push({
+      id: subPlan.id,
       type: 'subscription',
       title: subPlan.name,
       price: `£${(subPlan.price / 100).toFixed(0)}`,
@@ -91,6 +93,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
   }
 
   plansArray.push({
+    id:2,
     type: 'enterprise',
     title: 'Enterprise',
     price: '£POA',
@@ -178,7 +181,7 @@ export default function SubscriptionPage() {
   }, [userSubscriptions]);
 
   const purchaseTokensMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (productId: number) => {
       let paymentMethodId: string | undefined;
       const defaultCard = paymentCards.find((card) => card.isDefault);
       if (defaultCard) {
@@ -194,7 +197,7 @@ export default function SubscriptionPage() {
       const response = await apiCaller(
         API_ROUTES.BILLING.CREATE_ONE_TIME_PAYMENT_INTENT,
         'POST',
-        { product_id: 2, payment_method_id: paymentMethodId },
+        { product_id: productId, payment_method_id: paymentMethodId },
         {},
         true,
         'json'
@@ -210,7 +213,7 @@ export default function SubscriptionPage() {
   });
 
   const subscribeMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (subscriptionPlanId: number) => {
       const paymentMethodId = stripeCustomer?.default_payment_method;
 
       if (!paymentMethodId) {
@@ -220,7 +223,7 @@ export default function SubscriptionPage() {
         API_ROUTES.BILLING.SUBSCRIBE,
         'POST',
         {
-          subscription_plan_id: 2,
+          subscription_plan_id: subscriptionPlanId,
           payment_method_id: paymentMethodId,
         },
         {},
@@ -245,12 +248,12 @@ export default function SubscriptionPage() {
     if (plan.type === 'free') {
       return {
         ...plan,
-        buttonAction: () => purchaseTokensMutation.mutate(),
+        buttonAction: () => purchaseTokensMutation.mutate(plan.id),
       };
     } else if (plan.type === 'subscription') {
       return {
         ...plan,
-        buttonAction: () => subscribeMutation.mutate(),
+        buttonAction: () => subscribeMutation.mutate(plan.id),
       };
     } else {
       return {
@@ -324,7 +327,7 @@ export default function SubscriptionPage() {
             plan={user?.subscription_type || 'Free'}
             startDate={
               userSubscriptions?.slice(-1)[0]?.start_date
-                ? formatDate(userSubscriptions?.slice(-1)[0]?.start_date)
+                ? formatDateLocal(userSubscriptions.slice(-1)[0].start_date)
                 : 'N/A'
             }
             renewalDate={
