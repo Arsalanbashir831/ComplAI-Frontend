@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
@@ -11,16 +10,17 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDate } from '@/lib/utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import apiCaller from '@/config/apiCaller';
+import { formatDate } from '@/lib/utils';
+import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -220,7 +220,7 @@ export default function SubscriptionPage() {
         API_ROUTES.BILLING.SUBSCRIBE,
         'POST',
         {
-          subscription_plan_id: 1,
+          subscription_plan_id: 2,
           payment_method_id: paymentMethodId,
         },
         {},
