@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useLoader } from '@/contexts/loader-context';
+import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
 
@@ -14,6 +15,7 @@ import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
+import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
@@ -37,20 +39,18 @@ export function MessageInput({
   const router = useRouter();
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { isLoading } = useLoader();
+  const { user } = useUserContext();
+
   // Use global mutating state as our "isSending" indicator.
   const isSending = useIsMutating() > 0;
 
   // Main message text.
   const [message, setMessage] = useState('');
-  // File upload modal state.
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  // Track uploaded files.
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isUplaodModalOpen, setIsUplaodModalOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  // Show/hide the mention menu.
   const [showMentionMenu, setShowMentionMenu] = useState(false);
-  // The currently selected mention type (if any).
   const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
-  // For keyboard navigation within the menu.
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
 
   const maxChars = 10000;
@@ -127,12 +127,17 @@ export function MessageInput({
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
+    setIsUplaodModalOpen(false);
   };
 
   const handleSendMessage = async () => {
     if (isSending) return;
     if (!message.trim() && uploadedFiles.length === 0) return;
+
+    if ((user?.tokens ?? 0) <= 0) {
+      setIsUpgradeModalOpen(true);
+      return;
+    }
 
     try {
       let currentChatId = chatId;
@@ -357,7 +362,7 @@ export function MessageInput({
               <Button
                 variant={uploadedFiles.length > 0 ? 'default' : 'ghost'}
                 size={uploadedFiles.length > 0 ? 'icon' : 'default'}
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => setIsUplaodModalOpen(true)}
                 disabled={isSending}
                 className={cn(
                   uploadedFiles.length > 0
@@ -400,11 +405,21 @@ export function MessageInput({
       </div>
 
       <UploadModal
-        isOpen={isModalOpen}
+        isOpen={isUplaodModalOpen}
         uploadedFiles={uploadedFiles}
         setUploadedFiles={setUploadedFiles}
         onClose={handleCloseModal}
         onUpload={handleUpload}
+      />
+
+      <ConfirmationModal
+        isOpen={isUpgradeModalOpen}
+        onOpenChange={setIsUpgradeModalOpen}
+        title="Out of Tokens"
+        description="You are out of tokens. Would you like to upgrade your account?"
+        confirmText="Upgrade"
+        cancelText="Cancel"
+        onConfirm={() => router.push(ROUTES.SUPSCRIPTION)}
       />
     </div>
   );
