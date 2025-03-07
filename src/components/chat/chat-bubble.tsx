@@ -3,9 +3,9 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn, formatDate } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn, formatDate } from '@/lib/utils';
 
 import DisplayUsername from '../common/display-username';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -29,41 +29,58 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
 
   // Customized markdown components with proper types.
   const markdownComponents: Components = {
-    h1: ({  ...props }) => (
+    h1: ({ ...props }) => (
       <h1 className="mt-6 mb-4 text-3xl font-bold tracking-wide" {...props} />
     ),
     h2: ({ ...props }) => (
       <h2 className="mt-5 mb-3 text-2xl font-bold tracking-wide" {...props} />
     ),
-    h3: ({  ...props }) => (
-      <h3 className="mt-4 mb-2 text-xl font-semibold tracking-wide" {...props} />
+    h3: ({ ...props }) => (
+      <h3
+        className="mt-4 mb-2 text-xl font-semibold tracking-wide"
+        {...props}
+      />
     ),
-    hr: ({  ...props }) => (
+    hr: ({ ...props }) => (
       <hr className="my-4 border-t border-gray-300" {...props} />
     ),
-    p: ({  ...props }) => (
-      <p className="mt-2 mb-2 text-lg leading-relaxed tracking-normal" {...props} />
+    p: ({ ...props }) => (
+      <p
+        className="mt-2 mb-2 text-lg leading-relaxed tracking-normal"
+        {...props}
+      />
     ),
     ul: ({ ...props }) => (
-      <ul className="mt-2 mb-2 ml-6 list-disc text-lg leading-relaxed tracking-normal" {...props} />
+      <ul
+        className="mt-2 mb-2 ml-6 list-disc text-lg leading-relaxed tracking-normal"
+        {...props}
+      />
     ),
-    ol: ({  ...props }) => (
-      <ol className="mt-2 mb-2 ml-6 list-decimal text-lg leading-relaxed tracking-normal" {...props} />
+    ol: ({ ...props }) => (
+      <ol
+        className="mt-2 mb-2 ml-6 list-decimal text-lg leading-relaxed tracking-normal"
+        {...props}
+      />
     ),
-    li: ({  ...props }) => (
+    li: ({ ...props }) => (
       <li className="mb-1 text-lg leading-relaxed tracking-normal" {...props} />
     ),
     blockquote: ({ ...props }) => (
-      <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4 text-lg leading-relaxed tracking-normal" {...props} />
+      <blockquote
+        className="border-l-4 border-gray-300 pl-4 italic my-4 text-lg leading-relaxed tracking-normal"
+        {...props}
+      />
     ),
-    code: ({  inline, className, children, ...props }: CodeProps) => {
+    code: ({ inline, className, children, ...props }: CodeProps) => {
       const match = /language-(\w+)/.exec(className || '');
       return !inline ? (
         <pre
           className="bg-gray-100 p-4 my-4 overflow-auto rounded text-lg leading-relaxed"
           {...props}
         >
-          <code className={match ? `language-${match[1]}` : ''}>{children}</code>
+          <code className={match ? `language-${match[1]}` : ''}>
+            {children}
+          </code>
         </pre>
       ) : (
         <code className="bg-gray-100 p-1 rounded text-lg" {...props}>
@@ -71,24 +88,16 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
         </code>
       );
     },
-    table: ({  ...props }) => (
+    table: ({ ...props }) => (
       <table className="min-w-full border-collapse my-4 text-md" {...props} />
     ),
-    thead: ({  ...props }) => (
-      <thead className="bg-blue-800" {...props} />
-    ),
-    tbody: ({  ...props }) => (
-      <tbody className="bg-white" {...props} />
-    ),
-    tr: ({  ...props }) => (
-      <tr className="border-b" {...props} />
-    ),
-    th: ({  ...props }) => (
+    thead: ({ ...props }) => <thead className="bg-blue-800" {...props} />,
+    tbody: ({ ...props }) => <tbody className="bg-white" {...props} />,
+    tr: ({ ...props }) => <tr className="border-b" {...props} />,
+    th: ({ ...props }) => (
       <th className="px-4 py-2 text-left font-medium text-white" {...props} />
     ),
-    td: ({ ...props }) => (
-      <td className="px-4 py-2 text-black" {...props} />
-    )
+    td: ({ ...props }) => <td className="px-4 py-2 text-black" {...props} />,
   };
 
   return (
@@ -105,7 +114,9 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
       >
         <div className="flex items-start gap-3">
           <Image
-            src={isBot ? '/favicon.svg' : user?.profile_picture || '/avatar.png'}
+            src={
+              isBot ? '/favicon.svg' : user?.profile_picture || '/avatar.png'
+            }
             alt={isBot ? 'Compt-AI' : user?.username || 'User'}
             width={isBot ? 20 : 30}
             height={isBot ? 20 : 30}
@@ -123,7 +134,10 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
                   </span>
                 </div>
                 <div className="break-words text-black text-justify">
-                  <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  <Markdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                  >
                     {message.content}
                   </Markdown>
                 </div>
@@ -146,7 +160,10 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
             {isBot && (
               <>
                 <div className="text-black text-justify">
-                  <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  <Markdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                  >
                     {message.content}
                   </Markdown>
                 </div>

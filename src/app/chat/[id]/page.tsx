@@ -1,13 +1,13 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
+import type { ChatMessage } from '@/types/chat';
+import { useChat, useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
-import { useChat, useChatMessages } from '@/hooks/useChat';
-import type { ChatMessage } from '@/types/chat';
 
 // Type guard to check if value is a File
 function isFile(value: unknown): value is File {
