@@ -58,7 +58,6 @@ export function formatDate(inputDate: string): string {
     });
   }
 
-
   // Return full date and time for earlier days
   return date.toLocaleString('en-US', {
     year: 'numeric',
@@ -73,11 +72,23 @@ export const formatDateLocal = (dateString: string): string => {
   const date = new Date(dateString);
   const day = date.getDate();
   const year = date.getFullYear();
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   const month = monthNames[date.getMonth()];
   return `${day} ${month} ${year}`;
 };
-
 
 export const downloadDocument = (
   binaryData: string,

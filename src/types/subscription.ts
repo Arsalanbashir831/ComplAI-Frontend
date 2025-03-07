@@ -1,7 +1,7 @@
 export type PlanType = 'free' | 'subscription' | 'enterprise';
 
 export interface Plan {
-  id:number;
+  id: number;
   type: PlanType;
   title: string;
   price: string;
