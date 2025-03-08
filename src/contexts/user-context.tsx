@@ -1,8 +1,9 @@
 'use client';
 
-import useUserData from '@/hooks/useUserData';
-import { User } from '@/types/user';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+
+import { User } from '@/types/user';
+import useUserData from '@/hooks/useUserData';
 
 interface UserContextType {
   user: User | null;
@@ -29,7 +30,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, [fetchedUser]);
 
   return (
-    <UserContext.Provider value={{ user, loading: isLoading, setUser, refresh: refetch }}>
+    <UserContext.Provider
+      value={{ user, loading: isLoading, setUser, refresh: refetch }}
+    >
       {children}
     </UserContext.Provider>
   );

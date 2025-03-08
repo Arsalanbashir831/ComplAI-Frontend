@@ -1,9 +1,9 @@
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
 import { LoaderProvider } from '@/contexts/loader-context';
 import { UserProvider } from '@/contexts/user-context';
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
-import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
 
 import { Toaster } from '@/components/ui/sonner';
 
@@ -28,7 +28,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans bg-background text-foreground ${poppins}`}>
-    
         <QueryProvider>
           <AuthProvider>
             <LoaderProvider>
@@ -37,7 +36,6 @@ export default function RootLayout({
             </LoaderProvider>
           </AuthProvider>
         </QueryProvider>
-    
       </body>
     </html>
   );

@@ -2,8 +2,8 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 import { DateRange } from 'react-day-picker';
 
-import apiCaller from '@/config/apiCaller';
 import { ActivityItem } from '@/types/dashboard';
+import apiCaller from '@/config/apiCaller';
 
 const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
   if (!dateRange?.from || !dateRange?.to)
@@ -52,7 +52,6 @@ const useTokensHistory = (dateRange: DateRange) => {
     staleTime: 1000 * 60 * 5,
     retry: 1,
     enabled: !!dateRange?.from && !!dateRange?.to,
-    
   });
 };
 

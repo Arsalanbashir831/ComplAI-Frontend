@@ -1,13 +1,15 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import apiCaller from '@/config/apiCaller';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -15,8 +17,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
 
 import {
   ProfileFormFields,
@@ -26,7 +26,7 @@ import {
 
 export default function ProfileForm() {
   // Access both the current user and the setUser function from the context
-  const { user, setUser , refresh } = useUserContext();
+  const { user, setUser, refresh } = useUserContext();
 
   const [isEditable, setIsEditable] = useState(false);
   const [showUserId, setShowUserId] = useState(false);
@@ -77,7 +77,7 @@ export default function ProfileForm() {
     };
 
     fetchProfile();
-  }, [reset,refresh]);
+  }, [reset, refresh]);
 
   // Function to handle image uploads. This is now available regardless of edit mode.
   const handleImageUpload = async (
@@ -106,8 +106,8 @@ export default function ProfileForm() {
             file.name,
         };
       });
-        // Refresh user data to ensure context stays up-to-date
-        refresh();
+      // Refresh user data to ensure context stays up-to-date
+      refresh();
     } catch (error) {
       console.error('Failed to update profile image:', error);
     }
@@ -132,8 +132,8 @@ export default function ProfileForm() {
       );
       // Update the user context with the new data
       setUser(response.data);
-        // Refresh user data to ensure context stays up-to-date
-        refresh();
+      // Refresh user data to ensure context stays up-to-date
+      refresh();
       toggleEdit();
     } catch (error) {
       console.error('Failed to update profile:', error);

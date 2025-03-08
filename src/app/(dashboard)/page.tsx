@@ -3,13 +3,13 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 
+import apiCaller from '@/config/apiCaller';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { ActivityTable } from '@/components/dashboard/activity-table/activity-table';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { DonutChart } from '@/components/dashboard/donut-chart';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { TokenChart } from '@/components/dashboard/token-chart';
-import apiCaller from '@/config/apiCaller';
 
 type TokensSummary = {
   remaining_tokens: number;
@@ -39,7 +39,6 @@ export default function DashboardPage() {
     queryFn: fetchTokensSummary,
     staleTime: 1000 * 60 * 5,
     retry: 1,
-    
   });
 
   if (isLoadingTokensSummary) return <LoadingSpinner />;

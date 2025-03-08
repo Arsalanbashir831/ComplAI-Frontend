@@ -1,10 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useUserContext } from '@/contexts/user-context';
-import Link from 'next/link';
 
-import { useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 
@@ -17,7 +17,7 @@ export default function DashboardHeader({
   subtitle?: string;
   badgeTitle?: string;
 }) {
-  const { user,refresh } = useUserContext();
+  const { user, refresh } = useUserContext();
 
   useEffect(() => {
     refresh();
