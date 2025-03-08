@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
@@ -11,16 +10,17 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import apiCaller from '@/config/apiCaller';
+import { formatDateLocal } from '@/lib/utils';
+import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -169,7 +169,7 @@ export default function SubscriptionPage() {
   });
 
   // New query to fetch user subscriptions data
-  const { data: userSubscriptions, isLoading: subscriptionsLoading } = useQuery(
+  const { data: userSubscriptions, isLoading: subscriptionsLoading , refetch } = useQuery(
     {
       queryKey: ['userSubscriptions'],
       queryFn: fetchUserSubscriptions,
@@ -181,8 +181,9 @@ export default function SubscriptionPage() {
   useEffect(() => {
     if (userSubscriptions) {
       console.log('User Subscriptions:', userSubscriptions);
+      refetch()
     }
-  }, [userSubscriptions]);
+  }, [userSubscriptions,refetch]);
 
   const purchaseTokensMutation = useMutation({
     mutationFn: async (productId: number) => {
@@ -287,7 +288,7 @@ export default function SubscriptionPage() {
       refresh();
     },
     onError: () => {
-      toast.error('Unable to renew until the contract is over');
+      toast.error('Unable to renew until the Contract Period is over');
     },
   });
 

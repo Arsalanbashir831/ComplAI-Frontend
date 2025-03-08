@@ -22,7 +22,7 @@ export function SubscriptionInfo({
         <h2 className="text-2xl font-semibold">Current Subscription</h2>
         <div className="flex gap-2 text-sm">
           <span className="">Subscription:</span>
-          <span className="capitalize">{plan}</span>
+          <span className="capitalize">{plan==='subscription'?'Premium Plan':'Free'}</span>
         </div>
         <div className="flex gap-2 text-sm">
           <span className="">Started on:</span>
