@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 
-import type { Plan } from '@/types/subscription';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type { Plan } from '@/types/subscription';
 
 interface PricingCardProps {
   plan: Plan;
@@ -88,7 +88,7 @@ export function PricingCard({ plan, isActive, isDisbaled }: PricingCardProps) {
                   : 'border-gray-dark text-gray-dark'
               )}
             >
-              {plan.buttonText}
+              { plan.special && isDisbaled ?'Subscribed' : plan.buttonText}
             </Button>
           </div>
         </div>
