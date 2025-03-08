@@ -1,8 +1,9 @@
 // ChatContext.tsx
 'use client';
 
-import type { ChatMessage } from '@/types/chat';
 import { createContext, ReactNode, useContext, useState } from 'react';
+
+import type { ChatMessage } from '@/types/chat';
 
 interface ChatContextProps {
   messages: ChatMessage[];

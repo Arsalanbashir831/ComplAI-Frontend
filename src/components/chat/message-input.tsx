@@ -1,21 +1,21 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useChatContext } from '@/contexts/chat-context';
 import { useLoader } from '@/contexts/loader-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 
+import { UploadedFile } from '@/types/upload';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
 
-import { useChatContext } from '@/contexts/chat-context';
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -142,11 +142,11 @@ export function MessageInput({
       }
       const documentToSend =
         uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
-        if (isNewChat && currentChatId) {
-          setMessages([])
-          router.push(ROUTES.CHAT_ID(currentChatId));
-        }
-  
+      if (isNewChat && currentChatId) {
+        setMessages([]);
+        router.push(ROUTES.CHAT_ID(currentChatId));
+      }
+
       // Create a user message and add it to the context.
       const userMessage = {
         id: Date.now(),
@@ -175,7 +175,7 @@ export function MessageInput({
       setMessages((prev) => [...prev, placeholderAIMessage]);
 
       // If this is a new chat, redirect immediately.
-      
+
       // Now, send the message using internal handlers.
       if (!mentionType) {
         sendMessage({

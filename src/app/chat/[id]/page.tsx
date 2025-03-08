@@ -1,13 +1,13 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { useChatContext } from '@/contexts/chat-context';
 
+import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
-import { useChatContext } from '@/contexts/chat-context';
-import { useChatMessages } from '@/hooks/useChat';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
