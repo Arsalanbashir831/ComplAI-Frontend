@@ -1,24 +1,23 @@
 'use client';
 
-
 import { useRouter } from 'next/navigation';
-
-import { Card, CardContent } from '@/components/ui/card';
 import { useChatContext } from '@/contexts/chat-context';
+
+import type { PromptCardProps } from '@/types/chat';
 import { useChat } from '@/hooks/useChat';
 import useUserData from '@/hooks/useUserData';
-import type { PromptCardProps } from '@/types/chat';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function PromptCard({ icon, title, className }: PromptCardProps) {
   const { sendMessage, createChat } = useChat();
- const {setMessages}=  useChatContext()
- const {data:user} = useUserData()
+  const { setMessages } = useChatContext();
+  const { data: user } = useUserData();
   const router = useRouter();
- // const { setLoading } = useLoader();
+  // const { setLoading } = useLoader();
   const handleClick = async () => {
     const response = await createChat(title);
     const chatId = response.id;
-    setMessages([])
+    setMessages([]);
     router.push(`/chat/${chatId}`);
     //setLoading(true);
     // Create a user message and add it to the context.
@@ -48,8 +47,7 @@ export function PromptCard({ icon, title, className }: PromptCardProps) {
     };
     setMessages((prev) => [...prev, placeholderAIMessage]);
 
-
-     await sendMessage({
+    await sendMessage({
       chatId: chatId,
       content: title.trim(),
       onChunkUpdate: (chunk) => {
@@ -60,7 +58,6 @@ export function PromptCard({ icon, title, className }: PromptCardProps) {
         );
       },
     });
-    
   };
   return (
     <Card
