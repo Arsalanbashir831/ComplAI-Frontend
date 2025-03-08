@@ -1,12 +1,13 @@
-import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
 import { LoaderProvider } from '@/contexts/loader-context';
 import { UserProvider } from '@/contexts/user-context';
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
 
 import { Toaster } from '@/components/ui/sonner';
 
+import { ChatProvider } from '@/contexts/chat-context';
 import './globals.css';
 
 const poppins = Poppins({
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans bg-background text-foreground ${poppins}`}>
+      <ChatProvider>
         <QueryProvider>
           <AuthProvider>
             <LoaderProvider>
@@ -36,6 +38,7 @@ export default function RootLayout({
             </LoaderProvider>
           </AuthProvider>
         </QueryProvider>
+      </ChatProvider>
       </body>
     </html>
   );

@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -219,7 +219,7 @@ const useChat = () => {
                     }
                   }
 
-                  // If summary is received, finalize and resolve
+               
                   if (data.summary) {
                     const finalMessage: ChatMessage = {
                       id: data.summary.id,
@@ -306,3 +306,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

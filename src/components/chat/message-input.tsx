@@ -1,20 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useLoader } from '@/contexts/loader-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
+import { useChatContext } from '@/contexts/chat-context';
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -23,25 +24,19 @@ import { UploadModal } from './upload-modal';
 export function MessageInput({
   chatId = undefined,
   isNewChat = false,
-  onSendMessage,
-  noStreamSendMessage,
 }: {
-  chatId?: string | undefined;
+  chatId?: string;
   isNewChat?: boolean;
-  onSendMessage?: (content: string, document?: File) => Promise<void>;
-  noStreamSendMessage?: (
-    chatId: string,
-    content: string,
-    document?: File,
-    return_type?: string
-  ) => Promise<void>;
 }) {
   const router = useRouter();
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { isLoading } = useLoader();
   const { user } = useUserContext();
 
-  // Use global mutating state as our "isSending" indicator.
+  // Import chat messages context.
+  const { setMessages } = useChatContext();
+
+  // Global mutating state as our "isSending" indicator.
   const isSending = useIsMutating() > 0;
 
   // Main message text.
@@ -147,41 +142,65 @@ export function MessageInput({
       }
       const documentToSend =
         uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
+        if (isNewChat && currentChatId) {
+          setMessages([])
+          router.push(ROUTES.CHAT_ID(currentChatId));
+        }
+  
+      // Create a user message and add it to the context.
+      const userMessage = {
+        id: Date.now(),
+        chat: Number(currentChatId),
+        user: user?.username || 'You',
+        content: message.trim(),
+        created_at: new Date().toISOString(),
+        tokens_used: 0,
+        is_system_message: false,
+        file: documentToSend || null,
+      };
+      setMessages((prev) => [...prev, userMessage]);
 
-      if (onSendMessage) {
-        if (!mentionType) {
-          await onSendMessage(message.trim(), documentToSend);
-        } else if (noStreamSendMessage) {
-          await noStreamSendMessage(
-            currentChatId,
-            message.trim(),
-            documentToSend,
-            mentionType
+      // Create a placeholder AI message.
+      const aiMessageId = Date.now() + 1;
+      const placeholderAIMessage = {
+        id: aiMessageId,
+        chat: Number(currentChatId),
+        user: 'AI',
+        content: mentionType ? 'Creating File for you...' : '',
+        created_at: new Date().toISOString(),
+        tokens_used: 0,
+        is_system_message: true,
+        file: null,
+      };
+      setMessages((prev) => [...prev, placeholderAIMessage]);
+
+      // If this is a new chat, redirect immediately.
+      
+      // Now, send the message using internal handlers.
+      if (!mentionType) {
+        sendMessage({
+          chatId: currentChatId,
+          content: message.trim(),
+          document: documentToSend,
+          onChunkUpdate: (chunk) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessageId ? { ...msg, content: chunk } : msg
+              )
+            );
+          },
+        });
+      } else {
+        addMessageNoStream({
+          chatId: currentChatId,
+          content: message.trim(),
+          document: documentToSend,
+          return_type: mentionType,
+        }).then((response) => {
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === aiMessageId ? response : msg))
           );
-        }
-        setMessage('');
-        setUploadedFiles([]);
-        setMentionType(null);
-        return;
-      } else if (isNewChat && currentChatId) {
-        if (!mentionType) {
-          await sendMessage({
-            chatId: currentChatId,
-            content: message.trim(),
-            document: documentToSend,
-            onChunkUpdate: (chunk) => {
-              console.log(chunk);
-            },
-          });
-        } else {
-          await addMessageNoStream({
-            chatId: currentChatId,
-            content: message.trim(),
-            document: documentToSend,
-            return_type: mentionType,
-          });
-        }
-        router.push(ROUTES.CHAT_ID(currentChatId));
+        });
       }
 
       setMessage('');
@@ -197,10 +216,8 @@ export function MessageInput({
     const input = event.target.value;
     const mentionMatch = input.match(/@(\w*)$/);
     if (mentionMatch) {
-      // If there's text after @, show the menu.
       setShowMentionMenu(true);
       const query = mentionMatch[1].toLowerCase();
-      // Auto-select if an option exactly matches or starts with the query.
       const foundIndex = mentionOptions.findIndex((option) =>
         option.value.startsWith(query)
       );
@@ -213,15 +230,13 @@ export function MessageInput({
     }
   };
 
-  // Handle key events for both the textarea and mention menu.
+  // Handle key events for the textarea and mention menu.
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Close mention menu on Esc.
     if (event.key === 'Escape' && showMentionMenu) {
       event.preventDefault();
       setShowMentionMenu(false);
       return;
     }
-    // If the mention menu is open, handle navigation and selection.
     if (showMentionMenu) {
       if (event.key === 'ArrowDown') {
         event.preventDefault();
@@ -237,12 +252,10 @@ export function MessageInput({
       }
       if (event.key === 'Enter') {
         event.preventDefault();
-        // Check if the user typed a complete mention (e.g. @docx or @pdf).
         const match = message.match(/@(\w+)$/);
         let selectedOption: string;
         if (match) {
           const query = match[1].toLowerCase();
-          // If query exactly matches one of our options, use it.
           const found = mentionOptions.find((option) => option.value === query);
           selectedOption = found
             ? found.value
@@ -254,21 +267,16 @@ export function MessageInput({
         return;
       }
     }
-
-    // Remove mention pill with backspace if textarea is empty.
     if (event.key === 'Backspace' && message.length === 0 && mentionType) {
       event.preventDefault();
       setMentionType(null);
     }
-
-    // Allow Ctrl+Enter to send message.
     if (event.ctrlKey && event.key === 'Enter') {
       event.preventDefault();
       handleSendMessage();
     }
   };
 
-  // When an option is selected, remove the mention trigger text and set the mention.
   const handleSelectMention = (type: 'pdf' | 'docx') => {
     setMentionType(type);
     setMessage((prev) => prev.replace(/@(\w+)$/i, '').trim());
