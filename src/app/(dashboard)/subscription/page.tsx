@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 
 import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
 import apiCaller from '@/config/apiCaller';
-import { formatDate, formatDateLocal } from '@/lib/utils';
+import { formatDateLocal } from '@/lib/utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
@@ -337,13 +337,13 @@ export default function SubscriptionPage() {
                 ? formatDateLocal(userSubscriptions.slice(-1)[0].start_date)
                 : 'N/A'
             }
-            renewalDate={
-              userSubscriptions?.slice(-1)[0]?.current_period_end
-                ? formatDate(
-                    userSubscriptions?.slice(-1)[0]?.current_period_end
-                  )
-                : 'N/A'
-            }
+            // renewalDate={
+            //   userSubscriptions?.slice(-1)[0]?.current_period_end
+            //     ? formatDate(
+            //         userSubscriptions?.slice(-1)[0]?.current_period_end
+            //       )
+            //     : 'N/A'
+            // }
             autoRenew={autoRenew}
             onAutoRenewChange={handleAutoRenewChange.mutate}
           />

@@ -12,10 +12,27 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
       usage_date: '',
       activity_type: '',
       tokens_used: 0,
-      description: '',
-      user_id: '',
-      ai_response_document: '',
-      query: '',
+      user_id: 0,
+      ai_message: {
+        id: 0,
+        chat: 0,
+        content: '',
+        created_at: '',
+        file: '',
+        file_size: 0,
+        is_system_message: false,
+        user: '',
+      },
+      user_message: {
+        id: 0,
+        chat: 0,
+        content: '',
+        created_at: '',
+        file: '',
+        file_size: 0,
+        is_system_message: false,
+        user: '',
+      },
     };
 
   const queryParams = `?start_date=${
@@ -30,18 +47,10 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
     true,
     'json'
   );
+  console.log(response);
   return response.data.map((item: ActivityItem) => ({
     ...item,
-    activity_type:
-      item.activity_type.includes('.docx') ||
-      item.activity_type.includes('.pdf')
-        ? 'document'
-        : item.activity_type,
-    ai_response_document:
-      item.activity_type.includes('.docx') ||
-      item.activity_type.includes('.pdf')
-        ? item.activity_type
-        : null,
+    activity_type: item.activity_type,
   }));
 };
 

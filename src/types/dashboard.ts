@@ -9,10 +9,29 @@ export interface ActivityItem {
   usage_date: string;
   activity_type: string;
   tokens_used: number;
-  description: string;
-  ai_response_document: string;
-  query: string;
-  user_id: string;
+  user_id: number;
+
+  ai_message: {
+    id: number;
+    chat: number;
+    content: string;
+    created_at: string;
+    file: string | null;
+    file_size: number | null;
+    is_system_message: boolean;
+    user: string | null;
+  };
+
+  user_message: {
+    id: number;
+    chat: number;
+    content: string;
+    created_at: string;
+    file: string | null;
+    file_size: number | null;
+    is_system_message: boolean;
+    user: string;
+  };
 }
 
 export interface TokenUsageTrend {

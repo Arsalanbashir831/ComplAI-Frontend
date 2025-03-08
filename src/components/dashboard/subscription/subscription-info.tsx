@@ -4,7 +4,7 @@ import { Switch } from '@/components/ui/switch';
 interface SubscriptionInfoProps {
   plan: string;
   startDate: string;
-  renewalDate: string;
+  // renewalDate: string;
   autoRenew: boolean;
   onAutoRenewChange: () => void;
 }
@@ -12,7 +12,7 @@ interface SubscriptionInfoProps {
 export function SubscriptionInfo({
   plan,
   startDate,
-  renewalDate,
+  // renewalDate,
   autoRenew,
   onAutoRenewChange,
 }: SubscriptionInfoProps) {
@@ -29,8 +29,8 @@ export function SubscriptionInfo({
           <span>{startDate}</span>
         </div>
         <div className="flex gap-2 text-sm">
-          <span className="">Renews on:</span>
-          <span>{renewalDate}</span>
+          <span className="">Contract Period:</span>
+          <span>12 Months</span>
         </div>
       </div>
       <div className="flex items-center justify-between gap-4">
