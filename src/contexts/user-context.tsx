@@ -1,13 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-
-import { User } from '@/types/user';
 import useUserData from '@/hooks/useUserData';
+import { User } from '@/types/user';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface UserContextType {
   user: User | null;
+  loading: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  refresh: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -17,11 +18,10 @@ interface UserProviderProps {
 }
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
-  // Use your existing hook to fetch user data.
-  const { data: fetchedUser } = useUserData();
+  // Destructure refetch from your hook.
+  const { data: fetchedUser, isLoading, refetch } = useUserData();
   const [user, setUser] = useState<User | null>(null);
 
-  // Update the context state whenever new data is fetched.
   useEffect(() => {
     if (fetchedUser) {
       setUser(fetchedUser);
@@ -29,7 +29,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, [fetchedUser]);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, loading: isLoading, setUser, refresh: refetch }}>
       {children}
     </UserContext.Provider>
   );

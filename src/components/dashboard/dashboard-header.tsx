@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useUserContext } from '@/contexts/user-context';
+import Link from 'next/link';
 
+import { useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 
@@ -16,9 +17,14 @@ export default function DashboardHeader({
   subtitle?: string;
   badgeTitle?: string;
 }) {
-  const { user } = useUserContext();
+  const { user,refresh } = useUserContext();
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
   return (
-    <div className="flex items-start justify-between w-full ">
+    <div className="flex items-start justify-between w-full">
       <div className="flex items-center justify-center gap-5 ml-4 md:ml-0">
         <div className="flex flex-col gap-1">
           <h1 className="text-xl md:text-3xl font-bold">{title}</h1>

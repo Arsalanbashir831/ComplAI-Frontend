@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -10,7 +10,11 @@ import { ConfirmationModal } from './confirmation-modal';
 
 export default function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
-  const handleLogout = () => router.push(ROUTES.LOGIN);
+  const handleLogout = () => {
+    router.push(ROUTES.LOGIN);
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+  }
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <>
