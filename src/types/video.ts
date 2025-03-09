@@ -7,7 +7,7 @@ export interface Video {
   video_url: string;
   tags: string[];
   video_type: 'video' | 'tutorial';
-  pdf_file:string
+  pdf_file: string;
 }
 
 export interface VideoSection {
