@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useChatContext } from '@/contexts/chat-context';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import type { PromptCardProps } from '@/types/chat';
+import { Card, CardContent } from '@/components/ui/card';
 import { useChat, useChatMessages } from '@/hooks/useChat';
 import useUserData from '@/hooks/useUserData';
-import { Card, CardContent } from '@/components/ui/card';
+import type { PromptCardProps } from '@/types/chat';
 
 export function PromptCard({ icon, title, className }: PromptCardProps) {
   const { sendMessage, createChat } = useChat();
@@ -48,7 +48,7 @@ export function PromptCard({ icon, title, className }: PromptCardProps) {
       id: aiMessageId,
       chat: Number(newChatId),
       user: 'AI',
-      content: '',
+      content: 'loading',
       created_at: new Date().toISOString(),
       tokens_used: 0,
       is_system_message: true,
