@@ -1,9 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useUserContext } from '@/contexts/user-context';
-import Link from 'next/link';
-import { useEffect } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
@@ -52,11 +52,12 @@ export default function DashboardHeader({
             <AvatarFallback>{user}</AvatarFallback>
           </Avatar> */}
 
-
-
           <Avatar className="w-10 h-10 transition-all duration-200 transform hover:scale-105">
             {/* Avatar Image: Only loads if user.profile_picture is a valid string */}
-            <AvatarImage src={user?.profile_picture ?? undefined} alt={user?.username || 'User'} />
+            <AvatarImage
+              src={user?.profile_picture ?? undefined}
+              alt={user?.username || 'User'}
+            />
 
             {/* Fallback Avatar (Displays initials or default text) */}
             <AvatarFallback>
