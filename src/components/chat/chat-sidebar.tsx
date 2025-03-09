@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { useQuery } from '@tanstack/react-query';
@@ -12,12 +9,15 @@ import {
   MessageSquareText,
   Search,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import apiCaller from '@/config/apiCaller';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -27,9 +27,11 @@ import { Input } from '../ui/input';
 export function ChatSidebar() {
   const { chats } = useChat();
   const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname();
 
-  // Extract the active chat id from the pathname
+  // For client-side filtering
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const pathname = usePathname();
   const currentChatId = pathname.split('/').pop();
 
   type TokensSummary = {
@@ -69,6 +71,11 @@ export function ChatSidebar() {
   const progressValue =
     totalTokens > 0 ? ((totalTokens - remainingTokens) / totalTokens) * 100 : 0;
 
+  // 1. Create a filtered array from the local `chats` state using client-side search
+  const filteredChats = chats?.filter((chat) =>
+    chat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       <div
@@ -85,8 +92,11 @@ export function ChatSidebar() {
             <Logo href={ROUTES.CHAT} />
           </div>
           <div className="relative">
+            {/* 2. Update searchTerm as the user types. */}
             <Input
               placeholder="Search for chats"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               startIcon={<Search className="h-4 w-4 text-muted-foreground" />}
               endIcon={
                 <span className="flex gap-1 items-center bg-gray-light rounded text-black font-medium px-1.5 py-1 text-xs">
@@ -100,15 +110,18 @@ export function ChatSidebar() {
         </div>
 
         <div className="flex-1 overflow-auto px-6">
-          <h2 className="mb-4 text-lg font-semibold">Recent</h2>
+          {/* 3. Show heading based on searchTerm. */}
+          <h2 className="mb-4 text-lg font-semibold">
+            {searchTerm ? 'Search Results' : 'Recent'}
+          </h2>
           <div className="space-y-2">
-            {chats?.map((chat) => (
+            {/* 4. Map over `filteredChats` instead of `chats`. */}
+            {filteredChats?.map((chat) => (
               <Link href={ROUTES.CHAT_ID(chat.id)} key={chat.id}>
                 <Button
                   variant="ghost"
                   className={cn(
                     'w-full justify-start text-left font-normal text-gray-dark',
-                    // Add highlight class if the chat is active
                     currentChatId === String(chat.id) && 'bg-accent text-black'
                   )}
                 >

@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { useLoader } from '@/contexts/loader-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -36,6 +36,7 @@ export function MessageInput({
   const { isLoading } = useLoader();
   const { user } = useUserContext();
   const { refetch } = useChatMessages(currentChatId || '');
+ 
   // Import chat messages context.
   const { setMessages } = useChatContext();
 
@@ -50,7 +51,6 @@ export function MessageInput({
   const [showMentionMenu, setShowMentionMenu] = useState(false);
   const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
-
   const maxChars = 10000;
 
   // Define available mention options.
@@ -164,14 +164,14 @@ export function MessageInput({
         file: documentToSend || null,
       };
       setMessages((prev) => [...prev, userMessage]);
-
+      
       // Create a placeholder AI message.
       const aiMessageId = Date.now() + 1;
       const placeholderAIMessage = {
         id: aiMessageId,
         chat: Number(localChatId),
         user: 'AI',
-        content: mentionType ? 'Creating File for you...' : '',
+        content: mentionType ? 'loading' : 'loading',
         created_at: new Date().toISOString(),
         tokens_used: 0,
         is_system_message: true,
