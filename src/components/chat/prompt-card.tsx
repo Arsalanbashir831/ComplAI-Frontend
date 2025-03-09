@@ -1,12 +1,13 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useChatContext } from '@/contexts/chat-context';
+
+import type { PromptCardProps } from '@/types/chat';
 import { useChat, useChatMessages } from '@/hooks/useChat';
 import useUserData from '@/hooks/useUserData';
-import type { PromptCardProps } from '@/types/chat';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function PromptCard({ icon, title, className }: PromptCardProps) {
   const { sendMessage, createChat } = useChat();
@@ -16,7 +17,7 @@ export function PromptCard({ icon, title, className }: PromptCardProps) {
 
   // Store the newly created chat ID.
   const [chatId, setChatId] = useState<string>('');
-  
+
   // Initialize the hook with the current chat ID (or empty string if not set).
   const { refetch } = useChatMessages(chatId);
 

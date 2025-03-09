@@ -1,6 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
 import { useUserContext } from '@/contexts/user-context';
 import { ArrowDown } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
