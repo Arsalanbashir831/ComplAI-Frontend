@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { useLoader } from '@/contexts/loader-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -24,15 +24,17 @@ import { UploadModal } from './upload-modal';
 export function MessageInput({
   chatId = undefined,
   isNewChat = false,
+
 }: {
   chatId?: string;
   isNewChat?: boolean;
+  
 }) {
   const router = useRouter();
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { isLoading } = useLoader();
   const { user } = useUserContext();
-
+  const { refetch } = useChatMessages(chatId||'');
   // Import chat messages context.
   const { setMessages } = useChatContext();
 
@@ -128,12 +130,12 @@ export function MessageInput({
   const handleSendMessage = async () => {
     if (isSending) return;
     if (!message.trim() && uploadedFiles.length === 0) return;
-
+  
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
       return;
     }
-
+  
     try {
       let currentChatId = chatId;
       if (!currentChatId) {
@@ -146,7 +148,7 @@ export function MessageInput({
         setMessages([]);
         router.push(ROUTES.CHAT_ID(currentChatId));
       }
-
+  
       // Create a user message and add it to the context.
       const userMessage = {
         id: Date.now(),
@@ -159,7 +161,7 @@ export function MessageInput({
         file: documentToSend || null,
       };
       setMessages((prev) => [...prev, userMessage]);
-
+  
       // Create a placeholder AI message.
       const aiMessageId = Date.now() + 1;
       const placeholderAIMessage = {
@@ -173,12 +175,10 @@ export function MessageInput({
         file: null,
       };
       setMessages((prev) => [...prev, placeholderAIMessage]);
-
-      // If this is a new chat, redirect immediately.
-
-      // Now, send the message using internal handlers.
+  
       if (!mentionType) {
-        sendMessage({
+        // Await sendMessage so that we wait until all chunks are received.
+        await sendMessage({
           chatId: currentChatId,
           content: message.trim(),
           document: documentToSend,
@@ -191,18 +191,24 @@ export function MessageInput({
           },
         });
       } else {
-        addMessageNoStream({
+        // For non-streaming responses.
+        const response = await addMessageNoStream({
           chatId: currentChatId,
           content: message.trim(),
           document: documentToSend,
           return_type: mentionType,
-        }).then((response) => {
-          setMessages((prev) =>
-            prev.map((msg) => (msg.id === aiMessageId ? response : msg))
-          );
         });
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === aiMessageId ? response : msg))
+        );
       }
-
+  
+      // Once chunking/response is complete, refetch the chat messages and update the context.
+      const refetchResult = await refetch();
+      if (refetchResult.data) {
+        setMessages(refetchResult.data);
+      }
+  
       setMessage('');
       setUploadedFiles([]);
       setMentionType(null);
@@ -210,6 +216,8 @@ export function MessageInput({
       console.error('Error sending message:', error);
     }
   };
+  
+  
 
   // When the user types, check for a mention trigger.
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {

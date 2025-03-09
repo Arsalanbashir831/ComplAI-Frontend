@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -212,8 +212,8 @@ const useChat = () => {
                   const data = JSON.parse(chunk.trim());
 
                   // Live update UI with each chunk
-                  if (data.chunk && data.chunk.trim() !== '') {
-                    aiResponse += data.chunk;
+                  if (data.reasoning && data.reasoning.trim() !== '') {
+                    aiResponse += data.reasoning;
                     if (onChunkUpdate) {
                       onChunkUpdate(aiResponse);
                     }
@@ -250,6 +250,7 @@ const useChat = () => {
       queryClient.invalidateQueries({
         queryKey: ['chatMessages', variables.chatId],
       });
+      
     },
   });
 
@@ -305,3 +306,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+
