@@ -1,5 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { useQuery } from '@tanstack/react-query';
@@ -9,15 +12,12 @@ import {
   MessageSquareText,
   Search,
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 
+import apiCaller from '@/config/apiCaller';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import apiCaller from '@/config/apiCaller';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -127,7 +127,9 @@ export function ChatSidebar() {
         <div className="p-6 pb-4">
           <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative z-10">
             <h3 className="mb-1 font-semibold text-xs">
-            {progressValue > 80 ?'Daily query limit is almost reached':'Here you can track your token usage'}  
+              {progressValue > 80
+                ? 'Daily query limit is almost reached'
+                : 'Here you can track your token usage'}
             </h3>
             <Progress
               value={progressValue}
