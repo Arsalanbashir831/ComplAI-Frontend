@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { useLoader } from '@/contexts/loader-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -22,17 +22,18 @@ import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
 
 export function MessageInput({
-  chatId = undefined,
+  chatId: propChatId = undefined,
   isNewChat = false,
 }: {
   chatId?: string;
   isNewChat?: boolean;
 }) {
   const router = useRouter();
+  const [currentChatId, setCurrentChatId] = useState<string | undefined>(propChatId);
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { isLoading } = useLoader();
   const { user } = useUserContext();
-  const { refetch } = useChatMessages(chatId || '');
+  const { refetch } = useChatMessages(currentChatId || '');
   // Import chat messages context.
   const { setMessages } = useChatContext();
 
@@ -135,22 +136,24 @@ export function MessageInput({
     }
 
     try {
-      let currentChatId = chatId;
-      if (!currentChatId) {
+      let localChatId = currentChatId;
+      if (!localChatId) {
+        // Create a new chat and update currentChatId state.
         const response = await createChat(message.trim());
-        currentChatId = response.id;
+        localChatId = response.id;
+        setCurrentChatId(localChatId);
       }
       const documentToSend =
         uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
-      if (isNewChat && currentChatId) {
+      if (isNewChat && localChatId) {
         setMessages([]);
-        router.push(ROUTES.CHAT_ID(currentChatId));
+        router.push(ROUTES.CHAT_ID(localChatId));
       }
 
       // Create a user message and add it to the context.
       const userMessage = {
         id: Date.now(),
-        chat: Number(currentChatId),
+        chat: Number(localChatId),
         user: user?.username || 'You',
         content: message.trim(),
         created_at: new Date().toISOString(),
@@ -164,7 +167,7 @@ export function MessageInput({
       const aiMessageId = Date.now() + 1;
       const placeholderAIMessage = {
         id: aiMessageId,
-        chat: Number(currentChatId),
+        chat: Number(localChatId),
         user: 'AI',
         content: mentionType ? 'Creating File for you...' : '',
         created_at: new Date().toISOString(),
@@ -177,7 +180,7 @@ export function MessageInput({
       if (!mentionType) {
         // Await sendMessage so that we wait until all chunks are received.
         await sendMessage({
-          chatId: currentChatId,
+          chatId: localChatId,
           content: message.trim(),
           document: documentToSend,
           onChunkUpdate: (chunk) => {
@@ -191,7 +194,7 @@ export function MessageInput({
       } else {
         // For non-streaming responses.
         const response = await addMessageNoStream({
-          chatId: currentChatId,
+          chatId: localChatId,
           content: message.trim(),
           document: documentToSend,
           return_type: mentionType,
@@ -201,7 +204,7 @@ export function MessageInput({
         );
       }
 
-      // Once chunking/response is complete, refetch the chat messages and update the context.
+      // Once chunking/response is complete, refetch messages using the currentChatId.
       const refetchResult = await refetch();
       if (refetchResult.data) {
         setMessages(refetchResult.data);

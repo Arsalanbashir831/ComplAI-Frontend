@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
 import { useUserContext } from '@/contexts/user-context';
 import { ArrowDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
@@ -14,12 +14,8 @@ export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
   const { user } = useUserContext();
   const [showScrollButton, setShowScrollButton] = useState(false);
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Monitor the visibility of the bottom element to show/hide the scroll-to-bottom button
+  // Use IntersectionObserver to detect if the bottom element is visible.
+  // If it's not visible, we assume the user has scrolled up.
   useEffect(() => {
     const scrollContainer = scrollAreaRef.current;
     const bottomElement = bottomRef.current;
@@ -27,21 +23,27 @@ export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // If the bottom element is not intersecting with the scroll container's viewport, show the button.
+        // When the bottom is not in view, show the button.
         setShowScrollButton(!entry.isIntersecting);
       },
       {
-        root: scrollContainer, // Use the scroll container as the viewport
-        threshold: 0.1, // Adjust threshold as needed
+        root: scrollContainer,
+        threshold: 0.1,
       }
     );
 
     observer.observe(bottomElement);
-
     return () => {
       observer.disconnect();
     };
   }, []);
+
+  // Auto scroll when new messages arrive only if the user is at the bottom.
+  useEffect(() => {
+    if (!showScrollButton) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, showScrollButton]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -59,7 +61,7 @@ export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* "Scroll to Bottom" button */}
+      {/* Display the button only if the bottom is out of view */}
       {showScrollButton && (
         <Button
           onClick={scrollToBottom}

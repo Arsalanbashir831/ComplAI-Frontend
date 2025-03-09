@@ -1,29 +1,37 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useChatContext } from '@/contexts/chat-context';
-
-import type { PromptCardProps } from '@/types/chat';
-import { useChat } from '@/hooks/useChat';
-import useUserData from '@/hooks/useUserData';
 import { Card, CardContent } from '@/components/ui/card';
+import { useChatContext } from '@/contexts/chat-context';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import useUserData from '@/hooks/useUserData';
+import type { PromptCardProps } from '@/types/chat';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export function PromptCard({ icon, title, className }: PromptCardProps) {
   const { sendMessage, createChat } = useChat();
   const { setMessages } = useChatContext();
   const { data: user } = useUserData();
   const router = useRouter();
-  // const { setLoading } = useLoader();
+
+  // Store the newly created chat ID.
+  const [chatId, setChatId] = useState<string>('');
+  
+  // Initialize the hook with the current chat ID (or empty string if not set).
+  const { refetch } = useChatMessages(chatId);
+
   const handleClick = async () => {
+    // Create a new chat using the prompt title.
     const response = await createChat(title);
-    const chatId = response.id;
+    const newChatId = response.id;
+    setChatId(newChatId);
     setMessages([]);
-    router.push(`/chat/${chatId}`);
-    //setLoading(true);
-    // Create a user message and add it to the context.
+    router.push(`/chat/${newChatId}`);
+
+    // Create and add a user message.
     const userMessage = {
       id: Date.now(),
-      chat: Number(chatId),
+      chat: Number(newChatId),
       user: user?.username || 'You',
       content: title.trim(),
       created_at: new Date().toISOString(),
@@ -33,11 +41,11 @@ export function PromptCard({ icon, title, className }: PromptCardProps) {
     };
     setMessages((prev) => [...prev, userMessage]);
 
-    // Create a placeholder AI message.
+    // Create and add a placeholder AI message.
     const aiMessageId = Date.now() + 1;
     const placeholderAIMessage = {
       id: aiMessageId,
-      chat: Number(chatId),
+      chat: Number(newChatId),
       user: 'AI',
       content: '',
       created_at: new Date().toISOString(),
@@ -47,8 +55,9 @@ export function PromptCard({ icon, title, className }: PromptCardProps) {
     };
     setMessages((prev) => [...prev, placeholderAIMessage]);
 
+    // Send the message. The onChunkUpdate callback updates the AI placeholder.
     await sendMessage({
-      chatId: chatId,
+      chatId: newChatId,
       content: title.trim(),
       onChunkUpdate: (chunk) => {
         setMessages((prev) =>
@@ -58,7 +67,13 @@ export function PromptCard({ icon, title, className }: PromptCardProps) {
         );
       },
     });
+
+    const refetchResult = await refetch();
+    if (refetchResult.data) {
+      setMessages(refetchResult.data);
+    }
   };
+
   return (
     <Card
       className={`hover:bg-accent cursor-pointer transition-colors ${className}`}
