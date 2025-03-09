@@ -27,7 +27,7 @@ export const API_ROUTES = {
       `/api/chats/${chatId}/messages/add-stream/`,
     GET_MESSAGES: (chatId: string) => `/api/chats/${chatId}/messages/`,
     DELETE: '/api/chats/delete/',
-    SEARCH_CHATS :(search:string)=>`/api/search/elastic/?q=${search}`
+    SEARCH_CHATS: (search: string) => `/api/search/elastic/?q=${search}`,
   },
   BILLING: {
     ADD_CARD: '/api/billing/add-card/',

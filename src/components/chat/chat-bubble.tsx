@@ -3,9 +3,9 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn, formatDate } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn, formatDate } from '@/lib/utils';
 
 import DisplayUsername from '../common/display-username';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -36,19 +36,31 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
       <h2 className="mt-5 mb-3 text-2xl font-bold tracking-wide" {...props} />
     ),
     h3: ({ ...props }) => (
-      <h3 className="mt-4 mb-2 text-xl font-semibold tracking-wide" {...props} />
+      <h3
+        className="mt-4 mb-2 text-xl font-semibold tracking-wide"
+        {...props}
+      />
     ),
     hr: ({ ...props }) => (
       <hr className="my-4 border-t border-gray-300" {...props} />
     ),
     p: ({ ...props }) => (
-      <p className="mt-2 mb-2 text-lg leading-relaxed tracking-normal" {...props} />
+      <p
+        className="mt-2 mb-2 text-lg leading-relaxed tracking-normal"
+        {...props}
+      />
     ),
     ul: ({ ...props }) => (
-      <ul className="mt-2 mb-2 ml-6 list-disc text-lg leading-relaxed tracking-normal" {...props} />
+      <ul
+        className="mt-2 mb-2 ml-6 list-disc text-lg leading-relaxed tracking-normal"
+        {...props}
+      />
     ),
     ol: ({ ...props }) => (
-      <ol className="mt-2 mb-2 ml-6 list-decimal text-lg leading-relaxed tracking-normal" {...props} />
+      <ol
+        className="mt-2 mb-2 ml-6 list-decimal text-lg leading-relaxed tracking-normal"
+        {...props}
+      />
     ),
     li: ({ ...props }) => (
       <li className="mb-1 text-lg leading-relaxed tracking-normal" {...props} />
@@ -62,8 +74,13 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
     code: ({ inline, className, children, ...props }: CodeProps) => {
       const match = /language-(\w+)/.exec(className || '');
       return !inline ? (
-        <pre className="bg-gray-100 p-4 my-4 overflow-auto rounded text-lg leading-relaxed" {...props}>
-          <code className={match ? `language-${match[1]}` : ''}>{children}</code>
+        <pre
+          className="bg-gray-100 p-4 my-4 overflow-auto rounded text-lg leading-relaxed"
+          {...props}
+        >
+          <code className={match ? `language-${match[1]}` : ''}>
+            {children}
+          </code>
         </pre>
       ) : (
         <code className="bg-gray-100 p-1 rounded text-lg" {...props}>
@@ -71,7 +88,9 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
         </code>
       );
     },
-    table: ({ ...props }) => <table className="min-w-full border-collapse my-4 text-md" {...props} />,
+    table: ({ ...props }) => (
+      <table className="min-w-full border-collapse my-4 text-md" {...props} />
+    ),
     thead: ({ ...props }) => <thead className="bg-blue-800" {...props} />,
     tbody: ({ ...props }) => <tbody className="bg-white" {...props} />,
     tr: ({ ...props }) => <tr className="border-b" {...props} />,
@@ -163,7 +182,9 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
                     </Markdown>
                   ) : (
                     <div className="w-full bg-gray-300 rounded animate-pulse flex items-center justify-center h-12 px-5">
-                      <span className="text-gray-500 text-sm">Generating Response</span>
+                      <span className="text-gray-500 text-sm">
+                        Generating Response
+                      </span>
                     </div>
                   )}
                 </div>
