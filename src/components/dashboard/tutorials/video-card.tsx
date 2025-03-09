@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { Download, Play, User } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
 
-import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import type { Video } from '@/types/video';
 
 import { VideoPlayer } from './video-player';
 
@@ -48,12 +48,22 @@ export function VideoCard({ video }: VideoCardProps) {
               <span className="text-blue-dark">{video.studio}</span>
             </p>
             <Button
-              variant="destructive"
-              className="text-[10px] p-1 !no-underline h-fit"
-            >
-              <Download className="!h-3.5 !w-3.5 inline-block" />
-              PDF
-            </Button>
+  onClick={(e) => {
+    e.stopPropagation(); // Prevents the card's onClick from firing
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+    // If the pdf_file already starts with http, use it directly; otherwise, prepend the base URL.
+    const pdfUrl = video.pdf_file.startsWith('http')
+      ? video.pdf_file
+      : `${baseUrl}${video.pdf_file}`;
+    window.open(pdfUrl, '_blank');
+  }}
+  variant="destructive"
+  className="text-[10px] p-1 !no-underline h-fit"
+>
+  <Download className="!h-3.5 !w-3.5 inline-block" />
+  PDF
+</Button>
+
           </div>
 
           <p className="mt-2 text-sm line-clamp-3 text-gray-dark">
