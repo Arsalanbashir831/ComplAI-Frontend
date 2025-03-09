@@ -1,13 +1,13 @@
 'use client';
 
-import { useChatContext } from '@/contexts/chat-context';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useChatContext } from '@/contexts/chat-context';
 
-import { Card, CardContent } from '@/components/ui/card';
+import type { PromptCardProps } from '@/types/chat';
 import { useChat, useChatMessages } from '@/hooks/useChat';
 import useUserData from '@/hooks/useUserData';
-import type { PromptCardProps } from '@/types/chat';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function PromptCard({ icon, title, className }: PromptCardProps) {
   const { sendMessage, createChat } = useChat();

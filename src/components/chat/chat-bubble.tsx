@@ -3,14 +3,16 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn, formatDate } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn, formatDate } from '@/lib/utils';
 
 import DisplayUsername from '../common/display-username';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
+
 
 interface ChatBubbleProps {
   message: ChatMessage;
@@ -126,13 +128,17 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
             />
           ) : (
             <div className="relative w-8 h-8">
-              <Image
-                src={user?.profile_picture || '/avatar.png'}
-                alt={user?.username || 'User'}
-                fill
-                className="rounded-full object-cover"
-              />
-            </div>
+          <Avatar>
+  {/* Avatar Image: Only loads if user.profile_picture is a valid string */}
+  <AvatarImage src={user?.profile_picture ?? undefined} alt={user?.username || 'User'} />
+  
+  {/* Fallback Avatar (Displays initials or default text) */}
+  <AvatarFallback>
+    {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+  </AvatarFallback>
+</Avatar>
+
+          </div>
           )}
 
           <div className="flex flex-col gap-2 w-full">
