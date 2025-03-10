@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { useLoader } from '@/contexts/loader-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -141,7 +141,7 @@ export function MessageInput({
       let localChatId = currentChatId;
       if (!localChatId) {
         // Create a new chat and update currentChatId state.
-        const response = await createChat(message.trim());
+        const response = await createChat( shortenText(message.trim(),5));
         localChatId = response.id;
         setCurrentChatId(localChatId);
       }

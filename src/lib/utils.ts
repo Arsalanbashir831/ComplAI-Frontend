@@ -129,3 +129,8 @@ export const getDefaultDateRange = (): DateRange => {
 
   return { from: oneMonthAgo, to: today };
 };
+
+
+export function shortenText(text:string, wordLimit = 50) {
+  return text.split(/\s+/).slice(0, wordLimit).join(' ') + '...';
+}
