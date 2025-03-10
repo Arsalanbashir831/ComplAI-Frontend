@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { useQuery } from '@tanstack/react-query';
@@ -12,12 +9,15 @@ import {
   MessageSquareText,
   Search,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import apiCaller from '@/config/apiCaller';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -117,14 +117,15 @@ export function ChatSidebar() {
           <div className="space-y-2">
             {/* 4. Map over `filteredChats` instead of `chats`. */}
             {filteredChats?.map((chat) => (
-              <Link href={ROUTES.CHAT_ID(chat.id)} key={chat.id}>
-                <Button
+              // <Link href={ROUTES.CHAT_ID(chat.id)} key={chat.id}>
+              <>
+              <Button onClick={()=> window.location.href=ROUTES.CHAT_ID(chat.id)}
                   variant="ghost"
                   className={cn(
                     'w-full justify-start text-left font-normal text-gray-dark',
                     currentChatId === String(chat.id) && 'bg-accent text-black'
                   )}
-                >
+                  >
                   <span>
                     <MessageSquareText />
                   </span>
@@ -132,7 +133,8 @@ export function ChatSidebar() {
                     {chat.name}
                   </span>
                 </Button>
-              </Link>
+                  </> 
+              // </Link>
             ))}
           </div>
         </div>
