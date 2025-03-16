@@ -1,5 +1,13 @@
-'use client'
-import React, { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react';
+'use client';
+
+import React, {
+  createContext,
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useState,
+} from 'react';
 
 interface PromptContextProps {
   promptText: string;
@@ -8,7 +16,9 @@ interface PromptContextProps {
 
 const PromptContext = createContext<PromptContextProps | undefined>(undefined);
 
-export const PromptProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const PromptProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [promptText, setPromptText] = useState<string>('');
 
   return (

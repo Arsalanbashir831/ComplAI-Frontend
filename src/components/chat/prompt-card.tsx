@@ -1,17 +1,16 @@
 'use client';
 
-
-import { Card, CardContent } from '@/components/ui/card';
 import { usePrompt } from '@/contexts/prompt-context';
+
 import type { PromptCardProps } from '@/types/chat';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function PromptCard({ icon, title, className }: PromptCardProps) {
-  const {setPromptText}= usePrompt()
- 
+  const { setPromptText } = usePrompt();
 
-  const handleClick =()=>{
-setPromptText(title)
-  }
+  const handleClick = () => {
+    setPromptText(title);
+  };
   return (
     <Card
       className={`hover:bg-accent cursor-pointer transition-colors ${className}`}
