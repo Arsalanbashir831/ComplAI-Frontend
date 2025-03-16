@@ -4,7 +4,7 @@ import { Switch } from '@/components/ui/switch';
 interface SubscriptionInfoProps {
   plan: string;
   startDate: string;
-  // renewalDate: string;
+  renewalDate: string;
   autoRenew: boolean;
   onAutoRenewChange: () => void;
 }
@@ -12,7 +12,7 @@ interface SubscriptionInfoProps {
 export function SubscriptionInfo({
   plan,
   startDate,
-  // renewalDate,
+  renewalDate,
   autoRenew,
   onAutoRenewChange,
 }: SubscriptionInfoProps) {
@@ -45,12 +45,19 @@ export function SubscriptionInfo({
               id="auto-renew"
               checked={autoRenew}
               className="data-[state=unchecked]:bg-gray-400 mt-1.5"
-              onCheckedChange={onAutoRenewChange}
+              onCheckedChange={plan === 'free' ? () => {} : onAutoRenewChange}
             />
           </div>
           <div className="text-sm">
-            Automatically renew your subscription before it expires, ensuring
-            uninterrupted service.
+            {plan === 'free' ? (
+              <>
+                Automatically renew your subscription before it expires,
+                ensuring uninterrupted service.
+              </>
+            ) : (
+              // show renewal date of one year from start date
+              <>Auto renew your subscription at this {renewalDate}</>
+            )}
           </div>
         </div>
       </div>
