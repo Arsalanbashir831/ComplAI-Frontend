@@ -290,7 +290,7 @@ export default function SubscriptionPage() {
       refresh();
     },
     onError: () => {
-      toast.error('Unable to renew until the Contract Period is over');
+      toast.error('Unable to disable renew until the Contract Period is over');
     },
   });
 
@@ -340,14 +340,20 @@ export default function SubscriptionPage() {
                 ? formatDateLocal(userSubscriptions.slice(-1)[0].start_date)
                 : 'N/A'
             }
-            // renewalDate={
-            //   userSubscriptions?.slice(-1)[0]?.current_period_end
-            //     ? formatDate(
-            //         userSubscriptions?.slice(-1)[0]?.current_period_end
-            //       )
-            //     : 'N/A'
-            // }
-            autoRenew={autoRenew}
+            renewalDate={
+              userSubscriptions?.slice(-1)[0]?.start_date
+                ? formatDateLocal(
+                    new Date(
+                      userSubscriptions.slice(-1)[0].start_date
+                    ).setFullYear(
+                      new Date(
+                        userSubscriptions.slice(-1)[0].start_date
+                      ).getFullYear() + 1
+                    ) as unknown as string
+                  )
+                : 'N/A'
+            }
+            autoRenew={autoRenew && user?.subscription_type === 'subscription'}
             onAutoRenewChange={handleAutoRenewChange.mutate}
           />
 

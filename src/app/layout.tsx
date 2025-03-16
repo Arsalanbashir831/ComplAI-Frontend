@@ -34,7 +34,7 @@ export default function RootLayout({
             <AuthProvider>
               <LoaderProvider>
                 <UserProvider>{children}</UserProvider>
-                <Toaster />
+                <Toaster richColors />
               </LoaderProvider>
             </AuthProvider>
           </QueryProvider>
