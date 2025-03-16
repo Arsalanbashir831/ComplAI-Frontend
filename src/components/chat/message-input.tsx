@@ -1,20 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
-import { useLoader } from '@/contexts/loader-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
-import { LoaderCircle, Plus, PlusCircle, Send } from 'lucide-react';
+import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -33,16 +32,17 @@ export function MessageInput({
     propChatId
   );
   const { createChat, sendMessage, addMessageNoStream } = useChat();
-  const { isLoading } = useLoader();
+
   const { user } = useUserContext();
-  const { refetch } = useChatMessages(currentChatId || '');
+  const { refetch  } = useChatMessages(currentChatId || '');
 
   // Import chat messages context.
   const { setMessages } = useChatContext();
 
   // Global mutating state as our "isSending" indicator.
   const isSending = useIsMutating() > 0;
-
+  // AbortController ref to cancel the ongoing request.
+  const abortControllerRef = useRef<AbortController | null>(null);
   // Main message text.
   const [message, setMessage] = useState('');
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -131,12 +131,16 @@ export function MessageInput({
   const handleSendMessage = async () => {
     if (isSending) return;
     if (!message.trim() && uploadedFiles.length === 0) return;
-
+  
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
       return;
     }
-
+  
+    // Create a new AbortController and get its signal.
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+  
     try {
       let localChatId = currentChatId;
       if (!localChatId) {
@@ -151,7 +155,7 @@ export function MessageInput({
         setMessages([]);
         router.push(ROUTES.CHAT_ID(localChatId));
       }
-
+  
       // Create a user message and add it to the context.
       const userMessage = {
         id: Date.now(),
@@ -164,21 +168,21 @@ export function MessageInput({
         file: documentToSend || null,
       };
       setMessages((prev) => [...prev, userMessage]);
-
+  
       // Create a placeholder AI message.
       const aiMessageId = Date.now() + 1;
       const placeholderAIMessage = {
         id: aiMessageId,
         chat: Number(localChatId),
         user: 'AI',
-        content: mentionType ? 'loading' : 'loading',
+        content: 'loading',
         created_at: new Date().toISOString(),
         tokens_used: 0,
         is_system_message: true,
         file: null,
       };
       setMessages((prev) => [...prev, placeholderAIMessage]);
-
+  
       if (!mentionType) {
         // Await sendMessage so that we wait until all chunks are received.
         await sendMessage({
@@ -192,6 +196,7 @@ export function MessageInput({
               )
             );
           },
+          signal, // Pass the abort signal.
         });
       } else {
         // For non-streaming responses.
@@ -200,26 +205,36 @@ export function MessageInput({
           content: message.trim(),
           document: documentToSend,
           return_type: mentionType,
+          signal, // Pass the abort signal.
         });
         setMessages((prev) =>
           prev.map((msg) => (msg.id === aiMessageId ? response : msg))
         );
       }
-
+  
       // Once chunking/response is complete, refetch messages using the currentChatId.
       const refetchResult = await refetch();
       if (refetchResult.data) {
         setMessages(refetchResult.data);
       }
-
+  
       setMessage('');
       setUploadedFiles([]);
       setMentionType(null);
     } catch (error) {
       console.error('Error sending message:', error);
+    } finally {
+      // Reset the AbortController.
+      abortControllerRef.current = null;
     }
   };
-
+  
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  };
+  
   // When the user types, check for a mention trigger.
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = event.target.value;
@@ -295,11 +310,11 @@ export function MessageInput({
   return (
     <div>
       <div className="relative py-4">
-        {(isSending || isLoading) && (
+        {/* {(isSending || isLoading) && (
           <div className="absolute top-10 right-6">
             <LoaderCircle className="animate-spin h-5 w-5 text-gray-700" />
           </div>
-        )}
+        )} */}
 
         {showMentionMenu && (
           <div
@@ -405,10 +420,10 @@ export function MessageInput({
               <Button
                 size="icon"
                 className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
-                onClick={handleSendMessage}
-                disabled={isSending}
+                onClick={isSending ? handleStop : handleSendMessage}
+                // disabled={isSending}
               >
-                <Send className="h-4 w-4" />
+               {isSending? <Image width={10} height={10} src={'/pause.svg'} alt='' /> : <Send className="h-4 w-4" />} 
                 <span className="sr-only">Send message</span>
               </Button>
             </div>

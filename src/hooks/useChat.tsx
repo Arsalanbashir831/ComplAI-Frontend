@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -71,11 +71,13 @@ const useChat = () => {
       content,
       document,
       return_type,
+      signal
     }: {
       chatId: string;
       content: string;
       document?: File | Blob;
       return_type?: 'docx' | 'pdf' | null;
+      signal?: AbortSignal;
     }): Promise<ChatMessage> => {
       try {
         // Create FormData
@@ -101,6 +103,7 @@ const useChat = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
             },
+            signal
           }
         );
 
@@ -168,11 +171,13 @@ const useChat = () => {
       content,
       document,
       onChunkUpdate,
+      signal
     }: {
       chatId: string;
       content: string;
       document?: File | Blob;
       onChunkUpdate?: (chunk: string) => void;
+      signal?: AbortSignal;
     }): Promise<ChatMessage> => {
       const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
 
@@ -193,6 +198,7 @@ const useChat = () => {
               Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
               Accept: '*/*',
             },
+            signal
           });
 
           if (!sendResponse.ok || !sendResponse.body) {

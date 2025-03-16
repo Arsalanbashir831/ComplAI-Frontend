@@ -11,7 +11,8 @@ const apiCaller = async (
   options: AxiosRequestConfig = {},
   useAuth: boolean = true,
   dataType: 'json' | 'formdata' = 'json',
-  onErrorRefresh: boolean = false
+  onErrorRefresh: boolean = false,
+  signal?: AbortSignal
 ): Promise<AxiosResponse> => {
   const config: AxiosRequestConfig = {
     ...options,
@@ -19,6 +20,7 @@ const apiCaller = async (
     headers: {
       ...(options.headers || {}),
     },
+    signal,
   };
   config.headers = {};
   if (useAuth) {

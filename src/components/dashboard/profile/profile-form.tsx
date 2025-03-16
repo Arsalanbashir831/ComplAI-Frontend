@@ -1,15 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -17,6 +15,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import apiCaller from '@/config/apiCaller';
+import { cn } from '@/lib/utils';
 
 import {
   ProfileFormFields,
@@ -134,7 +134,7 @@ export default function ProfileForm() {
       setUser(response.data);
       // Refresh user data to ensure context stays up-to-date
       refresh();
-      toggleEdit();
+      // toggleEdit();
     } catch (error) {
       console.error('Failed to update profile:', error);
     }

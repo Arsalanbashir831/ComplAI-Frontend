@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -13,6 +10,9 @@ import {
   User2,
   Video,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -36,7 +36,7 @@ const PROFILE_LINKS = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-
+const router = useRouter()
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -95,10 +95,11 @@ export function DashboardSidebar() {
                   Return to AI Chat
                 </p>
                 <Button
+                onClick={()=>router.push(ROUTES.CHAT)}
                   variant="secondary"
                   className="w-3/4 text-primary cursor-pointer z-10"
                 >
-                  <Link href={ROUTES.CHAT}>Use Compl-AI</Link>
+                 Use Compl-AI
                 </Button>
               </div>
             </div>
