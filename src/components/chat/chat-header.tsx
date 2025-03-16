@@ -1,13 +1,13 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { Plus, Trash2 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 
@@ -42,7 +42,8 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
       {/* Action Buttons */}
       <div className="flex items-center space-x-2">
         <div className="border-r border-gray-light pr-4">
-          <Button onClick={()=>window.location.href=ROUTES.CHAT}
+          <Button
+            onClick={() => (window.location.href = ROUTES.CHAT)}
             className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 flex items-center gap-1 justify-center"
           >
             <Plus className="h-5 w-5" />

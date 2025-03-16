@@ -1,20 +1,20 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -90,9 +90,9 @@ export function LoginForm() {
       footerLinkHref={ROUTES.SIGN_UP}
       footerLinkText="Sign up"
     >
-     <div className='m-auto text-center'>
-      <OAuthButtons />
-     </div>
+      <div className="m-auto text-center">
+        <OAuthButtons />
+      </div>
 
       <div className="flex gap-2 items-center justify-center overflow-hidden">
         <Separator className="bg-[#BABABA]" />
