@@ -1,20 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
+import { usePrompt } from '@/contexts/prompt-context';
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -32,7 +33,7 @@ export function MessageInput({
     propChatId
   );
   const { createChat, sendMessage, addMessageNoStream } = useChat();
-
+  const { promptText, setPromptText } = usePrompt();
   const { user } = useUserContext();
   const { refetch } = useChatMessages(currentChatId || '');
 
@@ -43,8 +44,7 @@ export function MessageInput({
   const isSending = useIsMutating() > 0;
   // AbortController ref to cancel the ongoing request.
   const abortControllerRef = useRef<AbortController | null>(null);
-  // Main message text.
-  const [message, setMessage] = useState('');
+  // Remove local message state since we’re using promptText from context.
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isUplaodModalOpen, setIsUplaodModalOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -52,6 +52,7 @@ export function MessageInput({
   const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const maxChars = 10000;
+  console.log('prompt', promptText);
 
   // Define available mention options.
   const mentionOptions = [
@@ -130,7 +131,7 @@ export function MessageInput({
 
   const handleSendMessage = async () => {
     if (isSending) return;
-    if (!message.trim() && uploadedFiles.length === 0) return;
+    if (!promptText.trim() && uploadedFiles.length === 0) return;
 
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
@@ -145,7 +146,7 @@ export function MessageInput({
       let localChatId = currentChatId;
       if (!localChatId) {
         // Create a new chat and update currentChatId state.
-        const response = await createChat(shortenText(message.trim(), 5));
+        const response = await createChat(shortenText(promptText.trim(), 5));
         localChatId = response.id;
         setCurrentChatId(localChatId);
       }
@@ -161,7 +162,7 @@ export function MessageInput({
         id: Date.now(),
         chat: Number(localChatId),
         user: user?.username || 'You',
-        content: message.trim(),
+        content: promptText.trim(),
         created_at: new Date().toISOString(),
         tokens_used: 0,
         is_system_message: false,
@@ -187,7 +188,7 @@ export function MessageInput({
         // Await sendMessage so that we wait until all chunks are received.
         await sendMessage({
           chatId: localChatId,
-          content: message.trim(),
+          content: promptText.trim(),
           document: documentToSend,
           onChunkUpdate: (chunk) => {
             setMessages((prev) =>
@@ -202,7 +203,7 @@ export function MessageInput({
         // For non-streaming responses.
         const response = await addMessageNoStream({
           chatId: localChatId,
-          content: message.trim(),
+          content: promptText.trim(),
           document: documentToSend,
           return_type: mentionType,
           signal, // Pass the abort signal.
@@ -218,7 +219,8 @@ export function MessageInput({
         setMessages(refetchResult.data);
       }
 
-      setMessage('');
+      // Clear the prompt text (i.e. message) and reset file uploads/mention.
+      setPromptText('');
       setUploadedFiles([]);
       setMentionType(null);
     } catch (error) {
@@ -250,7 +252,7 @@ export function MessageInput({
       setShowMentionMenu(false);
     }
     if (input.length <= maxChars) {
-      setMessage(input);
+      setPromptText(input);
     }
   };
 
@@ -276,7 +278,7 @@ export function MessageInput({
       }
       if (event.key === 'Enter') {
         event.preventDefault();
-        const match = message.match(/@(\w+)$/);
+        const match = promptText.match(/@(\w+)$/);
         let selectedOption: string;
         if (match) {
           const query = match[1].toLowerCase();
@@ -291,7 +293,7 @@ export function MessageInput({
         return;
       }
     }
-    if (event.key === 'Backspace' && message.length === 0 && mentionType) {
+    if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
       event.preventDefault();
       setMentionType(null);
     }
@@ -303,19 +305,13 @@ export function MessageInput({
 
   const handleSelectMention = (type: 'pdf' | 'docx') => {
     setMentionType(type);
-    setMessage((prev) => prev.replace(/@(\w+)$/i, '').trim());
+    setPromptText((prev) => prev.replace(/@(\w+)$/i, '').trim());
     setShowMentionMenu(false);
   };
 
   return (
     <div>
       <div className="relative py-4">
-        {/* {(isSending || isLoading) && (
-          <div className="absolute top-10 right-6">
-            <LoaderCircle className="animate-spin h-5 w-5 text-gray-700" />
-          </div>
-        )} */}
-
         {showMentionMenu && (
           <div
             ref={mentionMenuRef}
@@ -361,7 +357,7 @@ export function MessageInput({
 
             <Textarea
               placeholder="Message Compl-AI"
-              value={message}
+              value={promptText}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
               disabled={isSending}
@@ -415,13 +411,12 @@ export function MessageInput({
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-dark">
-                {message.length} / {maxChars}
+                {promptText.length} / {maxChars}
               </span>
               <Button
                 size="icon"
                 className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
                 onClick={isSending ? handleStop : handleSendMessage}
-                // disabled={isSending}
               >
                 {isSending ? (
                   <Image width={10} height={10} src={'/pause.svg'} alt="" />
