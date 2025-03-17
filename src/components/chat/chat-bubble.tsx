@@ -3,14 +3,11 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn, formatDate } from '@/lib/utils';
 
-import DisplayUsername from '../common/display-username';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
 interface ChatBubbleProps {
@@ -25,7 +22,7 @@ interface CodeProps {
   children?: React.ReactNode;
 }
 
-export function ChatBubble({ message, user }: ChatBubbleProps) {
+export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.is_system_message;
 
   // Customized markdown components with proper types.
@@ -105,12 +102,12 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
     <div className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}>
       <div
         className={cn(
-          `flex flex-col gap-2 rounded-2xl py-4 items-center justify-center ${
-            isBot ? 'px-0' : 'px-4 md:px-8'
+          `flex flex-col gap-2 rounded-2xl py-2 items-center justify-center ${
+            isBot ? 'px-0' : 'px-4 md:px-8 rounded-full '
           } md:max-w-[66.666667%]`,
           isBot
             ? 'bg-white'
-            : 'bg-blue-light text-white border-gray-light border-2 shadow-md'
+            : 'bg-blue-light text-white border-gray-light border-2 '
         )}
       >
         <div className="flex items-start gap-3">
@@ -126,33 +123,34 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
               )}
             />
           ) : (
-            <div className="relative w-8 h-8">
-              <Avatar>
-                {/* Avatar Image: Only loads if user.profile_picture is a valid string */}
-                <AvatarImage
-                  src={user?.profile_picture ?? undefined}
-                  alt={user?.username || 'User'}
-                />
+            // <div className="relative w-8 h-8">
+            //   <Avatar>
+            //     {/* Avatar Image: Only loads if user.profile_picture is a valid string */}
+            //     <AvatarImage
+            //       src={user?.profile_picture ?? undefined}
+            //       alt={user?.username || 'User'}
+            //     />
 
-                {/* Fallback Avatar (Displays initials or default text) */}
-                <AvatarFallback>
-                  {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            //     {/* Fallback Avatar (Displays initials or default text) */}
+            //     <AvatarFallback>
+            //       {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+            //     </AvatarFallback>
+            //   </Avatar>
+            // </div>
+            <></>
           )}
 
           <div className="flex flex-col gap-2 w-full">
             {!isBot && (
               <>
-                <div className="flex flex-col md:flex-row md:gap-2 md:items-center">
+                {/* <div className="flex flex-col md:flex-row md:gap-2 md:items-center">
                   <span className="text-lg text-black font-medium md:border-r border-gray md:pr-2">
                     <DisplayUsername />
                   </span>
                   <span className="text-black text-sm">
                     {formatDate(message.created_at)}
                   </span>
-                </div>
+                </div> */}
                 <div className="break-words text-black text-justify">
                   <Markdown
                     remarkPlugins={[remarkGfm]}
@@ -211,7 +209,7 @@ export function ChatBubble({ message, user }: ChatBubbleProps) {
                 )}
               </>
             )}
-            <CopyButton content={message.content} />
+            {/* <CopyButton content={message.content} /> */}
           </div>
         </div>
       </div>

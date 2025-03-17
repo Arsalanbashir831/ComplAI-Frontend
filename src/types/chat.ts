@@ -29,6 +29,7 @@ export interface ChatMessage {
 }
 
 export interface Chat {
+  updated_at: string | number | Date;
   id: string;
   name: string;
   user: string;
