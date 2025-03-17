@@ -3,11 +3,12 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn } from '@/lib/utils';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
+import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
 interface ChatBubbleProps {
@@ -209,7 +210,8 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 )}
               </>
             )}
-            {/* <CopyButton content={message.content} /> */}
+            {isBot && (<>   <CopyButton content={message.content} /></>)}
+         
           </div>
         </div>
       </div>
