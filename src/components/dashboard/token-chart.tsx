@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  ChartContainer,
-  ChartTooltipContent
-} from '@/components/ui/chart';
-import useTokensHistory from '@/hooks/useTokensHistory';
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+
 import { getDefaultDateRange } from '@/lib/utils';
+import useTokensHistory from '@/hooks/useTokensHistory';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
 import { DateRangePicker } from '../common/date-range-picker';
 import LoadingSpinner from '../common/loading-spinner';
@@ -50,8 +54,10 @@ export function TokenChart() {
     const formattedDate = `${usageDate.getDate().toString().padStart(2, '0')}-${(usageDate.getMonth() + 1).toString().padStart(2, '0')}-${usageDate.getFullYear()}`;
 
     // Find the index of an existing entry for the current date
-    const existingEntry = acc.find(entry => entry.usage_date === formattedDate);
-    
+    const existingEntry = acc.find(
+      (entry) => entry.usage_date === formattedDate
+    );
+
     if (existingEntry) {
       // If the date already exists, accumulate the tokens_used
       existingEntry.tokens_used += curr.tokens_used;
@@ -95,7 +101,7 @@ export function TokenChart() {
             >
               <XAxis
                 dataKey="usage_date"
-                tickFormatter={(tick) => tick}  // Since the date is already formatted
+                tickFormatter={(tick) => tick} // Since the date is already formatted
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
