@@ -2,19 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { getDefaultDateRange } from '@/lib/utils';
-import useTokensHistory from '@/hooks/useTokensHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
+  ChartTooltipContent
 } from '@/components/ui/chart';
+import useTokensHistory from '@/hooks/useTokensHistory';
+import { getDefaultDateRange } from '@/lib/utils';
 
 import { DateRangePicker } from '../common/date-range-picker';
 import LoadingSpinner from '../common/loading-spinner';
+
+type AggregatedData = {
+  usage_date: string;
+  tokens_used: number;
+};
 
 export function TokenChart() {
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
@@ -27,10 +31,37 @@ export function TokenChart() {
 
   if (isLoading) return <LoadingSpinner />;
 
-  if (error)
-    return (
-      <p className="text-red-500 text-center mt-5">Error: {error?.message}</p>
-    );
+  if (error) return <div>Error loading data</div>;
+
+  // Filter data based on selected date range (frontend filtering)
+  const filteredData = Array.isArray(data)
+    ? data.filter((curr) => {
+        const usageDate = new Date(curr.usage_date);
+        const startDate = new Date(dateRange.from!);
+        const endDate = new Date(dateRange.to!);
+        return usageDate >= startDate && usageDate <= endDate;
+      })
+    : [];
+
+  // Aggregate token usage by date
+  const aggregatedData = filteredData.reduce((acc: AggregatedData[], curr) => {
+    // Extract the date part from the usage_date string (YYYY-MM-DD)
+    const usageDate = new Date(curr.usage_date);
+    const formattedDate = `${usageDate.getDate().toString().padStart(2, '0')}-${(usageDate.getMonth() + 1).toString().padStart(2, '0')}-${usageDate.getFullYear()}`;
+
+    // Find the index of an existing entry for the current date
+    const existingEntry = acc.find(entry => entry.usage_date === formattedDate);
+    
+    if (existingEntry) {
+      // If the date already exists, accumulate the tokens_used
+      existingEntry.tokens_used += curr.tokens_used;
+    } else {
+      // Otherwise, add a new entry with the tokens_used for that date
+      acc.push({ usage_date: formattedDate, tokens_used: curr.tokens_used });
+    }
+
+    return acc;
+  }, []);
 
   return (
     <Card className="rounded-lg shadow-md border-none w-full">
@@ -53,8 +84,8 @@ export function TokenChart() {
               },
             }}
           >
-            <LineChart
-              data={Array.isArray(data) ? data : []}
+            <BarChart
+              data={aggregatedData}
               margin={{
                 top: 5,
                 right: 10,
@@ -64,7 +95,7 @@ export function TokenChart() {
             >
               <XAxis
                 dataKey="usage_date"
-                tickFormatter={(tick) => new Date(tick).toLocaleDateString()}
+                tickFormatter={(tick) => tick}  // Since the date is already formatted
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
@@ -78,14 +109,13 @@ export function TokenChart() {
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
               />
-              <Line
-                type="monotone"
+              <Bar
                 dataKey="tokens_used"
-                strokeWidth={2}
-                stroke="var(--color-tokens)"
+                fill="var(--color-tokens)"
+                barSize={100} // Adjust the bar size here (default was 20)
               />
-              <ChartTooltip content={<ChartTooltipContent />} />
-            </LineChart>
+              <Tooltip content={<ChartTooltipContent />} />
+            </BarChart>
           </ChartContainer>
         </ResponsiveContainer>
       </CardContent>

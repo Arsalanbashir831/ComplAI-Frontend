@@ -3,15 +3,15 @@
 import { useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
-import type { ActivityItem } from '@/types/dashboard';
-import { cn, getDefaultDateRange } from '@/lib/utils';
-import useTokensHistory from '@/hooks/useTokensHistory';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DateRangePicker } from '@/components/common/date-range-picker';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import useTokensHistory from '@/hooks/useTokensHistory';
+import { cn, getDefaultDateRange } from '@/lib/utils';
+import type { ActivityItem } from '@/types/dashboard';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
@@ -31,28 +31,44 @@ export function ActivityTable({
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
   const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
 
+  const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   useEffect(() => {
     refetch();
-  }, [dateRange, refetch]);
+  }, [dateRange, activeTab, refetch]);
 
-  // Modal state
-  const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(
-    null
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  if (isLoading) return <LoadingSpinner />;
+
+  if (error) return <div>Error loading data</div>;
+
+  // Filter data based on the selected date range
+  const filteredData = Array.isArray(data)
+    ? data.filter((curr) => {
+        const usageDate = new Date(curr.usage_date);
+        const startDate = new Date(dateRange.from ?? new Date());
+        const endDate = new Date(dateRange.to ?? new Date());
+        return usageDate >= startDate && usageDate <= endDate;
+      })
+    : [];
+
+  // Filter based on the active tab (query or document)
+  const tabFilteredData = filteredData.filter((curr) => {
+    if (activeTab === 'query') {
+      return curr.activity_type === 'query';
+    } else if (activeTab === 'document') {
+      return curr.activity_type === 'document';
+    }
+    return true; // 'all' tab, show all
+  });
+
+  // Modal state (using previously declared state)
 
   // Handle "View" button
   const handleView = (activity: ActivityItem) => {
     setSelectedActivity(activity);
     setIsModalOpen(true);
   };
-
-  if (isLoading) return <LoadingSpinner />;
-
-  if (error)
-    return (
-      <p className="text-red-500 text-center mt-5">Error: {error?.message}</p>
-    );
 
   return (
     <>
@@ -105,7 +121,7 @@ export function ActivityTable({
         <CardContent className="p-0">
           <DataTable<ActivityItem, unknown>
             columns={createColumns(showActions, handleView)}
-            data={Array.isArray(data) ? data : []}
+            data={tabFilteredData} // Pass filtered and tab-specific data
             activeFilter={activeTab}
             pageSize={pageSize}
             isTabsPresent={true}
