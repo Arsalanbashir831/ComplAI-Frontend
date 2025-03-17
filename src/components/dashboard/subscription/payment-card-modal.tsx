@@ -1,12 +1,15 @@
 'use client';
 
+import { useState } from 'react';
+import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { useState } from 'react';
 
+import type { PaymentCard } from '@/types/subscription';
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -22,9 +25,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import apiCaller from '@/config/apiCaller';
-import type { PaymentCard } from '@/types/subscription';
-import Image from 'next/image';
 
 interface PaymentCardModalProps {
   mode: 'add' | 'edit';
@@ -144,7 +144,7 @@ export function PaymentCardModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <Image src={'/stripe.svg'} alt='stripe' width={100} height={100}/>
+          <Image src={'/stripe.svg'} alt="stripe" width={100} height={100} />
           <DialogTitle>
             {mode === 'add' ? 'Add a Payment Method' : 'Edit Card Expiration'}
           </DialogTitle>

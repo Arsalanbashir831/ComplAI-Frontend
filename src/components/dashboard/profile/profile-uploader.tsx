@@ -1,18 +1,20 @@
 'use client';
 
+import React, { useCallback, useState } from 'react';
+import Image from 'next/image';
+import Cropper from 'react-easy-crop';
+
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
-import Image from 'next/image';
-import React, { useCallback, useState } from 'react';
-import Cropper from 'react-easy-crop';
+
 import 'react-easy-crop/react-easy-crop.css'; // Ensure you have the CSS
 
 interface ProfileImageUploaderProps {
@@ -37,7 +39,12 @@ const ProfileImageUploader: React.FC<ProfileImageUploaderProps> = ({
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ width: number; height: number; x: number; y: number } | null>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   // When a file is selected, read it as a data URL
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,16 +56,19 @@ const ProfileImageUploader: React.FC<ProfileImageUploaderProps> = ({
   };
 
   // Callback from Cropper when cropping is complete (returns pixel coordinates)
-interface CroppedArea {
+  interface CroppedArea {
     x: number;
     y: number;
     width: number;
     height: number;
-}
+  }
 
-const onCropComplete = useCallback((_: CroppedArea, croppedAreaPixels: CroppedArea): void => {
-    setCroppedAreaPixels(croppedAreaPixels);
-}, []);
+  const onCropComplete = useCallback(
+    (_: CroppedArea, croppedAreaPixels: CroppedArea): void => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
 
   // When user clicks Save, get the cropped image and pass it to onSave callback
   const handleSave = async () => {
@@ -81,7 +91,9 @@ const onCropComplete = useCallback((_: CroppedArea, croppedAreaPixels: CroppedAr
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Update Profile Picture</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">
+            Update Profile Picture
+          </DialogTitle>
           <DialogDescription className="text-sm text-gray-500">
             Upload a new photo and crop it to update your profile picture.
           </DialogDescription>
@@ -124,7 +136,12 @@ const onCropComplete = useCallback((_: CroppedArea, croppedAreaPixels: CroppedAr
 
         {/* File input */}
         <div className="mb-4">
-          <input type="file" accept="image/*" onChange={handleFileChange} className="w-full text-sm" />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full text-sm"
+          />
         </div>
 
         <DialogFooter>
@@ -148,13 +165,20 @@ export default ProfileImageUploader;
 function readFile(file: File): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
-    reader.addEventListener('load', () => resolve(reader.result as string), false);
+    reader.addEventListener(
+      'load',
+      () => resolve(reader.result as string),
+      false
+    );
     reader.readAsDataURL(file);
   });
 }
 
 // Helper function to crop the image from the data URL using canvas
-async function getCroppedImg(imageSrc: string, pixelCrop: { x: number; y: number; width: number; height: number }): Promise<string> {
+async function getCroppedImg(
+  imageSrc: string,
+  pixelCrop: { x: number; y: number; width: number; height: number }
+): Promise<string> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -194,7 +218,11 @@ async function getCroppedImg(imageSrc: string, pixelCrop: { x: number; y: number
   circularCtx.clip();
 
   // Center the cropped image
-  circularCtx.drawImage(canvas, (size - canvas.width) / 2, (size - canvas.height) / 2);
+  circularCtx.drawImage(
+    canvas,
+    (size - canvas.width) / 2,
+    (size - canvas.height) / 2
+  );
 
   return circularCanvas.toDataURL();
 }

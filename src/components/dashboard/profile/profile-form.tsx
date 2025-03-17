@@ -1,13 +1,15 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -15,16 +17,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import apiCaller from '@/config/apiCaller';
 
-import axios from 'axios';
 import {
   ProfileFormFields,
   profileSchema,
   type ProfileFormValues,
 } from './profile-form-fields';
 import ProfileImageUploader from './profile-uploader';
-
 
 export default function ProfileForm() {
   const { user, setUser, refresh } = useUserContext();
@@ -61,7 +60,9 @@ export default function ProfileForm() {
         );
         const data = response.data;
         const fetchedDate = new Date(data.creationDate);
-        const validDate = isNaN(fetchedDate.getTime()) ? new Date() : fetchedDate;
+        const validDate = isNaN(fetchedDate.getTime())
+          ? new Date()
+          : fetchedDate;
 
         reset({
           id: data.id.toString(),
@@ -80,12 +81,12 @@ export default function ProfileForm() {
     fetchProfile();
   }, [reset, refresh]);
 
-  const toggleEdit = () => setIsEditable(prev => !prev);
+  const toggleEdit = () => setIsEditable((prev) => !prev);
 
   const onSubmit = async (data: ProfileFormValues) => {
     try {
       const response = await apiCaller(
-        API_ROUTES.USER.GET_USER_DATA, 
+        API_ROUTES.USER.GET_USER_DATA,
         'PUT',
         {
           username: data.username,
@@ -109,27 +110,28 @@ export default function ProfileForm() {
       // Convert base64 string to Blob using fetch
       const blob = await fetch(croppedImage).then((res) => res.blob());
       console.log('Blob:', blob);
-  
+
       // Create a new File from the Blob
       const file = new File([blob], 'profile.png', { type: 'image/png' });
       console.log('File:', file);
-  
+
       // Build FormData
       const formData = new FormData();
       formData.append('profile_picture', file);
-  
+
       // Debug: log FormData entries
       for (const [key, value] of formData.entries()) {
         console.log('FormData:', key, value);
       }
-  
+
       const response = await axios.post(
-        process.env.NEXT_PUBLIC_BACKEND_URL+API_ROUTES.USER.UPDATE_PROFILE_IMAGE,
+        process.env.NEXT_PUBLIC_BACKEND_URL +
+          API_ROUTES.USER.UPDATE_PROFILE_IMAGE,
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            'Authorization':`Bearer ${localStorage.getItem('accessToken')}`
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
         }
       );
@@ -149,23 +151,23 @@ export default function ProfileForm() {
   //   try {
   //     const blob = await fetch(croppedImage).then((res) => res.blob());
   //     console.log('Blob:', blob);
-  
+
   //     // Create a new File from the Blob with explicit MIME type 'image/png'
   //     const file = new File([blob], 'profile.png', { type: 'image/png' });
   //     console.log('File:', file);
-  
+
   //     // Append the file to a FormData object
   //     const formData = new FormData();
   //     formData.append('profile_picture', file);
-  
+
   //     // Debug: log FormData entries
   //     for (const [key, value] of formData.entries()) {
   //       console.log('FormData:', key, value);
   //     }
-  
+
   //     // Send the FormData payload to your API
   //     await apiCaller(API_ROUTES.USER.UPDATE_PROFILE_IMAGE, 'POST', formData, {}, true, 'formdata');
-  
+
   //     // Update user context and local state with the new profile image
   //     setUser((prev) => {
   //       if (!prev) return prev;
@@ -177,11 +179,12 @@ export default function ProfileForm() {
   //     console.error('Failed to update profile image:', error);
   //   }
   // };
-  
-
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto"
+    >
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
         {/* Responsive Profile Image Container */}
         <div
@@ -217,7 +220,7 @@ export default function ProfileForm() {
                   className="text-gray-700 hover:text-black relative p-0 h-fit bg-transparent"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowUserId(prev => !prev);
+                    setShowUserId((prev) => !prev);
                   }}
                 >
                   {showUserId ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -245,11 +248,7 @@ export default function ProfileForm() {
           >
             {isEditable ? 'Cancel' : 'Edit Info'}
           </Button>
-          {isEditable && (
-            <Button type="submit">
-              Save Changes
-            </Button>
-          )}
+          {isEditable && <Button type="submit">Save Changes</Button>}
         </div>
       </div>
 
