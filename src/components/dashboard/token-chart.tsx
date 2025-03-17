@@ -11,10 +11,10 @@ import {
   YAxis,
 } from 'recharts';
 
-import { getDefaultDateRange } from '@/lib/utils';
-import useTokensHistory from '@/hooks/useTokensHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import useTokensHistory from '@/hooks/useTokensHistory';
+import { getDefaultDateRange } from '@/lib/utils';
 
 import { DateRangePicker } from '../common/date-range-picker';
 import LoadingSpinner from '../common/loading-spinner';
@@ -96,7 +96,7 @@ export function TokenChart() {
                 top: 5,
                 right: 10,
                 left: 10,
-                bottom: 0,
+                bottom: 40, // Increased margin on bottom to avoid cutting off X-axis labels
               }}
             >
               <XAxis
@@ -107,6 +107,8 @@ export function TokenChart() {
                 tickMargin={10}
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
+                angle={-45} // Rotate the labels if necessary to fit them
+                textAnchor="end" // Adjust the alignment of the labels
               />
               <YAxis
                 tickLine={false}
@@ -118,7 +120,7 @@ export function TokenChart() {
               <Bar
                 dataKey="tokens_used"
                 fill="var(--color-tokens)"
-                barSize={100} // Adjust the bar size here (default was 20)
+                barSize={80} // Adjust the bar size here for more spacing
               />
               <Tooltip content={<ChartTooltipContent />} />
             </BarChart>

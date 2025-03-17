@@ -1,15 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -17,19 +15,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import apiCaller from '@/config/apiCaller';
 
+import axios from 'axios';
 import {
   ProfileFormFields,
   profileSchema,
   type ProfileFormValues,
 } from './profile-form-fields';
+import ProfileImageUploader from './profile-uploader';
+
 
 export default function ProfileForm() {
-  // Access both the current user and the setUser function from the context
   const { user, setUser, refresh } = useUserContext();
 
   const [isEditable, setIsEditable] = useState(false);
   const [showUserId, setShowUserId] = useState(false);
+  const [isUploaderOpen, setIsUploaderOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const { control, handleSubmit, reset, watch } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -43,7 +46,6 @@ export default function ProfileForm() {
     },
   });
 
-  // Watch the "id" field so we can display it
   const userId = watch('id');
 
   useEffect(() => {
@@ -59,9 +61,7 @@ export default function ProfileForm() {
         );
         const data = response.data;
         const fetchedDate = new Date(data.creationDate);
-        const validDate = isNaN(fetchedDate.getTime())
-          ? new Date()
-          : fetchedDate;
+        const validDate = isNaN(fetchedDate.getTime()) ? new Date() : fetchedDate;
 
         reset({
           id: data.id.toString(),
@@ -71,6 +71,7 @@ export default function ProfileForm() {
           jobTitle: data.job_title,
           creationDate: validDate,
         });
+        setProfileImage(data.profile_picture);
       } catch (error) {
         console.error('Failed to fetch profile:', error);
       }
@@ -79,46 +80,12 @@ export default function ProfileForm() {
     fetchProfile();
   }, [reset, refresh]);
 
-  // Function to handle image uploads. This is now available regardless of edit mode.
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (!event.target.files || event.target.files.length === 0) return;
-    const file = event.target.files[0];
-
-    try {
-      await apiCaller(
-        API_ROUTES.USER.UPDATE_PROFILE_IMAGE,
-        'POST',
-        { profile_picture: file },
-        {},
-        true,
-        'formdata'
-      );
-
-      setUser((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          profile_picture:
-            process.env.NEXT_PUBLIC_BACKEND_URL +
-            '/media/profile_pictures/' +
-            file.name,
-        };
-      });
-      // Refresh user data to ensure context stays up-to-date
-      refresh();
-    } catch (error) {
-      console.error('Failed to update profile image:', error);
-    }
-  };
-
-  const toggleEdit = () => setIsEditable((prev) => !prev);
+  const toggleEdit = () => setIsEditable(prev => !prev);
 
   const onSubmit = async (data: ProfileFormValues) => {
     try {
       const response = await apiCaller(
-        API_ROUTES.USER.GET_USER_DATA, // Consider using a dedicated update endpoint
+        API_ROUTES.USER.GET_USER_DATA, 
         'PUT',
         {
           username: data.username,
@@ -130,42 +97,106 @@ export default function ProfileForm() {
         true,
         'json'
       );
-      // Update the user context with the new data
       setUser(response.data);
-      // Refresh user data to ensure context stays up-to-date
       refresh();
-      // toggleEdit();
     } catch (error) {
       console.error('Failed to update profile:', error);
     }
   };
 
+  const handleImageSave = async (croppedImage: string) => {
+    try {
+      // Convert base64 string to Blob using fetch
+      const blob = await fetch(croppedImage).then((res) => res.blob());
+      console.log('Blob:', blob);
+  
+      // Create a new File from the Blob
+      const file = new File([blob], 'profile.png', { type: 'image/png' });
+      console.log('File:', file);
+  
+      // Build FormData
+      const formData = new FormData();
+      formData.append('profile_picture', file);
+  
+      // Debug: log FormData entries
+      for (const [key, value] of formData.entries()) {
+        console.log('FormData:', key, value);
+      }
+  
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_BACKEND_URL+API_ROUTES.USER.UPDATE_PROFILE_IMAGE,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization':`Bearer ${localStorage.getItem('accessToken')}`
+          },
+        }
+      );
+      console.log('Upload response:', response.data);
+      setUser((prev) => {
+        if (!prev) return prev;
+        return { ...prev, profile_picture: croppedImage };
+      });
+      refresh();
+      setProfileImage(croppedImage);
+    } catch (error) {
+      console.error('Failed to update profile image:', error);
+    }
+  };
+
+  // const handleImageSave = async (croppedImage: string) => {
+  //   try {
+  //     const blob = await fetch(croppedImage).then((res) => res.blob());
+  //     console.log('Blob:', blob);
+  
+  //     // Create a new File from the Blob with explicit MIME type 'image/png'
+  //     const file = new File([blob], 'profile.png', { type: 'image/png' });
+  //     console.log('File:', file);
+  
+  //     // Append the file to a FormData object
+  //     const formData = new FormData();
+  //     formData.append('profile_picture', file);
+  
+  //     // Debug: log FormData entries
+  //     for (const [key, value] of formData.entries()) {
+  //       console.log('FormData:', key, value);
+  //     }
+  
+  //     // Send the FormData payload to your API
+  //     await apiCaller(API_ROUTES.USER.UPDATE_PROFILE_IMAGE, 'POST', formData, {}, true, 'formdata');
+  
+  //     // Update user context and local state with the new profile image
+  //     setUser((prev) => {
+  //       if (!prev) return prev;
+  //       return { ...prev, profile_picture: croppedImage };
+  //     });
+  //     refresh();
+  //     setProfileImage(croppedImage);
+  //   } catch (error) {
+  //     console.error('Failed to update profile image:', error);
+  //   }
+  // };
+  
+
+
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="p-6 pb-20 bg-white shadow-md rounded-xl w-full mx-auto">
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
         {/* Responsive Profile Image Container */}
-        <div className="relative aspect-square w-16 md:w-20 lg:w-24 group overflow-hidden rounded-full">
+        <div
+          onClick={() => setIsUploaderOpen(true)}
+          className="relative aspect-square w-16 md:w-20 lg:w-24 group overflow-hidden rounded-full cursor-pointer"
+        >
           <Image
-            src={user?.profile_picture || '/user.png'}
+            src={profileImage || user?.profile_picture || '/user.png'}
             alt="Profile Avatar"
             fill
             className="rounded-full object-cover"
           />
-          {/* Overlay shown on hover */}
           <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <span className="text-white text-sm font-medium">Change</span>
           </div>
-          {/* Always render file input so user can change image */}
-          <input
-            type="file"
-            onChange={handleImageUpload}
-            className={cn(
-              'absolute inset-0 w-full h-full opacity-0 cursor-pointer'
-            )}
-          />
         </div>
 
         <div className="relative">
@@ -186,7 +217,7 @@ export default function ProfileForm() {
                   className="text-gray-700 hover:text-black relative p-0 h-fit bg-transparent"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowUserId((prev) => !prev);
+                    setShowUserId(prev => !prev);
                   }}
                 >
                   {showUserId ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -215,7 +246,7 @@ export default function ProfileForm() {
             {isEditable ? 'Cancel' : 'Edit Info'}
           </Button>
           {isEditable && (
-            <Button type="submit" asChild={false}>
+            <Button type="submit">
               Save Changes
             </Button>
           )}
@@ -223,6 +254,14 @@ export default function ProfileForm() {
       </div>
 
       <ProfileFormFields control={control} isEditable={isEditable} />
+
+      {/* Profile Image Uploader Dialog */}
+      <ProfileImageUploader
+        oldImage={profileImage || '/default-profile.png'}
+        open={isUploaderOpen}
+        onOpenChange={setIsUploaderOpen}
+        onSave={handleImageSave}
+      />
     </form>
   );
 }
