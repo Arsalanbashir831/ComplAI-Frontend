@@ -1,20 +1,20 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 
+import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useChat, useChatMessages } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -243,7 +243,7 @@ export function MessageInput({
       setShowMentionMenu(false);
       return;
     }
-    
+
     // If the mention menu is open, handle up/down navigation.
     if (showMentionMenu) {
       if (event.key === 'ArrowDown') {
@@ -260,32 +260,34 @@ export function MessageInput({
       }
       // You can remove or disable any Ctrl+Enter logic here if you don't want it to conflict.
     }
-    
+
     // If Ctrl+Enter is pressed, insert a newline at the cursor position.
     if (event.ctrlKey && event.key === 'Enter') {
       event.preventDefault();
       // Get the current cursor position.
       const { selectionStart, selectionEnd } = event.currentTarget;
       const newText =
-        promptText.slice(0, selectionStart) + "\n" + promptText.slice(selectionEnd);
+        promptText.slice(0, selectionStart) +
+        '\n' +
+        promptText.slice(selectionEnd);
       setPromptText(newText);
       // Optionally, update the cursor position here if needed.
       return;
     }
-  
+
     // If Backspace is pressed and there's no text, clear the mention type.
     if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
       event.preventDefault();
       setMentionType(null);
     }
-    
+
     // If plain Enter is pressed, send the message.
     if (event.key === 'Enter') {
       event.preventDefault();
       handleSendMessage();
     }
   };
-  
+
   // // When the user types, check for a mention trigger.
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = event.target.value;
