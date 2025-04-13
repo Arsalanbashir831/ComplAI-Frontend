@@ -9,12 +9,12 @@ import { usePrompt } from '@/contexts/prompt-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import TextareaAutosize from 'react-textarea-autosize';
 
 import { UploadedFile } from '@/types/upload';
 import { cn, shortenText } from '@/lib/utils';
 import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -236,8 +236,59 @@ export function MessageInput({
       abortControllerRef.current.abort();
     }
   };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // If the user presses Escape and the mention menu is open, close it.
+    if (event.key === 'Escape' && showMentionMenu) {
+      event.preventDefault();
+      setShowMentionMenu(false);
+      return;
+    }
 
-  // When the user types, check for a mention trigger.
+    // If the mention menu is open, handle up/down navigation.
+    if (showMentionMenu) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setSelectedMentionIndex(
+          (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
+        );
+        return;
+      }
+      // You can remove or disable any Ctrl+Enter logic here if you don't want it to conflict.
+    }
+
+    // If Ctrl+Enter is pressed, insert a newline at the cursor position.
+    if (event.ctrlKey && event.key === 'Enter') {
+      event.preventDefault();
+      // Get the current cursor position.
+      const { selectionStart, selectionEnd } = event.currentTarget;
+      const newText =
+        promptText.slice(0, selectionStart) +
+        '\n' +
+        promptText.slice(selectionEnd);
+      setPromptText(newText);
+      // Optionally, update the cursor position here if needed.
+      return;
+    }
+
+    // If Backspace is pressed and there's no text, clear the mention type.
+    if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
+      event.preventDefault();
+      setMentionType(null);
+    }
+
+    // If plain Enter is pressed, send the message.
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // // When the user types, check for a mention trigger.
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = event.target.value;
     const mentionMatch = input.match(/@(\w*)$/);
@@ -256,52 +307,52 @@ export function MessageInput({
     }
   };
 
-  // Handle key events for the textarea and mention menu.
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Escape' && showMentionMenu) {
-      event.preventDefault();
-      setShowMentionMenu(false);
-      return;
-    }
-    if (showMentionMenu) {
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
-        return;
-      }
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        setSelectedMentionIndex(
-          (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
-        );
-        return;
-      }
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        const match = promptText.match(/@(\w+)$/);
-        let selectedOption: string;
-        if (match) {
-          const query = match[1].toLowerCase();
-          const found = mentionOptions.find((option) => option.value === query);
-          selectedOption = found
-            ? found.value
-            : mentionOptions[selectedMentionIndex].value;
-        } else {
-          selectedOption = mentionOptions[selectedMentionIndex].value;
-        }
-        handleSelectMention(selectedOption as 'pdf' | 'docx');
-        return;
-      }
-    }
-    if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
-      event.preventDefault();
-      setMentionType(null);
-    }
-    if (event.ctrlKey && event.key === 'Enter') {
-      event.preventDefault();
-      handleSendMessage();
-    }
-  };
+  // // Handle key events for the textarea and mention menu.
+  // const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  //   if (event.key === 'Escape' && showMentionMenu) {
+  //     event.preventDefault();
+  //     setShowMentionMenu(false);
+  //     return;
+  //   }
+  //   if (showMentionMenu) {
+  //     if (event.key === 'ArrowDown') {
+  //       event.preventDefault();
+  //       setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
+  //       return;
+  //     }
+  //     if (event.key === 'ArrowUp') {
+  //       event.preventDefault();
+  //       setSelectedMentionIndex(
+  //         (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
+  //       );
+  //       return;
+  //     }
+  //     if (event.ctrlKey && event.key === 'Enter') {
+  //       event.preventDefault();
+  //       const match = promptText.match(/@(\w+)$/);
+  //       let selectedOption: string;
+  //       if (match) {
+  //         const query = match[1].toLowerCase();
+  //         const found = mentionOptions.find((option) => option.value === query);
+  //         selectedOption = found
+  //           ? found.value
+  //           : mentionOptions[selectedMentionIndex].value;
+  //       } else {
+  //         selectedOption = mentionOptions[selectedMentionIndex].value;
+  //       }
+  //       handleSelectMention(selectedOption as 'pdf' | 'docx');
+  //       return;
+  //     }
+  //   }
+  //   if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
+  //     event.preventDefault();
+  //     setMentionType(null);
+  //   }
+  //   if (event.key === 'Enter') {
+  //     event.preventDefault();
+  //     handleSendMessage();
+  //   }
+  // };
 
   const handleSelectMention = (type: 'pdf' | 'docx') => {
     setMentionType(type);
@@ -355,13 +406,13 @@ export function MessageInput({
               </div>
             )}
 
-            <Textarea
+            <TextareaAutosize
               placeholder="Message Compl-AI"
               value={promptText}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
               disabled={isSending}
-              className="min-h-[40px] flex-1 resize-none border-none bg-transparent pr-20 shadow-none focus-visible:ring-0"
+              className="min-h-[40px] max-h-[100px] outline-none flex-1 resize-none border-none bg-transparent pr-20 shadow-none focus-visible:ring-0"
             />
           </div>
 

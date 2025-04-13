@@ -6,12 +6,7 @@ import { usePathname } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Command,
-  LayoutDashboard,
-  MessageSquareText,
-  Search,
-} from 'lucide-react';
+import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
 
 import apiCaller from '@/config/apiCaller';
 import { cn } from '@/lib/utils';
@@ -101,12 +96,12 @@ export function ChatSidebar() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               startIcon={<Search className="h-4 w-4 text-muted-foreground" />}
-              endIcon={
-                <span className="flex gap-1 items-center bg-gray-light rounded text-black font-medium px-1.5 py-1 text-xs">
-                  <Command className="h-3 w-3" />
-                  <span className="font-mono">K</span>
-                </span>
-              }
+              // endIcon={
+              //   <span className="flex gap-1 items-center bg-gray-light rounded text-black font-medium px-1.5 py-1 text-xs">
+              //     <Command className="h-3 w-3" />
+              //     <span className="font-mono">K</span>
+              //   </span>
+              // }
               className="pl-8"
             />
           </div>

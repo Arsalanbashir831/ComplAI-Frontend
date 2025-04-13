@@ -104,7 +104,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       <div
         className={cn(
           `flex flex-col gap-2 rounded-2xl py-2 items-center justify-center ${
-            isBot ? 'px-0' : 'px-4 md:px-8 rounded-full '
+            isBot ? 'px-0' : 'px-4 md:px-8 '
           } md:max-w-[66.666667%]`,
           isBot
             ? 'bg-white'
