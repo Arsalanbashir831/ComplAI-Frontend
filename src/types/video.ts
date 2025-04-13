@@ -2,7 +2,7 @@ export interface Video {
   id: string;
   title: string;
   description: string;
-  thumbnail_url: string;
+  thumbnail_image: string;
   studio: string;
   video_url: string;
   tags: string[];
