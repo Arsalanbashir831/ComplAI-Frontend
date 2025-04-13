@@ -1,14 +1,14 @@
 'use client';
 
+import { useState } from 'react';
+import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { Download, Play, User } from 'lucide-react';
-import Image from 'next/image';
-import { useState } from 'react';
 
+import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import type { Video } from '@/types/video';
 
 import { VideoPlayer } from './video-player';
 
@@ -27,7 +27,7 @@ export function VideoCard({ video }: VideoCardProps) {
       >
         <div className="relative aspect-video">
           <Image
-            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${video.thumbnail_image }`}
+            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${video.thumbnail_image}`}
             alt={video.title}
             fill
             className="object-cover"
@@ -82,7 +82,7 @@ export function VideoCard({ video }: VideoCardProps) {
         >
           <VideoPlayer
             videoUrl={video.video_url}
-            thumbnail= {`${process.env.NEXT_PUBLIC_BACKEND_URL}/${video.thumbnail_image }`}
+            thumbnail={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${video.thumbnail_image}`}
           />
         </DialogContent>
       </Dialog>
