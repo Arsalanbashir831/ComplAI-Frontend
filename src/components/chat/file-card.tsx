@@ -84,7 +84,7 @@ export function FileCard({
       const parts = details.type.split('/');
       key = parts[1] || '';
     } else {
-      const extension = details.name.split('.').pop()?.toLowerCase();
+      const extension = details.name?.split('.').pop()?.toLowerCase();
       key = extension || 'plain';
     }
 

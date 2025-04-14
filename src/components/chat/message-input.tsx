@@ -53,6 +53,7 @@ export function MessageInput({
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const maxChars = 10000;
   console.log('prompt', promptText);
+  console.log('uploadedFiles', uploadedFiles);
 
   // Define available mention options.
   const mentionOptions = [
@@ -105,24 +106,39 @@ export function MessageInput({
     const file = files[0];
     if (!file) return;
 
-    const newFile: UploadedFile = {
-      id: crypto.randomUUID(),
-      lastModified: file.lastModified,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      webkitRelativePath: file.webkitRelativePath,
-      progress: 0,
-      rawFile: file,
-      arrayBuffer: file.arrayBuffer,
-      bytes: async () => new Uint8Array(await file.arrayBuffer()),
-      slice: file.slice,
-      stream: file.stream,
-      text: file.text,
-    };
+    const newUploadedFiles: UploadedFile[] = files
+      .map((file) => {
+        if (!file) {
+          console.warn('Skipping an invalid entry in the files array.');
+          return null;
+        }
+        return {
+          id: crypto.randomUUID(),
+          lastModified: file.lastModified,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          webkitRelativePath: file.webkitRelativePath,
+          progress: 0,
+          rawFile: file,
+          arrayBuffer: () => file.arrayBuffer(),
+          bytes: async () => new Uint8Array(await file.arrayBuffer()),
+          slice: (start?: number, end?: number, contentType?: string) =>
+            file.slice(start, end, contentType),
+          stream: () => file.stream(),
+          text: () => file.text(),
+        };
+      })
+      .filter((file) => file !== null) as UploadedFile[];
 
-    setUploadedFiles([newFile]);
-    await simulateUpload(newFile.id);
+    if (newUploadedFiles.length === 0) {
+      console.log('No valid files to upload.');
+      return;
+    }
+
+    setUploadedFiles(newUploadedFiles);
+    // Simulate upload progress for each file.
+    await Promise.all(newUploadedFiles.map((file) => simulateUpload(file.id)));
   };
 
   const handleCloseModal = () => {
@@ -144,14 +160,17 @@ export function MessageInput({
 
     try {
       let localChatId = currentChatId;
+      const documentsToSend: File[] = uploadedFiles.map(
+        (upFile) => upFile.rawFile
+      );
+
       if (!localChatId) {
         // Create a new chat and update currentChatId state.
         const response = await createChat(shortenText(promptText.trim(), 5));
         localChatId = response.id;
         setCurrentChatId(localChatId);
       }
-      const documentToSend =
-        uploadedFiles.length > 0 ? uploadedFiles[0].rawFile : undefined;
+
       if (isNewChat && localChatId) {
         setMessages([]);
         router.push(ROUTES.CHAT_ID(localChatId));
@@ -166,7 +185,7 @@ export function MessageInput({
         created_at: new Date().toISOString(),
         tokens_used: 0,
         is_system_message: false,
-        file: documentToSend || null,
+        file: documentsToSend.length > 0 ? documentsToSend : null,
       };
       setMessages((prev) => [...prev, userMessage]);
 
@@ -189,7 +208,7 @@ export function MessageInput({
         await sendMessage({
           chatId: localChatId,
           content: promptText.trim(),
-          document: documentToSend,
+          documents: documentsToSend,
           onChunkUpdate: (chunk) => {
             setMessages((prev) =>
               prev.map((msg) =>
@@ -204,7 +223,7 @@ export function MessageInput({
         const response = await addMessageNoStream({
           chatId: localChatId,
           content: promptText.trim(),
-          document: documentToSend,
+          documents: documentsToSend,
           return_type: mentionType,
           signal, // Pass the abort signal.
         });

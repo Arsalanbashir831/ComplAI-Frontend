@@ -69,13 +69,13 @@ const useChat = () => {
     mutationFn: async ({
       chatId,
       content,
-      document,
+      documents,
       return_type,
       signal,
     }: {
       chatId: string;
       content: string;
-      document?: File | Blob;
+      documents?: File[] | Blob;
       return_type?: 'docx' | 'pdf' | null;
       signal?: AbortSignal;
     }): Promise<ChatMessage> => {
@@ -85,8 +85,19 @@ const useChat = () => {
         formData.append('content', content);
 
         // Append document only if it exists
-        if (document) {
-          formData.append('document', document);
+        if (documents) {
+          if (Array.isArray(documents)) {
+            documents.forEach((file, index) => {
+              console.log(
+                ` - Appending file ${index + 1}: ${file.name} with key 'document'`
+              );
+              // Use the key 'document' as required by backend
+              formData.append('document', file, file.name);
+            });
+          } else {
+            // Handle single Blob
+            formData.append('document', documents);
+          }
         }
 
         // Append return_type only if it exists
@@ -169,13 +180,13 @@ const useChat = () => {
     mutationFn: async ({
       chatId,
       content,
-      document,
+      documents,
       onChunkUpdate,
       signal,
     }: {
       chatId: string;
       content: string;
-      document?: File | Blob;
+      documents?: File[] | Blob;
       onChunkUpdate?: (chunk: string) => void;
       signal?: AbortSignal;
     }): Promise<ChatMessage> => {
@@ -184,8 +195,19 @@ const useChat = () => {
       // Prepare FormData for sending the message with optional file.
       const formData = new FormData();
       formData.append('content', content);
-      if (document) {
-        formData.append('document', document);
+      if (documents) {
+        if (Array.isArray(documents)) {
+          documents.forEach((file, index) => {
+            console.log(
+              ` - Appending file ${index + 1}: ${file.name} with key 'document'`
+            );
+            // Use the key 'document' as required by backend
+            formData.append('document', file, file.name);
+          });
+        } else {
+          // Handle single Blob
+          formData.append('document', documents);
+        }
       }
 
       return new Promise<ChatMessage>(async (resolve, reject) => {
