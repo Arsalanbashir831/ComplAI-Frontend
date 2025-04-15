@@ -19,7 +19,7 @@ export interface UploadModalProps {
 }
 
 export interface FileCardProps {
-  file: UploadedFile | File;
+  file: UploadedFile | File | File[];
   showExtraInfo?: boolean;
   onRemove?: (id: string) => void;
   titleColor?: string;

@@ -26,6 +26,8 @@ interface CodeProps {
 export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.is_system_message;
 
+  console.log('message', message);
+
   // Customized markdown components with proper types.
   const markdownComponents: Components = {
     h1: ({ ...props }) => (

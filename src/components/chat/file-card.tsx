@@ -15,8 +15,10 @@ const getAbsoluteUrl = (url: string): string => {
 };
 
 // Type guard for frontend-uploaded files.
-const isUploadedFile = (file: UploadedFile | File): file is UploadedFile => {
-  return (file as UploadedFile).progress !== undefined;
+const isUploadedFile = (
+  file: UploadedFile | File | File[]
+): file is UploadedFile => {
+  return !Array.isArray(file) && (file as UploadedFile).progress !== undefined;
 };
 
 // Extract basic file details for backend files (passed as a URL).
