@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 // import { Import } from "@tiptap-pro/extension-import";
 
 import { FontSizeExtension } from '@/extensions/font-size';
@@ -24,55 +24,11 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageResize from 'tiptap-extension-resize-image';
 
-export const Editor = () => {
+export const Editor = ({ initialContent }: { initialContent: string }) => {
   const { setEditor } = useEditorStore();
-  const [content, setContent] = useState<string | null>(null);
-
-  // Load the content from localStorage or set an empty document if nothing is in localStorage
-  useEffect(() => {
-    const storedHtmlContent = localStorage.getItem('htmlContent');
-
-    if (storedHtmlContent) {
-      setContent(storedHtmlContent); // Use stored content if available
-    } else {
-      // Start with an empty document if no content is stored
-      setContent('');
-    }
-  }, []);
 
   const editor = useEditor({
-    immediatelyRender: false,
-    onCreate({ editor }) {
-      setEditor(editor);
-    },
-    onDestroy() {
-      setEditor(null);
-    },
-    onUpdate({ editor }) {
-      setEditor(editor);
-    },
-    onSelectionUpdate({ editor }) {
-      setEditor(editor);
-    },
-    onTransaction({ editor }) {
-      setEditor(editor);
-    },
-    onFocus({ editor }) {
-      setEditor(editor);
-    },
-    onBlur({ editor }) {
-      setEditor(editor);
-    },
-    onContentError({ editor }) {
-      setEditor(editor);
-    },
-    editorProps: {
-      attributes: {
-        style: 'padding-left: 40px; padding-right: 40px;',
-        class:
-          'focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] pt-10 pr-10 cursor-text w-[49vw]',
-      },
-    },
+    content: initialContent,
     extensions: [
       StarterKit,
       LineHeightExtension,
@@ -107,19 +63,48 @@ export const Editor = () => {
       // }),
       TaskList,
     ],
+    editorProps: {
+      attributes: {
+        style: 'padding-left: 40px; padding-right: 40px;',
+        class:
+          'focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] pt-10 pr-10 cursor-text w-[49vw]',
+      },
+    },
+    immediatelyRender: false,
+    onCreate({ editor }) {
+      setEditor(editor);
+    },
+    onDestroy() {
+      setEditor(null);
+    },
+    onUpdate({ editor }) {
+      setEditor(editor);
+    },
+    onSelectionUpdate({ editor }) {
+      setEditor(editor);
+    },
+    onTransaction({ editor }) {
+      setEditor(editor);
+    },
+    onFocus({ editor }) {
+      setEditor(editor);
+    },
+    onBlur({ editor }) {
+      setEditor(editor);
+    },
+    onContentError({ editor }) {
+      setEditor(editor);
+    },
   });
 
-  // Handle inserting the HTML content into the editor once it's available
   useEffect(() => {
-    if (editor && content) {
-      editor.commands.setContent(content); // Insert the HTML content into the editor
-    }
-  }, [editor, content]);
+    if (editor) editor.commands.setContent(initialContent);
+  }, [editor, initialContent]);
 
   return (
     <div className="size-full overflow-x-auto bg-[#F9FBFD] print:p-0 print:bg-white print:overflow-visible">
       <div className="flex justify-center py-4 print:py-0 mx-auto print:w-full print:min-w-0 w-full">
-        <EditorContent editor={editor} />
+        {editor && <EditorContent editor={editor} />}
       </div>
     </div>
   );
