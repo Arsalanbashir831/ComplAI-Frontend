@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -156,7 +156,7 @@ const useChat = () => {
             created_at: new Date().toISOString(),
             tokens_used: 0,
             is_system_message: true,
-            file: fileObject,
+            files: fileObject,
           } as ChatMessage;
         }
       } catch (error) {
@@ -265,7 +265,7 @@ const useChat = () => {
                       created_at: data.summary.created_at,
                       tokens_used: data.summary.tokens_used,
                       is_system_message: true,
-                      file: null,
+                      files: null,
                     };
                     resolve(finalMessage);
                   }
@@ -352,3 +352,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

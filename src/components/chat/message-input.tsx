@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -185,7 +185,7 @@ export function MessageInput({
         created_at: new Date().toISOString(),
         tokens_used: 0,
         is_system_message: false,
-        file: documentsToSend.length > 0 ? documentsToSend : null,
+        files: documentsToSend.length > 0 ? documentsToSend : null,
       };
       setMessages((prev) => [...prev, userMessage]);
 
@@ -199,7 +199,7 @@ export function MessageInput({
         created_at: new Date().toISOString(),
         tokens_used: 0,
         is_system_message: true,
-        file: null,
+        files: null,
       };
       setMessages((prev) => [...prev, placeholderAIMessage]);
 
