@@ -4,9 +4,12 @@ import type React from 'react';
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
+import animationData from '@/assets/lottie/ai-review-animation.json';
 import { ROUTES } from '@/constants/routes';
+import { X } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import LottiePlayer from '@/components/common/lottie-animation';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 
 interface UploadedFile {
@@ -79,9 +82,9 @@ export default function DocCompliancePage() {
     setIsReviewing(true);
 
     // Simulate AI review process
-      setTimeout(() => {
-          router.push(ROUTES.DOC_COMPLIANCE_AI_CORRECTION);
-      }, 3000);
+    setTimeout(() => {
+      router.push(ROUTES.DOC_COMPLIANCE_AI_CORRECTION);
+    }, 3000);
   };
 
   if (isReviewing) {
@@ -90,15 +93,10 @@ export default function DocCompliancePage() {
         <DashboardHeader title="Document Compliance" />
 
         <div className="w-full flex flex-col items-center justify-center  mt-12">
-          <div className="relative w-full h-[200px] mb-8">
-            <Image
-              src="/animation.gif"
-              alt="AI reviewing"
-              fill
-              className="object-contain"
-              unoptimized
-            />
-          </div>
+          <LottiePlayer
+            animationData={animationData}
+            style={{ height: '400px', width: '400px' }}
+          />
           <p className="text-lg text-gray-600">
             AI is reviewing your document...
           </p>
