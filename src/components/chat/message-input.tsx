@@ -1,20 +1,20 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { Button } from '@/components/ui/button';
-import { useChat, useChatMessages } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
 import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
