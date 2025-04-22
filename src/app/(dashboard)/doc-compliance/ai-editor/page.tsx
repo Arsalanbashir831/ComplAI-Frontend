@@ -1,13 +1,27 @@
-'use client';
+import DashboardHeader from '@/components/dashboard/dashboard-header';
+import { Editor } from '@/components/dashboard/doc-compliance/editor/editor';
+import { ToolBar } from '@/components/dashboard/doc-compliance/editor/toolbar';
 
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+// interface DocumentIdPageProps {
+//   params: Promise<{ documentId: string }>;
+// }
 
-export default function AiEditor() {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: '<p>Hello World!</p>',
-  });
+const DocumentIdPage = async () =>
+  // { params }: DocumentIdPageProps
+  {
+    // const { documentId } = await params;
+    return (
+      <div className="min-h-screen">
+        <div className="flex flex-col px-4 pt-2 gap-y-2 z-10 bg-[#FAFBFD] print:hidden">
+          <DashboardHeader title="Document Compliance" />
+          {/* <Navbar /> */}
+          <ToolBar />
+        </div>
+        <div className="pt-2 print:pt-0">
+          <Editor />
+        </div>
+      </div>
+    );
+  };
 
-  return <EditorContent editor={editor} />;
-}
+export default DocumentIdPage;
