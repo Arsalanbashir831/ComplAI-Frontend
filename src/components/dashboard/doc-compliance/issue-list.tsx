@@ -18,6 +18,7 @@ interface IssueListProps {
   issues: Issue[];
   title?: string;
   showAICorrectionButton?: boolean;
+  showResolveIssuesButton?: boolean;
   listClassName?: string;
 }
 
@@ -25,6 +26,7 @@ export default function IssueList({
   issues,
   title = 'Issues',
   showAICorrectionButton = false,
+  showResolveIssuesButton = false,
   listClassName = 'h-[calc(100vh-300px)]',
 }: IssueListProps) {
   return (
@@ -74,6 +76,21 @@ export default function IssueList({
           ))}
         </div>
       </ScrollArea>
+
+      {showResolveIssuesButton && (
+        <div className="flex justify-center mt-4">
+          <Button className="bg-[#1D1E4A] hover:bg-[#2d2e6a] text-white w-52">
+            <Image
+              src="/icons/ai.svg"
+              width={18}
+              height={18}
+              alt="AI"
+              className="mr-2"
+            />
+            Resolve all issues
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

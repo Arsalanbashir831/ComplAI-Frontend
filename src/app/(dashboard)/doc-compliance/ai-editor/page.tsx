@@ -33,7 +33,8 @@ const DocumentIdPage = async () =>
           <div className="w-full max-w-[300px] flex-shrink-0">
             <IssueList
               issues={SAMPLE_ISSUES}
-              listClassName="h-[calc(100vh-220px)]"
+              listClassName="h-[calc(100vh-280px)]"
+              showResolveIssuesButton
             />
           </div>
         </div>
