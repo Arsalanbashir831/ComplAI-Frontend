@@ -3,9 +3,9 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn } from '@/lib/utils';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
@@ -26,9 +26,17 @@ interface CodeProps {
 export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.is_system_message;
 
+  // Normalize files: allow string or array of file entries
+  const files: Array<{ id?: number; file: string }> =
+    Array.isArray(message.files) && message.files.length > 0
+      ? (message.files as Array<{ id?: number; file: string }> )
+      : typeof message.files === 'string'
+      ? [{ file: message.files }]
+      : [];
+
   console.log('message', message);
 
-  // Customized markdown components with proper types.
+  // Customized markdown components
   const markdownComponents: Components = {
     h1: ({ ...props }) => (
       <h1 className="mt-6 mb-4 text-3xl font-bold tracking-wide" {...props} />
@@ -92,13 +100,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     table: ({ ...props }) => (
       <table className="min-w-full border-collapse my-4 text-md" {...props} />
     ),
-    thead: ({ ...props }) => <thead className="bg-blue-800" {...props} />,
-    tbody: ({ ...props }) => <tbody className="bg-white" {...props} />,
-    tr: ({ ...props }) => <tr className="border-b" {...props} />,
+    thead: ({ ...props }) => <thead className="bg-blue-800" {...props} />,  
+    tbody: ({ ...props }) => <tbody className="bg-white" {...props} />,  
+    tr: ({ ...props }) => <tr className="border-b" {...props} />,  
     th: ({ ...props }) => (
       <th className="px-4 py-2 text-left font-medium text-white" {...props} />
     ),
-    td: ({ ...props }) => <td className="px-4 py-2 text-black" {...props} />,
+    td: ({ ...props }) => <td className="px-4 py-2 text-black" {...props} />,  
   };
 
   return (
@@ -114,7 +122,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         )}
       >
         <div className="flex items-start gap-3">
-          {isBot ? (
+          {isBot && (
             <Image
               src="/favicon.svg"
               alt="Compt-AI"
@@ -125,98 +133,54 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 message.content === 'loading' && 'animate-pulse'
               )}
             />
-          ) : (
-            // <div className="relative w-8 h-8">
-            //   <Avatar>
-            //     {/* Avatar Image: Only loads if user.profile_picture is a valid string */}
-            //     <AvatarImage
-            //       src={user?.profile_picture ?? undefined}
-            //       alt={user?.username || 'User'}
-            //     />
-
-            //     {/* Fallback Avatar (Displays initials or default text) */}
-            //     <AvatarFallback>
-            //       {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
-            //     </AvatarFallback>
-            //   </Avatar>
-            // </div>
-            <></>
           )}
 
           <div className="flex flex-col gap-2 w-full">
-            {!isBot && (
-              <>
-                {/* <div className="flex flex-col md:flex-row md:gap-2 md:items-center">
-                  <span className="text-lg text-black font-medium md:border-r border-gray md:pr-2">
-                    <DisplayUsername />
-                  </span>
-                  <span className="text-black text-sm">
-                    {formatDate(message.created_at)}
-                  </span>
-                </div> */}
-                <div className="break-words text-black text-justify">
-                  <Markdown
-                    remarkPlugins={[remarkGfm]}
-                    components={markdownComponents}
-                  >
-                    {message.content}
-                  </Markdown>
-                </div>
-                {message.file && (
-                  <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
-                    <div className="flex w-max h-14 gap-2">
+            <div className={cn('text-justify', 'text-black')}>
+              {message.content !== 'loading' ? (
+                <Markdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {message.content}
+                </Markdown>
+              ) : (
+                isBot && (
+                  <div className="w-full bg-gray-300 rounded animate-pulse flex items-center justify-center h-12 px-5">
+                    <span className="text-gray-500 text-sm">
+                      Generating Response
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* File attachments */}
+            {files.length > 0 && (
+              <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
+                <div className="flex w-max h-14 gap-2">
+                  {files.map((entry) => {
+                    const url = entry.file;
+                    const key = entry.id ?? url;
+                    return (
                       <FileCard
-                        file={message.file}
+                        key={key}
+                        file={new File([url], url.split('/').pop() || 'file')}
                         showExtraInfo={false}
                         titleColor="text-gray-dark"
                         className="bg-gray-light h-10"
                         hasShareButton={true}
                       />
-                    </div>
-                    <ScrollBar orientation="horizontal" />
-                  </ScrollArea>
-                )}
-              </>
-            )}
-            {isBot && (
-              <>
-                <div className="text-black text-justify w-full">
-                  {message.content !== 'loading' ? (
-                    <Markdown
-                      remarkPlugins={[remarkGfm]}
-                      components={markdownComponents}
-                    >
-                      {message.content}
-                    </Markdown>
-                  ) : (
-                    <div className="w-full bg-gray-300 rounded animate-pulse flex items-center justify-center h-12 px-5">
-                      <span className="text-gray-500 text-sm">
-                        Generating Response
-                      </span>
-                    </div>
-                  )}
+                    );
+                  })}
                 </div>
-                {message.file && (
-                  <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
-                    <div className="flex w-max h-14 gap-2">
-                      <FileCard
-                        file={message.file}
-                        showExtraInfo={false}
-                        titleColor="text-gray-dark"
-                        className="bg-gray-light h-10"
-                        hasShareButton={true}
-                      />
-                    </div>
-                    <ScrollBar orientation="horizontal" />
-                  </ScrollArea>
-                )}
-              </>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
             )}
-            {isBot && (
-              <>
-                {' '}
-                <CopyButton content={message.content} />
-              </>
+
+            {/* Copy button for bot messages */}
+            {isBot && message.content !== 'loading' && (
+              <CopyButton content={message.content} />
             )}
           </div>
         </div>

@@ -21,7 +21,7 @@ export interface ChatMessage {
   content: string;
   created_at: string;
   is_system_message: boolean;
-  file: UploadedFile | File | null | File[];
+  files: UploadedFile | File | null | File[]| [];
   userName?: string;
   avatarUrl?: string;
 

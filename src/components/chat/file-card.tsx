@@ -1,14 +1,13 @@
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { DownloadIcon, X } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
-import type { FileCardProps, UploadedFile } from '@/types/upload';
-import { cn, convertSizeToReadable } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn, convertSizeToReadable } from '@/lib/utils';
+import type { FileCardProps, UploadedFile } from '@/types/upload';
 
 // Helper to return an absolute URL using the backend URL if necessary
 const getAbsoluteUrl = (url: string): string => {
-  // If the URL is already absolute, return as is.
   if (url.startsWith('http')) return url;
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
   return `${backendUrl}${url}`;
@@ -24,18 +23,22 @@ const isUploadedFile = (
 // Extract basic file details for backend files (passed as a URL).
 const getFileDetails = (file: UploadedFile | File | string) => {
   if (typeof file === 'string') {
-    // Convert relative URL to an absolute one.
     const absoluteUrl = getAbsoluteUrl(file);
-    const name = absoluteUrl.split('/').pop() || 'Unknown file';
-    const extension = name.split('.').pop()?.toLowerCase();
-    // Set a basic MIME type based on extension.
+    // Extract filename without query/hash
+    const rawName = absoluteUrl.split('/').pop() || 'Unknown file';
+    const name = rawName.split('?')[0].split('#')[0];
+    // Get extension from filename
+    const extMatch = name.match(/\.([^.]+)$/);
+    const extension = extMatch ? extMatch[1].toLowerCase() : '';
+    // Determine MIME type based on extension
     let mimeType = 'text/plain';
     if (extension === 'pdf') {
       mimeType = 'application/pdf';
     } else if (extension === 'doc' || extension === 'docx') {
       mimeType = 'application/docx';
     }
-    return { name, size: 0, type: mimeType, url: absoluteUrl };
+    console.log('abs',absoluteUrl)
+    return { name, size: 0, type: mimeType, url:absoluteUrl };
   }
   return file as UploadedFile | File;
 };
@@ -45,10 +48,9 @@ export function FileCard({
   showExtraInfo = true,
   onRemove,
   titleColor,
-  hasShareButton,
+  hasShareButton ,
   className,
 }: FileCardProps) {
-  // For backend files (passed as a URL), fetch file size from metadata.
   const [backendFileSize, setBackendFileSize] = useState<number>(0);
 
   useEffect(() => {
@@ -58,79 +60,64 @@ export function FileCard({
         .then((res) => {
           const cl = res.headers.get('content-length');
           if (cl) {
-            setBackendFileSize(parseInt(cl));
+            setBackendFileSize(parseInt(cl, 10));
           }
         })
         .catch((err) => console.error('Failed to fetch file metadata:', err));
     }
   }, [file]);
 
-  // Create a unified file data object.
   const fileData =
     typeof file === 'string'
-      ? { ...getFileDetails(file), size: backendFileSize }
+      ? { ...getFileDetails(file), size: backendFileSize  }
       : file;
 
-  // Determine the icon path based on the file type.
-  const getIconPath = (details: { name: string; type: string }) => {
-    const fileTypeMap: Record<string, string> = {
-      pdf: 'pdf-document',
-      plain: 'plain-document',
-      docx: 'word-document',
-      'vnd.openxmlformats-officedocument.wordprocessingml.document':
-        'word-document',
-    };
+  // Determine file name and extension
+  const fileName = fileData.name;
+  const extension = fileName.split('.').pop()?.toLowerCase() || '';
 
-    let key = '';
-    if (details.type) {
-      const parts = details.type.split('/');
-      key = parts[1] || '';
-    } else {
-      const extension = details.name?.split('.').pop()?.toLowerCase();
-      key = extension || 'plain';
-    }
-
-    return `/icons/${fileTypeMap[key] || 'plain-document'}.svg`;
+  // Map extensions to icon names
+  const fileTypeMap: Record<string, string> = {
+    pdf: 'pdf-document',
+    doc: 'word-document',
+    docx: 'word-document',
   };
+
+  console.log(fileTypeMap[extension])
+  const iconName = fileTypeMap[extension] || 'plain-document';
+  const iconPath = `/icons/${iconName}.svg`;
+
+  // Background based on extension
+  console.log('ext',extension)
+  const bgClass =
+    extension === 'pdf'
+      ? 'bg-[#B1362F]'
+      : extension === 'doc' || extension === 'docx'
+      ? 'bg-[#07378C]'
+      : 'bg-transparent';
 
   return (
     <div
       className={cn(
         'flex items-center justify-between rounded-lg p-3',
-        // Use file type to decide on a background color.
-        typeof fileData === 'object' && 'url' in fileData && fileData.url
-          ? fileData.type === 'application/pdf'
-            ? 'bg-[#B1362F]'
-            : fileData.type === 'text/plain'
-              ? 'bg-[#372297bf]'
-              : 'bg-[#07378C]'
-          : 'bg-[#07378C]',
+        bgClass,
         className
       )}
     >
       <div className="flex items-center gap-3">
         {/* File Icon */}
-        <Image
-          src={
-            typeof file === 'string'
-              ? getIconPath(getFileDetails(file))
-              : getIconPath(fileData as { name: string; type: string })
-          }
-          width={30}
-          height={30}
-          alt="Document"
-        />
+        <Image src={iconPath} width={30} height={30} alt="Document" />
 
         <div className="flex flex-col">
           {/* File Name */}
           <span className={cn('font-normal text-sm text-white', titleColor)}>
-            {'name' in fileData ? fileData.name : ''}
+            {fileName}
           </span>
 
           {/* File Size & Upload Status */}
           {showExtraInfo && (
             <span className="text-xs text-white">
-              {convertSizeToReadable('size' in fileData ? fileData.size : 0)}
+              {convertSizeToReadable(fileData.size)}
               <span className="ml-2">
                 {typeof file !== 'string' &&
                 isUploadedFile(file) &&
@@ -146,25 +133,15 @@ export function FileCard({
 
       {/* Action Buttons: Download or Remove */}
       {hasShareButton ? (
-        // For backend files (with a URL), enable downloading by wrapping the button in an anchor.
-        'url' in fileData && fileData.url ? (
-          <a
-            href={fileData.url}
-            download
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full hover:bg-background/20 text-gray-dark"
-            >
-              <DownloadIcon className="h-4 w-4" />
-              <span className="sr-only">Download file</span>
-            </Button>
-          </a>
-        ) : (
-          <Button
+         <Button
+            onClick={() => {
+              // const url = 'url' in fileData ? fileData.url : (file as UploadedFile).id;
+              // console.log(fileData.name)
+              const a = document.createElement('a');
+              a.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/media/chat_files/${fileData.name}`;
+              a.download = fileData.name;
+              a.click();
+            }}
             variant="ghost"
             size="icon"
             className="h-8 w-8 rounded-full hover:bg-background/20 text-gray-dark"
@@ -172,8 +149,8 @@ export function FileCard({
             <DownloadIcon className="h-4 w-4" />
             <span className="sr-only">Download file</span>
           </Button>
-        )
       ) : (
+        
         <Button
           variant="ghost"
           size="icon"

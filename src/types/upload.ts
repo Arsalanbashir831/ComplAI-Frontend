@@ -18,14 +18,18 @@ export interface UploadModalProps {
   onUpload: (files: File[]) => void;
 }
 
+
 export interface FileCardProps {
-  file: UploadedFile | File | File[];
+
+  file: UploadedFile | File | string;
   showExtraInfo?: boolean;
   onRemove?: (id: string) => void;
   titleColor?: string;
-  className?: string;
   hasShareButton?: boolean;
+  className?: string;
+
 }
+
 
 export interface UploadedFilesProps extends FileUploadProps {
   uploadedFiles: UploadedFile[];
