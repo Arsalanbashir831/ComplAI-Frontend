@@ -637,7 +637,7 @@ export const ToolBar = () => {
     ],
   ];
   return (
-    <div className="bg-white px-2.5 py-0.5 rounded-md min-h-[40px] flex items-center justify-between gap-x-0.5 overflow-x-auto">
+    <div className="bg-white px-2.5 py-0.5 rounded-md min-h-[40px] flex items-center justify-between gap-x-0.5 overflow-x-auto mx-3">
       <FontFamilyButton />
       <Separator orientation="vertical" className="h-6 bg-neutral-300 " />
       <HeadingLevelButton />
