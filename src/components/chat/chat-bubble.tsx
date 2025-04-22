@@ -3,9 +3,9 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn } from '@/lib/utils';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
@@ -29,10 +29,10 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
     Array.isArray(message.files) && message.files.length > 0
-      ? (message.files as Array<{ id?: number; file: string }> )
+      ? (message.files as Array<{ id?: number; file: string }>)
       : typeof message.files === 'string'
-      ? [{ file: message.files }]
-      : [];
+        ? [{ file: message.files }]
+        : [];
 
   console.log('message', message);
 
@@ -100,13 +100,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     table: ({ ...props }) => (
       <table className="min-w-full border-collapse my-4 text-md" {...props} />
     ),
-    thead: ({ ...props }) => <thead className="bg-blue-800" {...props} />,  
-    tbody: ({ ...props }) => <tbody className="bg-white" {...props} />,  
-    tr: ({ ...props }) => <tr className="border-b" {...props} />,  
+    thead: ({ ...props }) => <thead className="bg-blue-800" {...props} />,
+    tbody: ({ ...props }) => <tbody className="bg-white" {...props} />,
+    tr: ({ ...props }) => <tr className="border-b" {...props} />,
     th: ({ ...props }) => (
       <th className="px-4 py-2 text-left font-medium text-white" {...props} />
     ),
-    td: ({ ...props }) => <td className="px-4 py-2 text-black" {...props} />,  
+    td: ({ ...props }) => <td className="px-4 py-2 text-black" {...props} />,
   };
 
   return (

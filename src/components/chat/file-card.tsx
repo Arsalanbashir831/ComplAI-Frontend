@@ -1,10 +1,10 @@
-import { DownloadIcon, X } from 'lucide-react';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { DownloadIcon, X } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { cn, convertSizeToReadable } from '@/lib/utils';
 import type { FileCardProps, UploadedFile } from '@/types/upload';
+import { cn, convertSizeToReadable } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 // Helper to return an absolute URL using the backend URL if necessary
 const getAbsoluteUrl = (url: string): string => {
@@ -37,8 +37,8 @@ const getFileDetails = (file: UploadedFile | File | string) => {
     } else if (extension === 'doc' || extension === 'docx') {
       mimeType = 'application/docx';
     }
-    console.log('abs',absoluteUrl)
-    return { name, size: 0, type: mimeType, url:absoluteUrl };
+    console.log('abs', absoluteUrl);
+    return { name, size: 0, type: mimeType, url: absoluteUrl };
   }
   return file as UploadedFile | File;
 };
@@ -48,7 +48,7 @@ export function FileCard({
   showExtraInfo = true,
   onRemove,
   titleColor,
-  hasShareButton ,
+  hasShareButton,
   className,
 }: FileCardProps) {
   const [backendFileSize, setBackendFileSize] = useState<number>(0);
@@ -69,7 +69,7 @@ export function FileCard({
 
   const fileData =
     typeof file === 'string'
-      ? { ...getFileDetails(file), size: backendFileSize  }
+      ? { ...getFileDetails(file), size: backendFileSize }
       : file;
 
   // Determine file name and extension
@@ -83,18 +83,18 @@ export function FileCard({
     docx: 'word-document',
   };
 
-  console.log(fileTypeMap[extension])
+  console.log(fileTypeMap[extension]);
   const iconName = fileTypeMap[extension] || 'plain-document';
   const iconPath = `/icons/${iconName}.svg`;
 
   // Background based on extension
-  console.log('ext',extension)
+  console.log('ext', extension);
   const bgClass =
     extension === 'pdf'
       ? 'bg-[#B1362F]'
       : extension === 'doc' || extension === 'docx'
-      ? 'bg-[#07378C]'
-      : 'bg-transparent';
+        ? 'bg-[#07378C]'
+        : 'bg-transparent';
 
   return (
     <div
@@ -133,24 +133,23 @@ export function FileCard({
 
       {/* Action Buttons: Download or Remove */}
       {hasShareButton ? (
-         <Button
-            onClick={() => {
-              // const url = 'url' in fileData ? fileData.url : (file as UploadedFile).id;
-              // console.log(fileData.name)
-              const a = document.createElement('a');
-              a.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/media/chat_files/${fileData.name}`;
-              a.download = fileData.name;
-              a.click();
-            }}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full hover:bg-background/20 text-gray-dark"
-          >
-            <DownloadIcon className="h-4 w-4" />
-            <span className="sr-only">Download file</span>
-          </Button>
+        <Button
+          onClick={() => {
+            // const url = 'url' in fileData ? fileData.url : (file as UploadedFile).id;
+            // console.log(fileData.name)
+            const a = document.createElement('a');
+            a.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/media/chat_files/${fileData.name}`;
+            a.download = fileData.name;
+            a.click();
+          }}
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full hover:bg-background/20 text-gray-dark"
+        >
+          <DownloadIcon className="h-4 w-4" />
+          <span className="sr-only">Download file</span>
+        </Button>
       ) : (
-        
         <Button
           variant="ghost"
           size="icon"
