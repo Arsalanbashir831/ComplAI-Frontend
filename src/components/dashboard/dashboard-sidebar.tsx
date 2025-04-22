@@ -26,10 +26,9 @@ import { Separator } from '../ui/separator';
 
 // Updated sidebar links with sections
 const COMPLIANCE_TOOLS = [
-    { href: ROUTES.COMPLIANCE_GPT, icon: Bot, label: 'Compliance GPT' },
-    { href: ROUTES.DOC_COMPLIANCE, icon: FileText, label: 'Doc Compliance' },
+  { href: ROUTES.COMPLIANCE_GPT, icon: Bot, label: 'Compliance GPT' },
+  { href: ROUTES.DOC_COMPLIANCE, icon: FileText, label: 'Doc Compliance' },
 ];
-
 
 const APP_NAVIGATION = [
   { href: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
