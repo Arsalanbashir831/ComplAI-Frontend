@@ -1,12 +1,13 @@
-'use client'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
+'use client';
 
-export default function AiEditor()   {
-    const editor = useEditor({
-        extensions: [StarterKit],
-        content: '<p>Hello World!</p>',
-    })
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 
-    return <EditorContent editor={editor} />
+export default function AiEditor() {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: '<p>Hello World!</p>',
+  });
+
+  return <EditorContent editor={editor} />;
 }
