@@ -1,19 +1,19 @@
 'use client';
 
-import type React from 'react';
-import { useState } from 'react';
-import Image from 'next/image';
 import animationData from '@/assets/lottie/ai-review-animation.json';
 import { API_ROUTES } from '@/constants/apiRoutes';
+import Image from 'next/image';
+import type React from 'react';
+import { useState } from 'react';
 // import { API_ROUTES } from '@/constants/apiRoutes';
 import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
 import { X } from 'lucide-react';
 import mammoth from 'mammoth';
-import * as pdfjsLib from 'pdfjs-dist';
+// import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'sonner';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
+import apiCaller from '@/config/apiCaller';
 // import apiCaller from '@/config/apiCaller';
 import LottiePlayer from '@/components/common/lottie-animation';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
@@ -79,25 +79,26 @@ export default function DocCompliancePage() {
 
     try {
       // 1) Read plain .txt
-      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-        fileText = await file.text();
-      }
+      // if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+      //   fileText = await file.text();
+      // }
       // 2) PDF
-      else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        let txt = '';
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          txt += content.items
-            .map((item) => ('str' in item ? item.str : ''))
-            .join(' ');
-        }
-        fileText = txt;
-      }
+      // else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+        
+      //   const arrayBuffer = await file.arrayBuffer();
+      //   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      //   let txt = '';
+      //   for (let i = 1; i <= pdf.numPages; i++) {
+      //     const page = await pdf.getPage(i);
+      //     const content = await page.getTextContent();
+      //     txt += content.items
+      //       .map((item) => ('str' in item ? item.str : ''))
+      //       .join(' ');
+      //   }
+      //   fileText = txt;
+      // }
       // 3) DOCX
-      else if (
+       if (
         file.type ===
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
         file.name.endsWith('.docx')
