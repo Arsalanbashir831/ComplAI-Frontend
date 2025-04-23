@@ -1,16 +1,23 @@
 'use client';
 
+import animationData from '@/assets/lottie/ai-review-animation.json';
+import { API_ROUTES } from '@/constants/apiRoutes';
+import Image from 'next/image';
 import type React from 'react';
 import { useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import animationData from '@/assets/lottie/ai-review-animation.json';
-import { ROUTES } from '@/constants/routes';
+// import { API_ROUTES } from '@/constants/apiRoutes';
+import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
 import { X } from 'lucide-react';
+import mammoth from 'mammoth';
+import * as pdfjsLib from 'pdfjs-dist';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import apiCaller from '@/config/apiCaller';
+// import apiCaller from '@/config/apiCaller';
 import LottiePlayer from '@/components/common/lottie-animation';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
+import IssueList from '@/components/dashboard/doc-compliance/issue-list';
 
 interface UploadedFile {
   id: string;
@@ -22,27 +29,30 @@ interface UploadedFile {
 }
 
 export default function DocCompliancePage() {
-  const router = useRouter();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
 
+  // ← new state for the API results
+  const { results, setResults } = useDocComplianceStore();
+  interface ComplianceResult {
+    original: string;
+    compliant: boolean;
+    suggestion: string;
+    reason: string;
+    citations: string[];
+  }
   const handleUpload = (files: File[]) => {
     setIsUploading(true);
-
-    // Simulate file upload
     setTimeout(() => {
       const newFiles = files.map((file) => ({
         id: Math.random().toString(36).substring(2, 9),
         name: file.name,
-        size: Math.round(file.size / 1024), // Convert to KB
+        size: Math.round(file.size / 1024),
         type: file.type,
         status: 'uploaded',
         file,
       }));
-
       setUploadedFiles(newFiles);
       setIsUploading(false);
     }, 1500);
@@ -52,25 +62,6 @@ export default function DocCompliancePage() {
     setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files);
-      handleUpload(files);
-    }
-  };
-
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
@@ -78,13 +69,84 @@ export default function DocCompliancePage() {
     }
   };
 
-  const handleAIReview = () => {
+  const handleAIReview = async () => {
+    console.log(uploadedFiles[0].file);
+    if (!uploadedFiles.length) return;
     setIsReviewing(true);
 
-    // Simulate AI review process
-    setTimeout(() => {
-      router.push(ROUTES.DOC_COMPLIANCE_AI_CORRECTION);
-    }, 3000);
+    const file = uploadedFiles[0].file;
+    let fileText = '';
+
+    try {
+      // 1) Read plain .txt
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        fileText = await file.text();
+      }
+      // 2) PDF
+      else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let txt = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          txt += content.items
+            .map((item) => ('str' in item ? item.str : ''))
+            .join(' ');
+        }
+        fileText = txt;
+      }
+      // 3) DOCX
+      else if (
+        file.type ===
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+        file.name.endsWith('.docx')
+      ) {
+        console.log('going there');
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        fileText = result.value;
+      } else if (
+        file.type === 'application/msword' ||
+        file.name.toLowerCase().endsWith('.doc')
+      ) {
+        toast.error(
+          'Old “.doc” files aren’t supported—please save as .docx and try again.'
+        );
+        setIsReviewing(false);
+        return;
+      } else {
+        // fallback for anything else
+        fileText = await file.text();
+      }
+
+      const response = await apiCaller(
+        API_ROUTES.DOC_COMPLIANCE.CHECK_DOC,
+        'POST',
+        { document: uploadedFiles[0].file },
+        {},
+        true,
+        'formdata'
+      );
+
+      const allResults = response.data.results as ComplianceResult[];
+
+      const nonCompliant = allResults.filter(
+        (item: ComplianceResult) => !item.compliant
+      );
+
+      setResults(nonCompliant, fileText);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error(err);
+      toast.error(
+        err.message ||
+          err.response?.data?.message ||
+          'Something went wrong reviewing your document.'
+      );
+    } finally {
+      setIsReviewing(false);
+    }
   };
 
   if (isReviewing) {
@@ -100,6 +162,22 @@ export default function DocCompliancePage() {
           <p className="text-lg text-gray-600">
             AI is reviewing your document...
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (results.length > 0) {
+    return (
+      <div className="w-full p-6 h-screen overflow-hidden flex flex-col">
+        <DashboardHeader title="Document Compliance" />
+
+        <div className="mt-8 bg-white rounded-xl p-6 shadow-sm flex flex-col flex-grow">
+          <div className="mt-2 bg-white rounded-xl p-6 shadow-sm flex flex-col flex-grow">
+            <h2 className="text-2xl font-bold">AI Compliance Report</h2>
+
+            <IssueList results={results} showAICorrectionButton />
+          </div>
         </div>
       </div>
     );
@@ -189,9 +267,6 @@ export default function DocCompliancePage() {
           <div className="flex justify-center items-center py-10">
             <div
               className="mt-6 w-1/2 rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer bg-[#F8F9FF]"
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
               onClick={() => document.getElementById('file-upload')?.click()}
             >
               <div className="mb-4">
@@ -218,6 +293,25 @@ export default function DocCompliancePage() {
             </div>
           </div>
         )}
+
+        {/* {uploadedFiles.length > 0 && (
+        <div className="mt-4 w-1/2 mx-auto">
+          <Button
+            onClick={handleAIReview}
+            className="w-full bg-[#1D1E4A] hover:bg-[#2d2e6a] text-white"
+            disabled={isUploading}
+          >
+            <Image
+              src="/icons/ai.svg"
+              width={18}
+              height={18}
+              alt="AI"
+              className="mr-2"
+            />
+            AI Review
+          </Button>
+        </div>
+      )} */}
       </div>
     </div>
   );

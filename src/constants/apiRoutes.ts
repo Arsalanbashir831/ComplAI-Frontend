@@ -29,6 +29,9 @@ export const API_ROUTES = {
     DELETE: '/api/chats/delete/',
     SEARCH_CHATS: (search: string) => `/api/search/elastic/?q=${search}`,
   },
+  DOC_COMPLIANCE: {
+    CHECK_DOC: '/api/checker/check-document/',
+  },
   BILLING: {
     ADD_CARD: '/api/billing/add-card/',
     DEFAULT_CARD: '/api/billing/default-card/',
