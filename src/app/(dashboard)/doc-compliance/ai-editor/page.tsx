@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
+import { useEditorStore } from '@/store/use-editor-store';
 
+import { applySuggestionAcross } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { Editor } from '@/components/dashboard/doc-compliance/editor/editor';
@@ -12,41 +14,29 @@ import IssueList from '@/components/dashboard/doc-compliance/issue-list';
 
 export default function DocumentIdPage() {
   const router = useRouter();
-  const { results, content = '', setContent } = useDocComplianceStore();
+  const { results, content = '' } = useDocComplianceStore();
+  const { editor } = useEditorStore();
+
+  console.log('DocumentIdPage', { results, content });
 
   // If we don’t have any content (e.g. user hit refresh), bounce back
   useEffect(() => {
     if (!content) router.push('/doc-compliance');
   }, [content, router]);
 
-  // 1) Inject <mark> around each flagged span
-  const highlighted = useMemo(() => {
-    let html = content;
-
-    for (const { original } of results) {
-      if (typeof original !== 'string' || !original.trim()) continue;
-
-      const esc = original.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      html = html.replace(
-        new RegExp(esc, 'g'),
-        `<mark class="bg-red-200">${original}</mark>`
-      );
-    }
-
-    return html;
-  }, [content, results]);
-
-  // 2) Bulk‐apply all suggestions
   const handleResolveAll = () => {
-    let updated = content;
-    for (const { original, suggestion } of results) {
-      if (!suggestion) continue;
-      const esc = original.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      updated = updated.replace(new RegExp(esc, 'g'), suggestion);
-    }
-    setContent(updated);
+    if (!editor) return;
+    results.forEach(({ original, suggestion }) => {
+      if (suggestion) applySuggestionAcross(editor, original, suggestion);
+    });
   };
 
+  const handleResolveIssue = (idx: number) => {
+    if (!editor) return;
+    const { original, suggestion } = results[idx];
+    if (editor && suggestion)
+      applySuggestionAcross(editor, original, suggestion);
+  };
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Header + Toolbar */}
@@ -58,8 +48,12 @@ export default function DocumentIdPage() {
       <div className="flex flex-1 mt-2 px-4 gap-x-4 overflow-hidden print:hidden">
         {/* Left: full‐width TipTap editor with highlights */}
         <div className="flex-1">
-          <ScrollArea className="flex-1 w-full bg-white rounded-lg p-4">
-            <Editor initialContent={highlighted} />
+          <ScrollArea className="flex-1 w-full bg-white rounded-lg p-4 h-[calc(100vh-130px)]">
+            <Editor
+              key={JSON.stringify(results.map((r) => r.original))}
+              initialContent={content}
+              results={results}
+            />
           </ScrollArea>
         </div>
 
@@ -70,6 +64,7 @@ export default function DocumentIdPage() {
             listClassName="h-[calc(100vh-280px)]"
             showResolveIssuesButton
             onResolveIssues={handleResolveAll}
+            onResolveIssue={handleResolveIssue}
           />
         </div>
       </div>

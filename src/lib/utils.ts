@@ -1,4 +1,6 @@
+import type { Editor } from '@tiptap/react';
 import { clsx, type ClassValue } from 'clsx';
+import { TextSelection } from 'prosemirror-state';
 import { DateRange } from 'react-day-picker';
 import { twMerge } from 'tailwind-merge';
 
@@ -132,4 +134,65 @@ export const getDefaultDateRange = (): DateRange => {
 
 export function shortenText(text: string, wordLimit = 50) {
   return text.split(/\s+/).slice(0, wordLimit).join(' ') + '...';
+}
+
+export function applySuggestionAcross(
+  editor: Editor,
+  original: string,
+  suggestion: string
+) {
+  const { state, view } = editor;
+  let tr = state.tr;
+
+  // Escape special regex chars in the original string
+  const esc = original.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+  // Global regex, but we will run it on each text node separately
+  const regex = new RegExp(esc, 'g');
+
+  // Collect all matches: { from, to }
+  const matches: Array<{ from: number; to: number }> = [];
+
+  state.doc.descendants((node, pos) => {
+    if (!node.isText) return true;
+
+    const text = node.text || '';
+    let m: RegExpExecArray | null;
+
+    // Reset lastIndex so each node starts at 0
+    regex.lastIndex = 0;
+
+    while ((m = regex.exec(text)) !== null) {
+      const startInNode = m.index;
+      const endInNode = startInNode + original.length;
+      matches.push({
+        from: pos + startInNode,
+        to: pos + endInNode,
+      });
+      // Move on in this node
+      regex.lastIndex = m.index + original.length;
+    }
+
+    return true;
+  });
+
+  if (matches.length === 0) return;
+
+  // Apply replacements in reverse document order
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const { from, to } = matches[i];
+    tr = tr.replaceWith(from, to, state.schema.text(suggestion));
+  }
+
+  if (tr.docChanged) {
+    // restore the original selection (or you could collapse to last replace)
+    tr = tr.setSelection(
+      TextSelection.create(
+        tr.doc,
+        view.state.selection.from,
+        view.state.selection.to
+      )
+    );
+    view.dispatch(tr.scrollIntoView());
+  }
 }

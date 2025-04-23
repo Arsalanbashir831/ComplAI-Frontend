@@ -15,6 +15,7 @@ interface IssueListProps {
   showAICorrectionButton?: boolean;
   showResolveIssuesButton?: boolean;
   onResolveIssues?: () => void;
+  onResolveIssue?: (idx: number) => void;
   listClassName?: string;
 }
 
@@ -24,6 +25,7 @@ export default function IssueList({
   showAICorrectionButton = false,
   showResolveIssuesButton = false,
   onResolveIssues,
+  onResolveIssue,
   listClassName = 'h-[calc(100vh-300px)]',
 }: IssueListProps) {
   return (
@@ -63,12 +65,24 @@ export default function IssueList({
               <div className="flex items-start gap-3">
                 {/* compliance dot */}
                 <div className="mt-1 flex-shrink-0">
-                  <div
+                  {/* <div
                     className={cn(
                       'w-3 h-3 rounded-full',
                       !res.compliant ? 'bg-red-500' : 'bg-green-500'
                     )}
-                  ></div>
+                  ></div> */}
+                  <button
+                    onClick={() => onResolveIssue?.(idx)}
+                    className="mt-1 flex-shrink-0"
+                    title="Apply this suggestion"
+                  >
+                    <div
+                      className={cn(
+                        'w-3 h-3 rounded-full transition-opacity hover:opacity-70',
+                        res.compliant ? 'bg-green-500' : 'bg-red-500'
+                      )}
+                    />
+                  </button>
                 </div>
                 <div>
                   {/* original text */}

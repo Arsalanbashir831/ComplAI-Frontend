@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
 // import { Import } from "@tiptap-pro/extension-import";
-
+import { useEffect } from 'react';
 import { FontSizeExtension } from '@/extensions/font-size';
+import { IssueHighlight } from '@/extensions/issue-highlight';
 import { LineHeightExtension } from '@/extensions/line-height';
 import { useEditorStore } from '@/store/use-editor-store';
 import { Color } from '@tiptap/extension-color';
@@ -24,7 +24,13 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageResize from 'tiptap-extension-resize-image';
 
-export const Editor = ({ initialContent }: { initialContent: string }) => {
+export const Editor = ({
+  initialContent,
+  results,
+}: {
+  initialContent: string;
+  results: { original: string }[];
+}) => {
   const { setEditor } = useEditorStore();
 
   const editor = useEditor({
@@ -62,12 +68,13 @@ export const Editor = ({ initialContent }: { initialContent: string }) => {
       //   token: "your-token",
       // }),
       TaskList,
+      IssueHighlight.configure({ results }),
     ],
     editorProps: {
       attributes: {
-        style: 'padding-left: 40px; padding-right: 40px;',
+        style: 'padding-left: 30px; padding-right: 30px;',
         class:
-          'focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] pt-10 pr-10 cursor-text w-[49vw]',
+          'focus:outline-none print:border-0 bg-white flex flex-col min-h-[1054px] pt-10 cursor-text w-[49vw]',
       },
     },
     immediatelyRender: false,
@@ -98,12 +105,21 @@ export const Editor = ({ initialContent }: { initialContent: string }) => {
   });
 
   useEffect(() => {
-    if (editor) editor.commands.setContent(initialContent);
+    if (editor) {
+      editor.commands.setContent(initialContent);
+    }
   }, [editor, initialContent]);
+
+  useEffect(() => {
+    if (editor) setEditor(editor);
+    return () => {
+      if (editor) setEditor(null);
+    };
+  }, [editor, setEditor]);
 
   return (
     <div className="size-full overflow-x-auto bg-[#F9FBFD] print:p-0 print:bg-white print:overflow-visible">
-      <div className="flex justify-center py-4 print:py-0 mx-auto print:w-full print:min-w-0 w-full">
+      <div className="flex justify-center print:py-0 mx-auto print:w-full print:min-w-0 w-full">
         {editor && <EditorContent editor={editor} />}
       </div>
     </div>
