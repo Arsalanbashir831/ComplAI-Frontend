@@ -1,4 +1,5 @@
-'use client'
+'use client';
+
 // app/(dashboard)/doc-compliance/page.js
 import dynamic from 'next/dynamic';
 
