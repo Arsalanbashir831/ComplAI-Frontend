@@ -1,13 +1,13 @@
 'use client';
 
+import { ROUTES } from '@/constants/routes';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ROUTES } from '@/constants/routes';
 
-import { ComplianceResult } from '@/types/doc-compliance';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+import { ComplianceResult } from '@/types/doc-compliance';
 
 interface IssueListProps {
   results: ComplianceResult[];
@@ -66,7 +66,7 @@ export default function IssueList({
                   <div
                     className={cn(
                       'w-3 h-3 rounded-full',
-                      res.compliant ? 'bg-red-500' : 'bg-green-500'
+                      !res.compliant ? 'bg-red-500' : 'bg-green-500'
                     )}
                   ></div>
                 </div>

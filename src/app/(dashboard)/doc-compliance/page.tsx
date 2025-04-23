@@ -1,9 +1,9 @@
 'use client';
 
+import animationData from '@/assets/lottie/ai-review-animation.json';
+import Image from 'next/image';
 import type React from 'react';
 import { useState } from 'react';
-import Image from 'next/image';
-import animationData from '@/assets/lottie/ai-review-animation.json';
 // import { API_ROUTES } from '@/constants/apiRoutes';
 import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
 import { X } from 'lucide-react';
@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import LottiePlayer from '@/components/common/lottie-animation';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import IssueList from '@/components/dashboard/doc-compliance/issue-list';
+import apiCaller from '@/config/apiCaller';
+import { API_ROUTES } from '@/constants/apiRoutes';
 
 interface UploadedFile {
   id: string;
@@ -33,7 +35,13 @@ export default function DocCompliancePage() {
 
   // ← new state for the API results
   const { results, setResults } = useDocComplianceStore();
-
+  interface ComplianceResult {
+    original: string;
+    compliant: boolean;
+    suggestion: string;
+    reason: string;
+    citations: string[];
+  }
   const handleUpload = (files: File[]) => {
     setIsUploading(true);
     setTimeout(() => {
@@ -62,6 +70,7 @@ export default function DocCompliancePage() {
   };
 
   const handleAIReview = async () => {
+console.log(uploadedFiles[0].file)
     if (!uploadedFiles.length) return;
     setIsReviewing(true);
 
@@ -93,231 +102,37 @@ export default function DocCompliancePage() {
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
         file.name.endsWith('.docx')
       ) {
+        console.log('going there')
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer });
         fileText = result.value;
+      }else if (
+        file.type === 'application/msword' ||
+        file.name.toLowerCase().endsWith('.doc')
+      ) {
+        toast.error('Old “.doc” files aren’t supported—please save as .docx and try again.');
+        setIsReviewing(false);
+        return;
       } else {
         // fallback for anything else
         fileText = await file.text();
       }
 
-      // const response = await apiCaller(
-      //   API_ROUTES.DOC_COMPLIANCE.CHECK_DOC,
-      //   'POST',
-      //   { document: file },
-      //   {},
-      //   true,
-      //   'formdata'
-      // );
-
-      // 5) Save both AI results & raw text into Zustand
-      // setResults(response.data.results, fileText);
-      setResults(
-        [
-          {
-            original: 'Client Care Policy Effective Date: 14 October 2018 1.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-
-          {
-            original:
-              'This can be done simply by the practice being seen to do its best to help them.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'Delays at reception If there is a delay of over 10 minutes the receptionist should endeavour to: offer an apology to the client; phone the member of staff and request an update to inform the client; inform the client of the reasons for the delay and actions to remedy; escort the client to the relevant meeting room, if appropriate; provide the client with suitable refreshments.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              "If there is a delay of over 20 minutes the receptionist should: offer an apology to the client; phone the member of staff and advise that they, a member of their team or secretary are required to deal with the situation; suggest a different appointment time, or organise the fee-earner's secretary to do so, if directed to by a colleague.",
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              '5.5 Dress and demeanour Dress It is important that the practice should project a sense of professionalism at all times, particularly in its dealings with clients.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original: 'First impressions gained by clients do matter.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'Everybody should dress in a manner which is appropriate for their practice and a respectful manner.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              "Conduct Professionals should also try to conduct themselves in a way that will reassure clients and enhance the practice's commitment to client service.",
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'This can be achieved by appropriate behaviour both in and outside the office towards clients, business contacts, suppliers and other third parties.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'A positive, respectful and professional approach will have a significant impact on any client.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              "5.6 Client feedback Feedback A client's experience can have a significant impact on a practice.",
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'It could result in repeat business or a positive referral to a prospective client.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'To help Newport Land & Law continually improve its service, feedback from clients is actively encouraged and valued.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'There are various methods to elicit feedback, including client satisfaction surveys and post-matter questionnaires.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'Which method is used will depend on what is most appropriate for the practice or the client.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'Complaints The practice also monitors and evaluates client complaints to identify and address shortcomings and failings in its standard of service.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'Such feedback is essential to help continually gauge client perceptions of the practice.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'Review Feedback will be regularly reviewed and escalated to management level.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              "5.7 Confirmation of instructions Confirmation of instruction At or near the outset of every matter the client should receive: confirmation of the name and status of the person acting, along with details of the principal person responsible for the overall supervision of the matter (contained in the practice's initial opening letter for conveyancing, which should always be sent);  a written estimate of costs and disbursements in the practice's standard form; a copy of the terms and conditions of business under which the practice acts; advice as to how to complain and of their right to complain to the Legal Ombudsman, the timeframe for doing so and full details of how to contact the Legal Ombudsman.",
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original: '6.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original: 'Responsibilities 6.1.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              "All staff that interact with clients Must take responsibility to: make a reservation as soon as possible when meeting rooms are required; ensure that all visitors are greeted appropriately and met from reception and shown back to reception; ensure that clients are not kept waiting; clients are escorted to the relevant meeting room, if appropriate; clients are provided with suitable refreshments; the reception area and any rooms used for client meetings are kept clean and tidy and appropriate; the practice's publicity material is made available to clients and is kept in presentable condition; any colleagues discussing inappropriate topics, e.g.",
-            compliant: false,
-            suggestion:
-              "All staff that interact with clients must take responsibility to: make a reservation as soon as possible when meeting rooms are required; ensure that all visitors are greeted appropriately and met from reception and shown back to reception; ensure that clients are not kept waiting; clients are escorted to the relevant meeting room, if appropriate; clients are provided with suitable refreshments; the reception area and any rooms used for client meetings are kept clean and tidy and appropriate; the practice's publicity material is made available to clients and is kept in presentable condition; address any colleagues discussing inappropriate topics, e.g.",
-            reason:
-              'The sentence is non-compliant due to the lack of a verb in the last clause, making it incomplete and unclear.',
-            citations: [
-              'https://www.sra.org.uk/solicitors/standards-regulations/code-conduct-solicitors/',
-            ],
-          },
-          {
-            original: 'a client matter, are advised to vacate the reception.',
-            compliant: false,
-            suggestion:
-              'Due to a client matter, you are advised to vacate the reception.',
-            reason:
-              'The sentence is incomplete and lacks clarity, which may lead to misunderstandings.',
-            citations: [],
-          },
-          {
-            original: '7.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-          {
-            original:
-              'Enforcement If a person was found to be in violation of this policy, they would be dealt with in line with disciplinary policy and procedure.',
-            compliant: true,
-            suggestion: '',
-            reason: '',
-            citations: [],
-          },
-        ],
-        fileText
+      const response = await apiCaller(
+        API_ROUTES.DOC_COMPLIANCE.CHECK_DOC,
+        'POST',
+        { document: uploadedFiles[0].file },
+        {},
+        true,
+        'formdata'
       );
+
+     
+      const allResults = response.data.results as ComplianceResult[];
+
+      const nonCompliant = allResults.filter((item: ComplianceResult) => !item.compliant);
+      
+      setResults(nonCompliant, fileText);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
@@ -355,7 +170,7 @@ export default function DocCompliancePage() {
         <DashboardHeader title="Document Compliance" />
 
         <div className="mt-8 bg-white rounded-xl p-6 shadow-sm flex flex-col flex-grow">
-          <div className="mt-8 bg-white rounded-xl p-6 shadow-sm flex flex-col flex-grow">
+          <div className="mt-2 bg-white rounded-xl p-6 shadow-sm flex flex-col flex-grow">
             <h2 className="text-2xl font-bold">AI Compliance Report</h2>
 
             <IssueList results={results} showAICorrectionButton />
