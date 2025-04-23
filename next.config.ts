@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
       'api.compl-ai.co.uk',
     ],
   },
- 
 };
 
 export default nextConfig;
