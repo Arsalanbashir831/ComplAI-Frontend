@@ -1,9 +1,10 @@
 'use client';
 
-import animationData from '@/assets/lottie/ai-review-animation.json';
-import Image from 'next/image';
 import type React from 'react';
 import { useState } from 'react';
+import Image from 'next/image';
+import animationData from '@/assets/lottie/ai-review-animation.json';
+import { API_ROUTES } from '@/constants/apiRoutes';
 // import { API_ROUTES } from '@/constants/apiRoutes';
 import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
 import { X } from 'lucide-react';
@@ -11,13 +12,12 @@ import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'sonner';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 // import apiCaller from '@/config/apiCaller';
 import LottiePlayer from '@/components/common/lottie-animation';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import IssueList from '@/components/dashboard/doc-compliance/issue-list';
-import apiCaller from '@/config/apiCaller';
-import { API_ROUTES } from '@/constants/apiRoutes';
 
 interface UploadedFile {
   id: string;
@@ -70,7 +70,7 @@ export default function DocCompliancePage() {
   };
 
   const handleAIReview = async () => {
-console.log(uploadedFiles[0].file)
+    console.log(uploadedFiles[0].file);
     if (!uploadedFiles.length) return;
     setIsReviewing(true);
 
@@ -102,15 +102,17 @@ console.log(uploadedFiles[0].file)
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
         file.name.endsWith('.docx')
       ) {
-        console.log('going there')
+        console.log('going there');
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer });
         fileText = result.value;
-      }else if (
+      } else if (
         file.type === 'application/msword' ||
         file.name.toLowerCase().endsWith('.doc')
       ) {
-        toast.error('Old “.doc” files aren’t supported—please save as .docx and try again.');
+        toast.error(
+          'Old “.doc” files aren’t supported—please save as .docx and try again.'
+        );
         setIsReviewing(false);
         return;
       } else {
@@ -127,11 +129,12 @@ console.log(uploadedFiles[0].file)
         'formdata'
       );
 
-     
       const allResults = response.data.results as ComplianceResult[];
 
-      const nonCompliant = allResults.filter((item: ComplianceResult) => !item.compliant);
-      
+      const nonCompliant = allResults.filter(
+        (item: ComplianceResult) => !item.compliant
+      );
+
       setResults(nonCompliant, fileText);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
