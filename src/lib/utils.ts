@@ -155,7 +155,7 @@ export function escapeRx(s: string): string {
  */
 export function applySuggestionAcross(
   editor: TipTapEditor,
-  original: string,
+  original: string | null | undefined,
   suggestion: string
 ): void {
   // Explicitly void return type
@@ -166,6 +166,11 @@ export function applySuggestionAcross(
   console.log('applySuggestionAcross: Replacing with:', suggestion);
 
   // 2. Prepare the regular expression
+  if (!original) {
+    console.warn('applySuggestionAcross: Original text is null or undefined.');
+    return;
+  }
+
   // Break the original text into words, escape them for regex safety, and filter out empty strings
   const words = original.trim().split(/\s+/).map(escapeRx).filter(Boolean);
 
@@ -273,18 +278,107 @@ export function applySuggestionAcross(
 }
 
 /**
- * Wraps occurrences of specified original texts within an HTML string with <mark> tags.
+ * Represents a token extracted from the HTML string.
+ */
+interface HtmlToken {
+  text: string;
+  type: 'word' | 'tag' | 'whitespace' | 'other';
+  startIndex: number;
+  endIndex: number; // Index *after* the last character of the token
+}
+
+/**
+ * Finds the next token (word, tag, whitespace, or other sequence) in the HTML string.
+ * @param html The HTML string to search within.
+ * @param startIndex The index to start searching from.
+ * @returns An HtmlToken object or null if end of string is reached.
+ */
+function getNextToken(html: string, startIndex: number): HtmlToken | null {
+  if (startIndex >= html.length) {
+    return null;
+  }
+
+  const firstChar = html[startIndex];
+
+  // 1. Check for HTML Tag
+  if (firstChar === '<') {
+    const tagEndIndex = html.indexOf('>', startIndex);
+    if (tagEndIndex !== -1) {
+      const endIndex = tagEndIndex + 1;
+      return {
+        text: html.substring(startIndex, endIndex),
+        type: 'tag',
+        startIndex: startIndex,
+        endIndex: endIndex,
+      };
+    } else {
+      // Malformed tag or just '<' literal - treat as 'other'
+      return {
+        text: firstChar,
+        type: 'other',
+        startIndex: startIndex,
+        endIndex: startIndex + 1,
+      };
+    }
+  }
+
+  // 2. Check for Whitespace sequence
+  const whitespaceMatch = html.substring(startIndex).match(/^\s+/);
+  if (whitespaceMatch) {
+    const text = whitespaceMatch[0];
+    const endIndex = startIndex + text.length;
+    return {
+      text: text,
+      type: 'whitespace',
+      startIndex: startIndex,
+      endIndex: endIndex,
+    };
+  }
+
+  // 3. Check for Word sequence (non-tag, non-whitespace)
+  // We can define a "word" as a sequence of non-whitespace, non-'<' characters.
+  let wordEndIndex = startIndex;
+  while (
+    wordEndIndex < html.length &&
+    html[wordEndIndex] !== '<' &&
+    !/\s/.test(html[wordEndIndex])
+  ) {
+    wordEndIndex++;
+  }
+
+  if (wordEndIndex > startIndex) {
+    return {
+      text: html.substring(startIndex, wordEndIndex),
+      type: 'word',
+      startIndex: startIndex,
+      endIndex: wordEndIndex,
+    };
+  }
+
+  // 4. Fallback for any other single character not caught above (should be rare)
+  return {
+    text: firstChar,
+    type: 'other',
+    startIndex: startIndex,
+    endIndex: startIndex + 1,
+  };
+}
+
+/**
+ * Highlights occurrences of target *word sequences* within an HTML string
+ * by wrapping matching segments with <mark> tags. It handles HTML tags and
+ * whitespace between words by including them within the mark if they are
+ * part of a successful match sequence.
  *
- * NOTE: This function uses simple string replacement and has limitations:
- * - It may fail or break HTML if 'original' text spans across tags.
- * - It may fail if 'original' text and HTML content use different HTML entities (e.g., & vs &amp;).
- * - It may fail due to whitespace differences.
- * - It performs a case-sensitive replacement.
- * - Using Tiptap decorations/marks via extensions is generally more robust.
+ * NOTE: This is a string-based approach using tokenization and may have
+ * limitations with complex HTML structures or nested marks compared to
+ * DOM manipulation. It processes results sequentially. Matching is case-insensitive.
  *
- * @param {string} htmlContent The initial HTML content string.
- * @param {Array<{original: string}>} results An array of objects, each with an 'original' string to find.
- * @returns {string} The HTML content with matches wrapped in <mark> tags.
+ * @param htmlContent The initial HTML string.
+ * @param results An array of ComplianceResult objects. Each result's `original`
+ * field specifies a complete text sequence (multiple words potentially)
+ * to find and highlight.
+ * @returns The processed HTML string with highlights.
  */
 export function addMarksToHtmlContent(
   htmlContent: string,
@@ -294,48 +388,139 @@ export function addMarksToHtmlContent(
     return htmlContent;
   }
 
-  let modifiedContent = htmlContent;
+  const resultsToHighlight = results.filter(
+    (
+      r
+    ): r is ComplianceResult & { original: string } => // Type guard
+      !r.compliant &&
+      typeof r.original === 'string' &&
+      r.original.trim().length > 0 // Ensure non-empty after trim
+  );
 
-  results.forEach((result) => {
-    const originalText = result.original;
+  if (resultsToHighlight.length === 0) {
+    return htmlContent;
+  }
 
-    // Basic check to avoid trying to replace empty strings
-    if (
-      originalText &&
-      typeof originalText === 'string' &&
-      originalText.length > 0
-    ) {
-      try {
-        // Escape special characters in the original text so it can be used in a RegExp
-        // This handles characters like ., *, +, ?, ^, $, {, }, (, ), |, [, ], \
-        const escapedOriginalText = originalText.replace(
-          /[.*+?^${}()|[\]\\]/g,
-          '\\$&'
-        );
+  let processedHtml = htmlContent;
 
-        // Create a regular expression to find all occurrences globally ('g' flag)
-        // NOTE: This is case-sensitive. Add 'i' flag for case-insensitive: new RegExp(escapedOriginalText, 'gi')
-        const regex = new RegExp(escapedOriginalText, 'g');
+  // Process each result sequentially
+  resultsToHighlight.forEach((result) => {
+    // Split target into words, filtering empty strings from multiple spaces
+    const targetWords = result.original.trim().split(/\s+/).filter(Boolean);
+    if (targetWords.length === 0) return; // Skip if target is only whitespace
 
-        // Replace found occurrences with the text wrapped in <mark> tags
-        // Using a function in replace ensures that we don't accidentally replace parts of already added <mark> tags
-        // if originalText contained '<' or '>'.
-        modifiedContent = modifiedContent.replace(
-          regex,
-          (match) => (
-            console.log(match),
-            `<mark style="background-color: rgb(254, 202, 202);">${match}</mark>`
-          )
-        );
-      } catch (error) {
-        console.error(
-          `Error creating or using RegExp for text: "${originalText}"`,
-          error
-        );
-        // Continue with the next result even if one fails
+    const currentHtml = processedHtml; // Work on the output of the previous result
+    let newHtml = ''; // Build the output for this result
+    let i = 0; // Current index within currentHtml
+
+    // State for tracking the multi-word match
+    let targetWordIndex = 0; // Index into targetWords we are currently trying to match
+    let potentialMatchTokens: HtmlToken[] = []; // Tokens accumulated for a potential match
+    let inPotentialMatch = false; // Are we accumulating tokens for a possible match?
+
+    while (i < currentHtml.length) {
+      const token = getNextToken(currentHtml, i);
+      if (!token) break; // End of string
+
+      let processedToken = false; // Flag to check if token was handled in match logic
+
+      if (inPotentialMatch) {
+        // --- Inside a potential match ---
+        if (token.type === 'word') {
+          // Compare with the next expected target word (case-insensitive)
+          if (
+            targetWordIndex < targetWords.length &&
+            token.text.toLowerCase() ===
+              targetWords[targetWordIndex].toLowerCase()
+          ) {
+            // Word matches the expected word in the sequence
+            potentialMatchTokens.push(token);
+            targetWordIndex++;
+
+            if (targetWordIndex === targetWords.length) {
+              // *** Full Match Found! ***
+              // Add the opening mark
+              newHtml += '<mark style="background-color: #ff000077;">';
+              // Add all the tokens that formed the match
+              potentialMatchTokens.forEach((t) => (newHtml += t.text));
+              // Add the closing mark
+              newHtml += '</mark>';
+
+              // Reset state for the next potential match
+              inPotentialMatch = false;
+              potentialMatchTokens = [];
+              targetWordIndex = 0;
+              processedToken = true; // Mark token as handled
+            }
+            // else: continue potential match, waiting for next word
+          } else {
+            // Word mismatch: The potential match failed.
+            // Append the previously accumulated tokens *without* marks
+            potentialMatchTokens.forEach((t) => (newHtml += t.text));
+            // Reset state
+            inPotentialMatch = false;
+            potentialMatchTokens = [];
+            targetWordIndex = 0;
+            // IMPORTANT: The current token caused the mismatch,
+            // so it needs to be processed normally *now* (in the !inPotentialMatch block below)
+            // Do *not* set processedToken = true here.
+          }
+        } else if (token.type === 'tag' || token.type === 'whitespace') {
+          // Tags or whitespace *between* matching words are part of the match.
+          potentialMatchTokens.push(token);
+          processedToken = true; // Mark token as handled (conditionally)
+        } else {
+          // 'other' token breaks the match sequence. Append previous tokens.
+          potentialMatchTokens.forEach((t) => (newHtml += t.text));
+          inPotentialMatch = false;
+          potentialMatchTokens = [];
+          targetWordIndex = 0;
+          // Let the 'other' token be processed normally below.
+        }
       }
-    }
-  });
 
-  return modifiedContent;
+      // --- Not inside a potential match OR potential match just failed ---
+      if (!inPotentialMatch && !processedToken) {
+        if (
+          token.type === 'word' &&
+          targetWords.length > 0 && // Ensure there are target words
+          token.text.toLowerCase() === targetWords[0].toLowerCase() // Case-insensitive
+        ) {
+          // This word *could* be the start of a new match sequence
+          inPotentialMatch = true;
+          potentialMatchTokens = [token]; // Start accumulating
+          targetWordIndex = 1; // We've matched the first word
+
+          if (targetWordIndex === targetWords.length) {
+            // Handle edge case: target sequence is only one word long
+            newHtml += '<mark style="background-color: #ff000077;">';
+            newHtml += token.text; // Add the single matching word
+            newHtml += '</mark>';
+            // Reset state
+            inPotentialMatch = false;
+            potentialMatchTokens = [];
+            targetWordIndex = 0;
+          }
+          // Otherwise, continue hoping the next words match...
+        } else {
+          // Token is not a word, or it doesn't start the target sequence. Append normally.
+          newHtml += token.text;
+        }
+      }
+
+      // Advance the main index
+      i = token.endIndex;
+    } // End while loop
+
+    // If the loop ends while still in a potential match (e.g., HTML ends mid-sequence),
+    // the match failed. Append the accumulated tokens without marks.
+    if (inPotentialMatch) {
+      potentialMatchTokens.forEach((t) => (newHtml += t.text));
+    }
+
+    // Update processedHtml for the next iteration or final return
+    processedHtml = newHtml;
+  }); // End forEach result
+
+  return processedHtml;
 }

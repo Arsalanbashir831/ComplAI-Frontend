@@ -23,11 +23,13 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageResize from 'tiptap-extension-resize-image';
 
+import { ComplianceResult } from '@/types/doc-compliance';
+
 export const Editor = ({
   initialContent,
 }: {
   initialContent: string;
-  results: { original: string }[];
+  results: ComplianceResult[];
 }) => {
   const { setEditor } = useEditorStore();
   console.log(initialContent);
