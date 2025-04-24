@@ -36,9 +36,9 @@ export const IssueHighlight = Extension.create<IssueHighlightOptions>({
       new Plugin({
         key: pluginKey,
         props: {
-          decorations: state => {
+          decorations: (state) => {
             const { doc } = state;
-            const issues = this.options.results.filter(i => !i.resolved);
+            const issues = this.options.results.filter((i) => !i.resolved);
             if (!issues.length) return DecorationSet.create(doc, []);
 
             const fullText = doc.textBetween(0, doc.content.size, '\n');
@@ -66,9 +66,9 @@ export const IssueHighlight = Extension.create<IssueHighlightOptions>({
             }
 
             return DecorationSet.create(doc, decos);
-          }
-        }
-      })
+          },
+        },
+      }),
     ];
-  }
+  },
 });

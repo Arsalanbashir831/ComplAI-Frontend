@@ -1,11 +1,8 @@
-
+import { Editor as TipTapEditor } from '@tiptap/react';
 import { clsx, type ClassValue } from 'clsx';
 import { TextSelection } from 'prosemirror-state';
 import { DateRange } from 'react-day-picker';
 import { twMerge } from 'tailwind-merge';
-
-
-import { Editor as TipTapEditor } from '@tiptap/react';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -218,11 +215,7 @@ export function applySuggestionAcross(
   const html = editor.getHTML();
 
   // 2. Break original into words and build a tolerant regex
-  const words = original
-    .trim()
-    .split(/\s+/)
-    .map(escapeRx)
-    .filter(Boolean);
+  const words = original.trim().split(/\s+/).map(escapeRx).filter(Boolean);
   if (!words.length) return;
 
   // e.g. /(word1)(?:\s|<[^>]+>)+(word2)(?:\s|<[^>]+>)+(word3)/gi
@@ -240,7 +233,8 @@ export function applySuggestionAcross(
 
   // 6. Restore the original selection in the new document
   editor.view.dispatch(
-    editor.state.tr.setSelection(TextSelection.create(editor.state.doc, from, to))
+    editor.state.tr
+      .setSelection(TextSelection.create(editor.state.doc, from, to))
       .scrollIntoView()
   );
 }

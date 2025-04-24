@@ -19,11 +19,16 @@ export async function POST(request: NextRequest) {
     // Validate input
     if (typeof htmlContent !== 'string' || !Array.isArray(highlights)) {
       return NextResponse.json(
-        { error: 'Invalid request: htmlContent must be a string and highlights must be an array.' },
+        {
+          error:
+            'Invalid request: htmlContent must be a string and highlights must be an array.',
+        },
         { status: 400 }
       );
     }
-    const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
+    const openai = new OpenAI({
+      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    });
 
     // Send one request with full HTML and all highlight items
     const prompt = `
@@ -43,15 +48,21 @@ ${htmlContent}
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        { role: 'system', content: 'You annotate HTML with <mark> tags as requested.' },
-        { role: 'user', content: prompt }
+        {
+          role: 'system',
+          content: 'You annotate HTML with <mark> tags as requested.',
+        },
+        { role: 'user', content: prompt },
       ],
     });
 
     // The assistant response should be just the updated HTML
     const updatedHtml = completion.choices[0]?.message?.content?.trim() || '';
 
-    return NextResponse.json({ success: true, highlightedContent: updatedHtml });
+    return NextResponse.json({
+      success: true,
+      highlightedContent: updatedHtml,
+    });
   } catch (error) {
     console.error('Error processing highlights:', error);
     return NextResponse.json(
