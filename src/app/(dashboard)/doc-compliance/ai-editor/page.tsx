@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
 import { useEditorStore } from '@/store/use-editor-store';
 
-import { applySuggestionAcross } from '@/lib/utils';
+import { addMarksToHtmlContent, applySuggestionAcross } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { Editor } from '@/components/dashboard/doc-compliance/editor/editor';
@@ -18,6 +18,13 @@ export default function DocumentIdPage() {
   const { editor } = useEditorStore();
 
   console.log('DocumentIdPage', { results, content });
+
+  // Pre-process content to add initial marks
+  // Use useMemo to avoid recalculating on every render unless content/results change
+  const initialContentWithMarks = useMemo(() => {
+    console.log('Calculating initial content with marks...');
+    return addMarksToHtmlContent(content, results);
+  }, [content, results]);
 
   // If we don’t have any content (e.g. user hit refresh), bounce back
   useEffect(() => {
@@ -51,7 +58,7 @@ export default function DocumentIdPage() {
           <ScrollArea className="flex-1 w-full bg-white rounded-lg p-4 h-[calc(100vh-130px)]">
             <Editor
               key={JSON.stringify(results.map((r) => r.original))}
-              initialContent={content}
+              initialContent={initialContentWithMarks}
               results={results}
             />
           </ScrollArea>

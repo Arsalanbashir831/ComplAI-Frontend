@@ -3,7 +3,6 @@
 // import { Import } from "@tiptap-pro/extension-import";
 import { useEffect } from 'react';
 import { FontSizeExtension } from '@/extensions/font-size';
-import { IssueHighlight } from '@/extensions/issue-highlight';
 import { LineHeightExtension } from '@/extensions/line-height';
 import { useEditorStore } from '@/store/use-editor-store';
 import { Color } from '@tiptap/extension-color';
@@ -26,7 +25,6 @@ import ImageResize from 'tiptap-extension-resize-image';
 
 export const Editor = ({
   initialContent,
-  results,
 }: {
   initialContent: string;
   results: { original: string }[];
@@ -68,7 +66,6 @@ export const Editor = ({
       //   token: "your-token",
       // }),
       TaskList,
-      IssueHighlight.configure({ results }),
     ],
     editorProps: {
       attributes: {
