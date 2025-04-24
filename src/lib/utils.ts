@@ -1,8 +1,11 @@
-import type { Editor } from '@tiptap/react';
+
 import { clsx, type ClassValue } from 'clsx';
 import { TextSelection } from 'prosemirror-state';
 import { DateRange } from 'react-day-picker';
 import { twMerge } from 'tailwind-merge';
+
+
+import { Editor as TipTapEditor } from '@tiptap/react';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -136,63 +139,108 @@ export function shortenText(text: string, wordLimit = 50) {
   return text.split(/\s+/).slice(0, wordLimit).join(' ') + '...';
 }
 
+// export function applySuggestionAcross(
+//   editor: Editor,
+//   original: string,
+//   suggestion: string
+// ) {
+//   const { state, view } = editor;
+//   let tr = state.tr;
+
+//   // Escape special regex chars in the original string
+//   const esc = original.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+//   // Global regex, but we will run it on each text node separately
+//   const regex = new RegExp(esc, 'g');
+
+//   // Collect all matches: { from, to }
+//   const matches: Array<{ from: number; to: number }> = [];
+
+//   state.doc.descendants((node, pos) => {
+//     if (!node.isText) return true;
+
+//     const text = node.text || '';
+//     let m: RegExpExecArray | null;
+
+//     // Reset lastIndex so each node starts at 0
+//     regex.lastIndex = 0;
+
+//     while ((m = regex.exec(text)) !== null) {
+//       const startInNode = m.index;
+//       const endInNode = startInNode + original.length;
+//       matches.push({
+//         from: pos + startInNode,
+//         to: pos + endInNode,
+//       });
+//       // Move on in this node
+//       regex.lastIndex = m.index + original.length;
+//     }
+
+//     return true;
+//   });
+
+//   if (matches.length === 0) return;
+
+//   // Apply replacements in reverse document order
+//   for (let i = matches.length - 1; i >= 0; i--) {
+//     const { from, to } = matches[i];
+//     tr = tr.replaceWith(from, to, state.schema.text(suggestion));
+//   }
+
+//   if (tr.docChanged) {
+//     // restore the original selection (or you could collapse to last replace)
+//     tr = tr.setSelection(
+//       TextSelection.create(
+//         tr.doc,
+//         view.state.selection.from,
+//         view.state.selection.to
+//       )
+//     );
+//     view.dispatch(tr.scrollIntoView());
+//   }
+// }
+
+/** Escape regex metachars */
+export function escapeRx(s: string): string {
+  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+/**
+ * Replace every occurrence of `original` (plain-text) in the **HTML** of the editor
+ * with `suggestion`, allowing arbitrary tags between plain-text words.
+ */
 export function applySuggestionAcross(
-  editor: Editor,
+  editor: TipTapEditor,
   original: string,
   suggestion: string
 ) {
-  const { state, view } = editor;
-  let tr = state.tr;
+  // 1. Get the current HTML
+  const html = editor.getHTML();
 
-  // Escape special regex chars in the original string
-  const esc = original.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  // 2. Break original into words and build a tolerant regex
+  const words = original
+    .trim()
+    .split(/\s+/)
+    .map(escapeRx)
+    .filter(Boolean);
+  if (!words.length) return;
 
-  // Global regex, but we will run it on each text node separately
-  const regex = new RegExp(esc, 'g');
+  // e.g. /(word1)(?:\s|<[^>]+>)+(word2)(?:\s|<[^>]+>)+(word3)/gi
+  const pattern = words.join('(?:\\s|<[^>]+>)+');
+  const re = new RegExp(pattern, 'gi');
 
-  // Collect all matches: { from, to }
-  const matches: Array<{ from: number; to: number }> = [];
+  // 3. Replace in the HTML
+  const newHtml = html.replace(re, suggestion);
 
-  state.doc.descendants((node, pos) => {
-    if (!node.isText) return true;
+  // 4. Remember the current selection
+  const { from, to } = editor.state.selection;
 
-    const text = node.text || '';
-    let m: RegExpExecArray | null;
+  // 5. Re-set the editor content (this parses the HTML back into ProseMirror nodes)
+  editor.commands.setContent(newHtml);
 
-    // Reset lastIndex so each node starts at 0
-    regex.lastIndex = 0;
-
-    while ((m = regex.exec(text)) !== null) {
-      const startInNode = m.index;
-      const endInNode = startInNode + original.length;
-      matches.push({
-        from: pos + startInNode,
-        to: pos + endInNode,
-      });
-      // Move on in this node
-      regex.lastIndex = m.index + original.length;
-    }
-
-    return true;
-  });
-
-  if (matches.length === 0) return;
-
-  // Apply replacements in reverse document order
-  for (let i = matches.length - 1; i >= 0; i--) {
-    const { from, to } = matches[i];
-    tr = tr.replaceWith(from, to, state.schema.text(suggestion));
-  }
-
-  if (tr.docChanged) {
-    // restore the original selection (or you could collapse to last replace)
-    tr = tr.setSelection(
-      TextSelection.create(
-        tr.doc,
-        view.state.selection.from,
-        view.state.selection.to
-      )
-    );
-    view.dispatch(tr.scrollIntoView());
-  }
+  // 6. Restore the original selection in the new document
+  editor.view.dispatch(
+    editor.state.tr.setSelection(TextSelection.create(editor.state.doc, from, to))
+      .scrollIntoView()
+  );
 }

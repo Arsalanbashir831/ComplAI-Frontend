@@ -1,7 +1,6 @@
 'use client';
 
 // import { Import } from "@tiptap-pro/extension-import";
-import { useEffect } from 'react';
 import { FontSizeExtension } from '@/extensions/font-size';
 import { IssueHighlight } from '@/extensions/issue-highlight';
 import { LineHeightExtension } from '@/extensions/line-height';
@@ -22,6 +21,7 @@ import TextStyle from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useEffect } from 'react';
 import ImageResize from 'tiptap-extension-resize-image';
 
 export const Editor = ({
@@ -32,7 +32,7 @@ export const Editor = ({
   results: { original: string }[];
 }) => {
   const { setEditor } = useEditorStore();
-
+console.log(initialContent)
   const editor = useEditor({
     content: initialContent,
     extensions: [
@@ -50,6 +50,7 @@ export const Editor = ({
       Color,
       Highlight.configure({
         multicolor: true,
+        
       }),
       FontFamily,
       TextStyle,
