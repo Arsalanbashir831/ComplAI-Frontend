@@ -1,26 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react'; // Import useState
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
 import { useEditorStore } from '@/store/use-editor-store';
 
 import { ComplianceResult } from '@/types/doc-compliance';
-import { applySuggestionAcross } from '@/lib/utils';
+import { applySuggestionAcross } from '@/lib/utils'; // Ensure this path is correct
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton'; // Example loading component
+import { Skeleton } from '@/components/ui/skeleton';
+// --- Import necessary types and components ---
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { Editor } from '@/components/dashboard/doc-compliance/editor/editor';
 import { ToolBar } from '@/components/dashboard/doc-compliance/editor/toolbar';
 import IssueList from '@/components/dashboard/doc-compliance/issue-list';
 
-// Define the structure of the processed result item expected from the API
+// --- Type definitions ---
 interface ProcessedResultItem extends ComplianceResult {
   highlightedOriginalHtml: string | null;
   suggestionHtml: string | null;
 }
 
-// Define the structure of the API response
 interface ProcessComplianceResponseBody {
   fullHighlightedHtml: string;
   processedResults: ProcessedResultItem[];
@@ -28,56 +28,62 @@ interface ProcessComplianceResponseBody {
 
 export default function DocumentIdPage() {
   const router = useRouter();
-  // Get raw content and results from the store
-  const { results, content = '' } = useDocComplianceStore();
-  const { editor } = useEditorStore(); // Get editor instance
+  const { results: originalResults, content = '' } = useDocComplianceStore(); // Rename original results
+  const { editor } = useEditorStore();
 
-  // --- State for fetched data, loading, and errors ---
+  // --- State ---
   const [processedData, setProcessedData] =
     useState<ProcessComplianceResponseBody | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Start loading initially
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  // --- ---
 
-  console.log('DocumentIdPage Render:', { results, content, editor: !!editor });
+  console.log('DocumentIdPage Render:', {
+    hasOriginalResults: !!originalResults?.length,
+    hasContent: !!content,
+    hasEditor: !!editor,
+    isLoading,
+    hasProcessedData: !!processedData,
+  });
 
-  // --- Fetch processed data from the API ---
+  // --- Fetch processed data ---
   useEffect(() => {
-    // Only fetch if we have content and results to process
-    if (!content || !results || results.length === 0) {
-      console.log('Skipping fetch: No content or results.');
-      // If there's content but no results, we can just use the original content
+    // Use originalResults for deciding whether to fetch
+    if (!content || !originalResults || originalResults.length === 0) {
+      console.log('Skipping fetch: No content or original results.');
       if (content) {
+        // If content exists but no results, show original content, no processed issues
         setProcessedData({
           fullHighlightedHtml: content,
           processedResults: [],
         });
       } else {
-        setProcessedData(null); // Ensure no stale data if content becomes empty
+        setProcessedData(null); // Clear data if no content
       }
       setIsLoading(false);
       setError(null);
-      return; // Exit effect
+      return;
     }
 
     const fetchProcessedData = async () => {
       console.log('Starting fetch to /api/process-compliance...');
       setIsLoading(true);
       setError(null);
-      setProcessedData(null); // Clear previous data
+      setProcessedData(null);
 
       try {
         const response = await fetch('/api/process-compliance', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ htmlContent: content, results }),
+          headers: { 'Content-Type': 'application/json' },
+          // Send original content and original results to the API
+          body: JSON.stringify({
+            htmlContent: content,
+            results: originalResults,
+          }),
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({})); // Try to get error details
-          console.error('API Error Response:', errorData);
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API Error Response:', response.status, errorData);
           throw new Error(
             errorData.error ||
               `API request failed with status ${response.status}`
@@ -88,14 +94,14 @@ export default function DocumentIdPage() {
         console.log('API Success Response:', data);
         setProcessedData(data);
       } catch (err: unknown) {
-        // Handle errors gracefully
         if (err instanceof Error) {
           console.error('Error fetching processed data:', err.message);
           setError(err.message || 'Failed to fetch processed compliance data.');
         } else {
-          console.error('Error fetching processed data:', err);
+          console.error('Unknown error fetching processed data:', err);
+          setError('An unknown error occurred.');
         }
-        setProcessedData(null); // Clear data on error
+        setProcessedData(null);
       } finally {
         setIsLoading(false);
         console.log('Fetch attempt finished.');
@@ -104,45 +110,73 @@ export default function DocumentIdPage() {
 
     fetchProcessedData();
 
-    // Depend on content and results (stringified results ensure deep comparison triggers effect)
-  }, [content, JSON.stringify(results)]);
-  // --- ---
+    // Depend on content and the original results to trigger fetch
+  }, [content, JSON.stringify(originalResults)]); // Stringify ensures deep comparison
 
-  // --- Redirect if content is missing after initial check ---
+  // --- Redirect if no content after loading attempt ---
   useEffect(() => {
-    // Check *after* loading attempt is finished and there's still no content
-    if (
-      !isLoading &&
-      !error &&
-      !processedData?.fullHighlightedHtml &&
-      !content
-    ) {
-      console.log('Redirecting: No content available.');
-      router.push('/doc-compliance');
+    if (!isLoading && !error && !content) {
+      // Check original content
+      console.log('Redirecting: No base content available.');
+      router.push('/doc-compliance'); // Redirect to a safe page
     }
-  }, [isLoading, error, processedData, content, router]);
+  }, [isLoading, error, content, router]);
 
-  // --- Handlers using original results array ---
-  // These might need adjustment if they need the processed snippets later
+  // --- Handlers using PROCESSED results data ---
   const handleResolveAll = () => {
-    if (!editor || !results) return; // Use original results for now
-    results.forEach(({ original, suggestion }) => {
-      if (original && suggestion)
-        applySuggestionAcross(editor, original, suggestion);
-    });
+    // Guard clauses: need editor AND processedData with its results
+    if (!editor || !processedData?.processedResults) {
+      console.warn('Resolve All: Editor or processed results not available.');
+      return;
+    }
+    console.log('Resolve All: Applying suggestions...');
+    // Iterate through the processed results from the API response
+    processedData.processedResults.forEach(
+      ({ original, suggestionHtml, compliant }) => {
+        // Apply only if not compliant and suggestionHtml exists
+        if (!compliant && original && suggestionHtml) {
+          // Call the updated utility function
+          applySuggestionAcross(editor, original, suggestionHtml);
+        }
+      }
+    );
+    console.log('Resolve All: Finished applying suggestions.');
+    // Optionally: Add logic to mark issues as resolved in UI state
   };
 
   const handleResolveIssue = (idx: number) => {
-    if (!editor || !results || !results[idx]) return; // Use original results for now
-    const { original, suggestion } = results[idx];
-    if (original && suggestion) {
-      applySuggestionAcross(editor, original, suggestion);
+    // Guard clauses: need editor AND the specific processed result
+    if (
+      !editor ||
+      !processedData?.processedResults ||
+      !processedData.processedResults[idx]
+    ) {
+      console.warn(
+        `Resolve Issue ${idx}: Editor or processed result not available.`
+      );
+      return;
     }
+    // Get the specific processed result by index
+    const { original, suggestionHtml, compliant } =
+      processedData.processedResults[idx];
+
+    console.log(`Resolve Issue ${idx}: Applying suggestion...`);
+    // Apply only if not compliant, original text exists, and suggestionHtml exists
+    if (!compliant && original && suggestionHtml) {
+      // Call the updated utility function
+      applySuggestionAcross(editor, original, suggestionHtml);
+    } else {
+      console.warn(
+        `Resolve Issue ${idx}: Cannot apply. Compliant: ${compliant}, Has Original: ${!!original}, Has suggestionHtml: ${!!suggestionHtml}`
+      );
+    }
+    console.log(`Resolve Issue ${idx}: Finished applying suggestion.`);
+    // Optionally: Add logic to mark the specific issue as resolved in UI state
   };
   // --- ---
 
-  // Determine content to display in the editor
-  const editorContent = processedData?.fullHighlightedHtml ?? '';
+  // Determine content for the editor: use processed highlighted HTML if available
+  const editorContent = processedData?.fullHighlightedHtml ?? content; // Fallback to original content
 
   // --- Render Logic ---
   return (
@@ -150,58 +184,96 @@ export default function DocumentIdPage() {
       {/* Header + Toolbar */}
       <div className="px-4 pt-2 bg-[#FAFBFD] space-y-4 print:hidden z-10">
         <DashboardHeader title="Document Compliance" />
-        <ToolBar />
+        {/* Render Toolbar only if editor exists */}
+        {editor && <ToolBar />}
       </div>
 
       <div className="flex flex-1 mt-2 px-4 gap-x-4 overflow-hidden print:hidden">
         {/* Left: Editor Area */}
-        <div className="flex-1">
-          <ScrollArea className="flex-1 w-full bg-white rounded-lg p-4 h-[calc(100vh-130px)]">
+        <div className="flex-1 overflow-hidden">
+          {' '}
+          {/* Added overflow-hidden */}
+          <ScrollArea className="w-full bg-white rounded-lg p-4 h-[calc(100vh-130px)]">
             {isLoading && (
-              <div className="space-y-2">
+              <div className="space-y-2 p-4">
+                {' '}
+                {/* Added padding */}
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-[90%]" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-[80%]" />
                 <Skeleton className="h-4 w-full" />
                 <p className="text-center text-sm text-muted-foreground pt-4">
-                  Processing document...
+                  Processing document... this may take a moment.
                 </p>
               </div>
             )}
             {error && (
-              <p className="text-red-600">
+              <p className="text-red-600 p-4">
+                {' '}
+                {/* Added padding */}
                 Error loading compliance data: {error}
               </p>
             )}
-            {!isLoading && !error && (
+            {/* Render Editor only when not loading, no error, and content exists */}
+            {!isLoading && !error && content && (
               <Editor
-                // Use a key that changes only when the *content* itself fundamentally changes,
-                // allowing the editor to manage internal updates better if possible.
-                // If editor state preservation is not critical on results change, the old key is fine.
-                // Let's use editorContent for the key now. If it causes issues, revert to results based key.
-                key={editorContent}
-                // Pass the fetched highlighted content
+                // Use a key that changes when the content source changes
+                key={processedData ? 'processed' : 'original'}
                 initialContent={editorContent}
-                // Pass original results (IssueList might need processedResults later)
-                results={results}
+                // Pass processed results (or original if not processed yet)
+                // The Editor might use this for internal features later
+                results={
+                  processedData?.processedResults ?? originalResults ?? []
+                }
               />
+            )}
+            {/* Handle case where loading finished, no error, but still no content */}
+            {!isLoading && !error && !content && (
+              <p className="text-center text-muted-foreground p-4">
+                No document content found.
+              </p>
             )}
           </ScrollArea>
         </div>
 
         {/* Right: issues + “Resolve all” */}
         <div className="w-full max-w-[300px] flex-shrink-0">
-          {/* Pass original results for now. Might need processedData.processedResults later */}
-          <IssueList
-            results={results}
-            // Optionally pass processed results if IssueList is adapted to use them
-            // processedResults={processedData?.processedResults}
-            listClassName="h-[calc(100vh-280px)]"
-            showResolveIssuesButton
-            onResolveIssues={handleResolveAll}
-            onResolveIssue={handleResolveIssue}
-          />
+          {
+            isLoading && (
+              <Skeleton className="h-full w-full" />
+            ) /* Skeleton for issue list */
+          }
+          {error && <p className="text-red-500">Error loading issues.</p>}
+          {/* Render IssueList only when processing is done (or failed) and there's processed data */}
+          {!isLoading && !error && processedData && (
+            <IssueList
+              // IMPORTANT: Pass the processed results from the API
+              results={processedData.processedResults}
+              listClassName="h-[calc(100vh-280px)]" // Adjust height as needed
+              showResolveIssuesButton
+              onResolveIssues={handleResolveAll}
+              onResolveIssue={handleResolveIssue}
+            />
+          )}
+          {/* Handle cases where loading is done, no error, but no processed data */}
+          {!isLoading &&
+            !error &&
+            !processedData &&
+            originalResults &&
+            originalResults.length > 0 && (
+              <p className="text-muted-foreground p-2">
+                Could not process compliance issues.
+              </p>
+            )}
+          {!isLoading &&
+            !error &&
+            !processedData &&
+            (!originalResults || originalResults.length === 0) && (
+              <p className="text-muted-foreground p-2">
+                No compliance issues found or processed.
+              </p>
+            )}
         </div>
       </div>
     </div>

@@ -145,136 +145,162 @@ export function escapeRx(s: string): string {
 }
 
 /**
- * Replace every occurrence of `original` (plain-text) in the **HTML** of the editor
- * with `suggestion`, allowing arbitrary tags (including <mark>) between plain-text words.
- * Any <mark> tags within the matched segment will be removed as part of the replacement.
+ * Replace segments matching the plain-text `original` phrase in the editor's HTML
+ * with the provided `suggestionHtml`. Allows for arbitrary HTML tags between words
+ * in the original phrase match.
+ *
+ * **Limitation:** This replaces the *exact matched segment*. If `suggestionHtml`
+ * represents a different block level (e.g., an `<li>`) than the matched content,
+ * it might lead to invalid HTML structure. It does not automatically replace
+ * the parent block element.
  *
  * @param editor The Tiptap editor instance.
- * @param original The plain text phrase to find (case-insensitive).
- * @param suggestion The plain text or HTML string to replace the original phrase with.
+ * @param original The plain text phrase to find (case-insensitive). Should not be empty.
+ * @param suggestionHtml The HTML string to replace the matched segment with.
  */
 export function applySuggestionAcross(
   editor: TipTapEditor,
   original: string | null | undefined,
-  suggestion: string
+  suggestionHtml: string // This is expected to be an HTML string
 ): void {
-  // Explicitly void return type
-  // 1. Get the current HTML content from the editor
-  const html = editor.getHTML();
-  console.log('applySuggestionAcross: Original HTML:', html);
-  console.log('applySuggestionAcross: Finding:', original);
-  console.log('applySuggestionAcross: Replacing with:', suggestion);
-
-  // 2. Prepare the regular expression
-  if (!original) {
-    console.warn('applySuggestionAcross: Original text is null or undefined.');
-    return;
-  }
-
-  // Break the original text into words, escape them for regex safety, and filter out empty strings
-  const words = original.trim().split(/\s+/).map(escapeRx).filter(Boolean);
-
-  // If there are no words to match, exit early
-  if (!words.length) {
+  if (!editor || editor.isDestroyed) {
     console.warn(
-      'applySuggestionAcross: Original text is empty or contains only whitespace.'
+      'applySuggestionAcross: Editor is not available or destroyed.'
     );
     return;
   }
 
-  // Build the regex pattern:
-  // - Separator `(?:\\s+|<[^>]+>)+`: Matches one or more whitespace or any HTML tag between words.
-  // - Core sequence: `words.join(separatorPattern)` matches the words with separators.
-  // - Boundaries:
-  //    - `(?:<mark(?:\\s+[^>]*)?>\\s*?)?`: Optionally matches an opening <mark> tag (with attributes)
-  //      followed by optional non-greedy whitespace.
-  //    - `(?:\\s*?</mark>)?`: Optionally matches non-greedy whitespace followed by a closing </mark> tag.
-  // - The core sequence is captured in group $1, but we replace the entire match.
+  // 1. Validate inputs
+  if (!original || original.trim().length === 0) {
+    console.warn('applySuggestionAcross: Original text is empty or invalid.');
+    return;
+  }
+
+  // 2. Get current editor state
+  const { state } = editor;
+  const html = editor.getHTML(); // Get HTML for regex matching
+
+  console.log('applySuggestionAcross: Finding:', original);
+  console.log(
+    'applySuggestionAcross: Replacing matched HTML segment with suggestion HTML:',
+    suggestionHtml
+  );
+
+  // 3. Prepare the regular expression to find the original text segment
+  const words = original.trim().split(/\s+/).map(escapeRx).filter(Boolean);
+  if (!words.length) {
+    console.warn(
+      'applySuggestionAcross: No valid words found in original text.'
+    );
+    return;
+  }
+
+  // Regex to find the words separated by whitespace or any HTML tag(s),
+  // optionally enclosed within <mark> tags.
   const separatorPattern = '(?:\\s+|<[^>]+>)+';
   const coreWordSequence = words.join(separatorPattern);
   const pattern =
-    `(?:<mark(?:\\s+[^>]*)?>\\s*?)?` + // Optional opening <mark> (with potential attributes) and optional space (non-greedy)
-    `(${coreWordSequence})` + // Capture the actual word sequence (group 1)
-    `(?:\\s*?</mark>)?`; // Optional space (non-greedy) and closing </mark>
+    `(?:<mark(?:\\s+[^>]*)?>\\s*?)?` + // Optional opening <mark> (non-capturing)
+    `(${coreWordSequence})` + // Capture the core sequence (group 1) for validation
+    `(?:\\s*?</mark>)?`; // Optional closing <mark> (non-capturing)
 
-  console.log('applySuggestionAcross: Regex pattern:', pattern);
+  const re = new RegExp(pattern, 'gi'); // Global, case-insensitive
 
-  // Create the RegExp object:
-  // - 'g': Global - find all matches, not just the first.
-  // - 'i': Case-insensitive matching.
-  const re = new RegExp(pattern, 'gi');
-
-  // 3. Perform the replacement in the HTML string
+  // 4. Perform replacement using the RegExp on the HTML string
   let replaced = false;
-  const newHtml = html.replace(re, (match, capturedCoreSequence) => {
-    console.log('applySuggestionAcross: Matched segment:', match);
-    console.log('applySuggestionAcross: Captured core:', capturedCoreSequence); // Log the captured part
-    // Double-check if the captured core roughly matches the original text content
-    // (This is a basic sanity check, ignoring case and tags within the original)
-    const simpleOriginal = original.trim().replace(/\s+/g, ' ');
-    const simpleCaptured = capturedCoreSequence
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    if (simpleCaptured.toLowerCase() === simpleOriginal.toLowerCase()) {
-      replaced = true; // Flag that at least one valid replacement occurred
-      return suggestion; // Return the suggestion string for replacement
+  let matchCount = 0;
+  const newHtml = html.replace(re, (match) => {
+    matchCount++;
+    // --- Validation Step ---
+    const simpleOriginal = original.trim().replace(/\s+/g, ' ').toLowerCase();
+    const simpleMatchContent = match
+      .replace(/<[^>]+>/g, ' ') // Strip tags
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim()
+      .toLowerCase();
+
+    // Validate if the text content of the match includes the original text
+    if (simpleMatchContent.includes(simpleOriginal)) {
+      console.log(
+        `applySuggestionAcross: Match ${matchCount} validated. Replacing matched HTML segment.`
+      );
+      replaced = true;
+      // Return the suggestionHtml to replace the entire 'match' string
+      return suggestionHtml;
     } else {
       console.warn(
-        'applySuggestionAcross: Captured content mismatch, skipping replacement for:',
-        match
+        `applySuggestionAcross: Match ${matchCount} validation failed. Skipping replacement.`,
+        `\nMatch Content (stripped): "${simpleMatchContent}"`,
+        `\nOriginal (simplified): "${simpleOriginal}"`
       );
-      return match; // Return the original match if the core content doesn't seem right
+      // Return the original match if validation fails to avoid incorrect replacement
+      return match;
     }
   });
 
-  // 4. Check if any changes were actually made
+  // 5. Update editor only if changes were made
   if (!replaced) {
     console.log(
-      'applySuggestionAcross: No valid replacements made for the given original text.'
+      'applySuggestionAcross: No valid replacements were made in the HTML.'
     );
-    return; // Exit if no valid replacements occurred
+    return; // Exit if no replacements occurred
   }
 
-  console.log('applySuggestionAcross: New HTML:', newHtml);
+  console.log(
+    'applySuggestionAcross: HTML content was modified. Updating editor.'
+  );
 
-  // 5. Remember the current selection (before updating content)
-  const currentSelection = editor.state.selection;
+  // 6. Update the editor's content and handle selection
+  try {
+    // Remember selection BEFORE changing content
+    const { from, to } = state.selection;
 
-  // 6. Update the editor's content
-  editor.commands.setContent(newHtml, false); // Pass false to potentially improve selection restoration
+    // Use setContent to replace the entire editor content with the modified HTML
+    // Pass 'true' to trigger parsing and update events.
+    editor.commands.setContent(newHtml, true);
 
-  // 7. Attempt to restore the selection
-  const newDocSize = editor.state.doc.content.size;
-  const newFrom = Math.min(currentSelection.from, newDocSize);
-  const newTo = Math.min(currentSelection.to, newDocSize);
+    // Attempt to restore selection asynchronously
+    setTimeout(() => {
+      if (editor && !editor.isDestroyed && editor.view) {
+        const currentDoc = editor.state.doc;
+        // Cap the selection range to the new document size
+        const newFrom = Math.min(from, currentDoc.content.size);
+        const newTo = Math.min(to, currentDoc.content.size);
+        // Ensure from <= to
+        const finalFrom = Math.min(newFrom, newTo);
+        const finalTo = Math.max(newFrom, newTo);
 
-  setTimeout(() => {
-    if (editor && !editor.isDestroyed && editor.view) {
-      try {
-        const selection = TextSelection.create(
-          editor.state.doc,
-          newFrom,
-          newTo
-        );
-        editor.view.dispatch(
-          editor.state.tr.setSelection(selection).scrollIntoView()
-        );
-        // Manually trigger an update event if setContent had emitUpdate: false
-        editor.view.dispatch(editor.state.tr.setMeta('forceUpdate', true));
-      } catch (error) {
-        console.error(
-          'applySuggestionAcross: Error restoring selection:',
-          error
-        );
-        editor.commands.focus('end'); // Fallback focus
+        try {
+          const selection = TextSelection.create(
+            currentDoc,
+            finalFrom,
+            finalTo
+          );
+          // Use a transaction to set selection and scroll
+          const tr = editor.state.tr.setSelection(selection);
+          // Only scroll if the selection changed or might be off-screen
+          if (!state.selection.eq(selection)) {
+            tr.scrollIntoView();
+          }
+          editor.view.dispatch(tr);
+          console.log(
+            'applySuggestionAcross: Selection restoration attempted.'
+          );
+        } catch (selectionError) {
+          console.error(
+            'applySuggestionAcross: Error creating/setting selection:',
+            selectionError
+          );
+          editor.commands.focus('end'); // Fallback focus
+        }
       }
-    } else {
-      console.warn(
-        'applySuggestionAcross: Editor or view not available for selection restoration.'
-      );
-    }
-  }, 0); // Timeout 0ms
+    }, 50); // 50ms delay - adjust if needed
+  } catch (updateError) {
+    console.error(
+      'applySuggestionAcross: Error setting editor content:',
+      updateError
+    );
+  }
 }
 
 /**
