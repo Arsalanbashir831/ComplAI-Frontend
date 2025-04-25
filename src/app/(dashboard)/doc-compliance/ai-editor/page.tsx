@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
 import { useEditorStore } from '@/store/use-editor-store';
 
 import { ComplianceResult } from '@/types/doc-compliance';
-import { applySuggestionAcross } from '@/lib/utils'; // Ensure this path is correct
+import { applySuggestionAcross } from '@/lib/resolve-issues'; // Ensure this path is correct
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 // --- Import necessary types and components ---
@@ -65,13 +65,13 @@ export default function DocumentIdPage() {
     }
 
     const fetchProcessedData = async () => {
-      console.log('Starting fetch to /api/process-compliance...');
+      console.log('Starting fetch to /api/process-compliance-open-ai...');
       setIsLoading(true);
       setError(null);
       setProcessedData(null);
 
       try {
-        const response = await fetch('/api/process-compliance', {
+        const response = await fetch('/api/process-compliance-open-ai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           // Send original content and original results to the API
@@ -122,58 +122,122 @@ export default function DocumentIdPage() {
     }
   }, [isLoading, error, content, router]);
 
-  // --- Handlers using PROCESSED results data ---
-  const handleResolveAll = () => {
+  const handleResolveIssue = useCallback(
+    (idx: number) => {
+      // Guard clauses: need editor AND the specific processed result
+      if (
+        !editor ||
+        !processedData?.processedResults ||
+        !processedData.processedResults[idx]
+      ) {
+        console.warn(
+          `Resolve Issue ${idx}: Editor or processed result not available.`
+        );
+        return;
+      }
+      // Get the specific processed result by index
+      const { original, suggestionHtml, compliant } =
+        processedData.processedResults[idx];
+
+      console.log(`Resolve Issue ${idx}: Applying suggestion...`);
+
+      let appliedSuccessfully = false;
+      // Apply only if not compliant, original text exists, and suggestionHtml exists
+      if (!compliant && original && suggestionHtml) {
+        // Call the utility function
+        try {
+          applySuggestionAcross(editor, original, suggestionHtml);
+          appliedSuccessfully = true; // Assume success if no error thrown
+        } catch (e) {
+          console.error(`Error applying suggestion for issue ${idx}:`, e);
+        }
+      } else {
+        console.warn(
+          `Resolve Issue ${idx}: Cannot apply. Compliant: ${compliant}, Has Original: ${!!original}, Has suggestionHtml: ${!!suggestionHtml}`
+        );
+      }
+
+      // --- **UPDATE STATE HERE** ---
+      // Only update state if the suggestion was successfully applied
+      if (appliedSuccessfully) {
+        setProcessedData((currentData) => {
+          if (!currentData) return null; // Should not happen if we got here, but safe check
+
+          // Create a new array excluding the resolved issue
+          const updatedResults = currentData.processedResults.filter(
+            (_, index) => index !== idx
+          );
+
+          // Return new state object
+          return {
+            ...currentData, // Keep other properties like fullHighlightedHtml
+            processedResults: updatedResults,
+          };
+        });
+        console.log(
+          `Resolve Issue ${idx}: Finished applying suggestion and updated UI state.`
+        );
+      } else {
+        console.log(
+          `Resolve Issue ${idx}: Finished attempting suggestion (no change applied or error occurred).`
+        );
+      }
+    },
+    [editor, processedData]
+  ); // Dependencies for useCallback
+
+  const handleResolveAll = useCallback(() => {
     // Guard clauses: need editor AND processedData with its results
     if (!editor || !processedData?.processedResults) {
       console.warn('Resolve All: Editor or processed results not available.');
       return;
     }
     console.log('Resolve All: Applying suggestions...');
-    // Iterate through the processed results from the API response
-    processedData.processedResults.forEach(
-      ({ original, suggestionHtml, compliant }) => {
-        // Apply only if not compliant and suggestionHtml exists
-        if (!compliant && original && suggestionHtml) {
-          // Call the updated utility function
+
+    let changesMade = false;
+    // Keep track of results that *couldn't* be applied or were already compliant
+    const remainingResults: ProcessedResultItem[] = [];
+
+    // Iterate through the *current* processed results
+    processedData.processedResults.forEach((result) => {
+      const { original, suggestionHtml, compliant } = result;
+      // Try to apply only if not compliant and suggestionHtml exists
+      if (!compliant && original && suggestionHtml) {
+        try {
           applySuggestionAcross(editor, original, suggestionHtml);
+          changesMade = true; // Mark that at least one change was attempted/applied
+          // If applied, don't add it to remainingResults
+        } catch (e) {
+          console.error(
+            `Error applying suggestion during Resolve All for: ${original}`,
+            e
+          );
+          remainingResults.push(result); // Keep if application failed
         }
+      } else {
+        // Keep the result if it was already compliant or couldn't be applied
+        remainingResults.push(result);
       }
-    );
+    });
+
     console.log('Resolve All: Finished applying suggestions.');
-    // Optionally: Add logic to mark issues as resolved in UI state
-  };
 
-  const handleResolveIssue = (idx: number) => {
-    // Guard clauses: need editor AND the specific processed result
-    if (
-      !editor ||
-      !processedData?.processedResults ||
-      !processedData.processedResults[idx]
-    ) {
-      console.warn(
-        `Resolve Issue ${idx}: Editor or processed result not available.`
-      );
-      return;
-    }
-    // Get the specific processed result by index
-    const { original, suggestionHtml, compliant } =
-      processedData.processedResults[idx];
-
-    console.log(`Resolve Issue ${idx}: Applying suggestion...`);
-    // Apply only if not compliant, original text exists, and suggestionHtml exists
-    if (!compliant && original && suggestionHtml) {
-      // Call the updated utility function
-      applySuggestionAcross(editor, original, suggestionHtml);
+    // --- **UPDATE STATE HERE** ---
+    // Update state only if changes were potentially made
+    if (changesMade) {
+      setProcessedData((currentData) => {
+        if (!currentData) return null;
+        // Update the list to only contain the results that were kept
+        return {
+          ...currentData,
+          processedResults: remainingResults,
+        };
+      });
+      console.log('Resolve All: Updated UI state.');
     } else {
-      console.warn(
-        `Resolve Issue ${idx}: Cannot apply. Compliant: ${compliant}, Has Original: ${!!original}, Has suggestionHtml: ${!!suggestionHtml}`
-      );
+      console.log('Resolve All: No changes applied to editor.');
     }
-    console.log(`Resolve Issue ${idx}: Finished applying suggestion.`);
-    // Optionally: Add logic to mark the specific issue as resolved in UI state
-  };
-  // --- ---
+  }, [editor, processedData]); // Dependencies for useCallback
 
   // Determine content for the editor: use processed highlighted HTML if available
   const editorContent = processedData?.fullHighlightedHtml ?? content; // Fallback to original content
@@ -250,7 +314,7 @@ export default function DocumentIdPage() {
             <IssueList
               // IMPORTANT: Pass the processed results from the API
               results={processedData.processedResults}
-              listClassName="h-[calc(100vh-280px)]" // Adjust height as needed
+              listClassName="h-[calc(100vh-260px)]" // Adjust height as needed
               showResolveIssuesButton
               onResolveIssues={handleResolveAll}
               onResolveIssue={handleResolveIssue}
