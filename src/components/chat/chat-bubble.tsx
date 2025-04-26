@@ -3,9 +3,9 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn } from '@/lib/utils';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import CopyButton from './copy-button';
@@ -157,15 +157,15 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
             {/* File attachments */}
             {files.length > 0 && (
-              <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
+              <ScrollArea  className="whitespace-nowrap flex w-full max-w-[600px]">
                 <div className="flex w-max h-14 gap-2">
-                  {files.map((entry) => {
+                  {files.map((entry, index) => {
                     const url = entry.file;
-                    const key = entry.id ?? url;
+                    const key = entry.id ?? index;
                     return (
                       <FileCard
                         key={key}
-                        file={new File([url], url.split('/').pop() || 'file')}
+                        file={new File([url], url?.split('/')?.pop() || 'file')}
                         showExtraInfo={false}
                         titleColor="text-gray-dark"
                         className="bg-gray-light h-10"
