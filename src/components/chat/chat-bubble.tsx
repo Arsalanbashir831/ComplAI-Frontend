@@ -3,9 +3,9 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn } from '@/lib/utils';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
@@ -148,9 +148,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
               ) : (
                 isBot && (
                   <div className="space-y-2 animate-pulse">
-                  <Skeleton className="h-5 w-[350px]" />
-                  <Skeleton className="h-5 w-[350px]" />
-                </div>
+                    <Skeleton className="h-5 w-[350px]" />
+                    <Skeleton className="h-5 w-[350px]" />
+                  </div>
                 )
               )}
             </div>

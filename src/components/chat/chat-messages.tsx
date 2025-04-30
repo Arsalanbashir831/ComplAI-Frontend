@@ -1,10 +1,10 @@
+import { useEffect, useRef, useState } from 'react';
+import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { ArrowDown } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
-import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { ChatBubble } from './chat-bubble';
@@ -14,7 +14,7 @@ export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const { user } = useUserContext();
   const [showScrollButton, setShowScrollButton] = useState(false);
- const {trigger} =useSendMessageTrigger()
+  const { trigger } = useSendMessageTrigger();
   // Use IntersectionObserver to detect if the bottom element is visible.
   // If it's not visible, we assume the user has scrolled up.
   useEffect(() => {
@@ -44,14 +44,12 @@ export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
     if (!showScrollButton || trigger) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, showScrollButton,trigger]);
+  }, [messages, showScrollButton, trigger]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-
-  
   return (
     <ScrollArea
       ref={scrollAreaRef}

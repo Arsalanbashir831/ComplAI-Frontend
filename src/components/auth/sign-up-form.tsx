@@ -1,20 +1,20 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -30,17 +30,13 @@ import { OAuthButtons } from './outh-buttons';
 
 const formSchema = z
   .object({
-    username: z
-      .string()
-      .min(2, 'Username must be at least 2 characters long'),
+    username: z.string().min(2, 'Username must be at least 2 characters long'),
     email: z
       .string()
       .email('Invalid email address')
       // → normalize to lowercase right away
       .transform((val) => val.toLowerCase()),
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters long'),
+    password: z.string().min(8, 'Password must be at least 8 characters long'),
     confirmPassword: z
       .string()
       .min(8, 'Confirm Password must be at least 8 characters long'),
@@ -56,7 +52,6 @@ const formSchema = z
     path: ['username'],
     message: 'Username and email must not be the same',
   });
-
 
 export function SignUpForm() {
   const [loading, setLoading] = useState(false);
