@@ -1,18 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { ROUTES } from '@/constants/routes';
-import { useQuery } from '@tanstack/react-query';
-import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import React, { useState } from 'react';
 
-import apiCaller from '@/config/apiCaller';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -29,42 +25,42 @@ export function ChatSidebar() {
   const pathname = usePathname();
   const currentChatId = pathname.split('/').pop();
 
-  type TokensSummary = {
-    remaining_tokens: number;
-    used_tokens: number;
-    total_tokens: number;
-  };
+  // type TokensSummary = {
+  //   remaining_tokens: number;
+  //   used_tokens: number;
+  //   total_tokens: number;
+  // };
 
-  const fetchTokensSummary = async (): Promise<TokensSummary> => {
-    const response = await apiCaller(
-      API_ROUTES.USER.GET_TOKENS_SUMMARY,
-      'GET',
-      {},
-      {},
-      true,
-      'json'
-    );
-    return response.data;
-  };
+  // const fetchTokensSummary = async (): Promise<TokensSummary> => {
+  //   const response = await apiCaller(
+  //     API_ROUTES.USER.GET_TOKENS_SUMMARY,
+  //     'GET',
+  //     {},
+  //     {},
+  //     true,
+  //     'json'
+  //   );
+  //   return response.data;
+  // };
 
-  const { data: tokensSummary } = useQuery({
-    queryKey: ['tokensSummary'],
-    queryFn: fetchTokensSummary,
-    staleTime: 1000 * 60 * 5,
-    retry: 1,
-  });
+  // const { data: tokensSummary } = useQuery({
+  //   queryKey: ['tokensSummary'],
+  //   queryFn: fetchTokensSummary,
+  //   staleTime: 1000 * 60 * 5,
+  //   retry: 1,
+  // });
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
   // Ensure non-negative token values
-  const totalTokens = Math.max(tokensSummary?.total_tokens || 0, 0);
-  const remainingTokens = Math.max(tokensSummary?.remaining_tokens || 0, 0);
+  // const totalTokens = Math.max(tokensSummary?.total_tokens || 0, 0);
+  // const remainingTokens = Math.max(tokensSummary?.remaining_tokens || 0, 0);
 
   // Calculate progress percentage safely
-  const progressValue =
-    totalTokens > 0 ? ((totalTokens - remainingTokens) / totalTokens) * 100 : 0;
+  // const progressValue =
+  //   totalTokens > 0 ? ((totalTokens - remainingTokens) / totalTokens) * 100 : 0;
 
   // 1. Create a filtered array from the local `chats` state using client-side search
   const filteredChats = chats?.filter((chat) =>
@@ -137,7 +133,7 @@ export function ChatSidebar() {
         </div>
 
         <div className="p-6 pb-4">
-          <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative z-10">
+          {/* <div className="mb-6 rounded-lg bg-primary p-3 text-primary-foreground gap-y-2 flex flex-col items-center query-limit-card relative z-10">
             <h3 className="mb-1 font-semibold text-xs">
               {progressValue > 80
                 ? 'Daily query limit is almost reached'
@@ -161,7 +157,7 @@ export function ChatSidebar() {
                 Upgrade
               </Button>
             </Link>
-          </div>
+          </div> */}
 
           <div className="border-t pt-4">
             <Link

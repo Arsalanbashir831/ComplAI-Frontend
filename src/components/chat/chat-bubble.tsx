@@ -3,11 +3,12 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn } from '@/lib/utils';
 
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
+import { Skeleton } from '../ui/skeleton';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
@@ -146,11 +147,10 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 </Markdown>
               ) : (
                 isBot && (
-                  <div className="w-full bg-gray-300 rounded animate-pulse flex items-center justify-center h-12 px-5">
-                    <span className="text-gray-500 text-sm">
-                      Generating Response
-                    </span>
-                  </div>
+                  <div className="space-y-2 animate-pulse">
+                  <Skeleton className="h-5 w-[350px]" />
+                  <Skeleton className="h-5 w-[350px]" />
+                </div>
                 )
               )}
             </div>

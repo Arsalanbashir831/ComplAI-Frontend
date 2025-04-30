@@ -1,21 +1,22 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
+import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
@@ -36,7 +37,7 @@ export function MessageInput({
   const { promptText, setPromptText } = usePrompt();
   const { user } = useUserContext();
   const { refetch } = useChatMessages(currentChatId || '');
-
+const {setTrigger} = useSendMessageTrigger()
   // Import chat messages context.
   const { setMessages } = useChatContext();
 
@@ -153,7 +154,7 @@ export function MessageInput({
       setIsUpgradeModalOpen(true);
       return;
     }
-
+setTrigger(true)
     // Create a new AbortController and get its signal.
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
@@ -239,6 +240,7 @@ export function MessageInput({
       }
 
       // Clear the prompt text (i.e. message) and reset file uploads/mention.
+      setTrigger(false)
       setPromptText('');
       setUploadedFiles([]);
       setMentionType(null);
@@ -489,7 +491,7 @@ export function MessageInput({
                 onClick={isSending ? handleStop : handleSendMessage}
               >
                 {isSending ? (
-                  <Image width={10} height={10} src={'/pause.svg'} alt="" />
+                  <Image className='animate-pulse' width={10} height={10} src={'/pause.svg'} alt="" />
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
