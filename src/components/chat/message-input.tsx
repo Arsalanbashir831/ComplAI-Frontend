@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,15 +7,20 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
+import { ChatMessage } from '@/types/chat';
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
+import { ChatBubble } from './chat-bubble';
 import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
 
@@ -36,15 +38,15 @@ export function MessageInput({
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { promptText, setPromptText } = usePrompt();
   const { user } = useUserContext();
-  const { refetch } = useChatMessages(currentChatId || '');
+  // const { refetch } = useChatMessages(currentChatId || '');
   const { setTrigger } = useSendMessageTrigger();
   // Import chat messages context.
-  const { setMessages } = useChatContext();
-
+  // const { setMessages } = useChatContext();
+  const { setBubbles } = useChatContext();
   // Global mutating state as our "isSending" indicator.
   const isSending = useIsMutating() > 0;
   // AbortController ref to cancel the ongoing request.
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   // Remove local message state since we’re using promptText from context.
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isUplaodModalOpen, setIsUplaodModalOpen] = useState(false);
@@ -147,114 +149,104 @@ export function MessageInput({
   };
 
   const handleSendMessage = async () => {
-    if (isSending) return;
+    if (isSending || abortRef.current) return;
     if (!promptText.trim() && uploadedFiles.length === 0) return;
 
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
       return;
     }
+
     setTrigger(true);
-    // Create a new AbortController and get its signal.
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
+    abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
+
+    let localChatId = currentChatId;
+    if (!localChatId) {
+      const { id } = await createChat(shortenText(promptText.trim(), 5));
+      localChatId = id;
+      setCurrentChatId(id);
+    }
+    if (isNewChat && localChatId) {
+      setBubbles([]);
+      router.push(ROUTES.CHAT_ID(localChatId));
+    }
+
+    const userKey =Date.now();
+    const userMsg: ChatMessage = {
+      id: userKey,
+      chat: Number(localChatId),
+      user: user?.username || 'You',
+      content: promptText.trim(),
+      created_at: new Date().toISOString(),
+      tokens_used: 0,
+      is_system_message: false,
+      files: uploadedFiles.map(f => f.rawFile),
+    };
+    setBubbles(prev => [...prev, <ChatBubble key={userKey} message={userMsg} />]);
+
+    const aiKey = Date.now();
+    const placeholder: ChatMessage = {
+      id: aiKey,
+      chat: Number(localChatId),
+      user: 'AI',
+      content: '',
+      created_at: new Date().toISOString(),
+      tokens_used: 0,
+      is_system_message: true,
+      files: null,
+    };
+    setBubbles(prev => [...prev, <ChatBubble key={aiKey} message={placeholder} />]);
 
     try {
-      let localChatId = currentChatId;
-      const documentsToSend: File[] = uploadedFiles.map(
-        (upFile) => upFile.rawFile
-      );
-
-      if (!localChatId) {
-        // Create a new chat and update currentChatId state.
-        const response = await createChat(shortenText(promptText.trim(), 5));
-        localChatId = response.id;
-        setCurrentChatId(localChatId);
-      }
-
-      if (isNewChat && localChatId) {
-        setMessages([]);
-        router.push(ROUTES.CHAT_ID(localChatId));
-      }
-
-      // Create a user message and add it to the context.
-      const userMessage = {
-        id: Date.now(),
-        chat: Number(localChatId),
-        user: user?.username || 'You',
-        content: promptText.trim(),
-        created_at: new Date().toISOString(),
-        tokens_used: 0,
-        is_system_message: false,
-        files: documentsToSend.length > 0 ? documentsToSend : null,
-      };
-      setMessages((prev) => [...prev, userMessage]);
-
-      // Create a placeholder AI message.
-      const aiMessageId = Date.now() + 1;
-      const placeholderAIMessage = {
-        id: aiMessageId,
-        chat: Number(localChatId),
-        user: 'AI',
-        content: 'loading',
-        created_at: new Date().toISOString(),
-        tokens_used: 0,
-        is_system_message: true,
-        files: null,
-      };
-      setMessages((prev) => [...prev, placeholderAIMessage]);
-
-      if (!mentionType) {
-        // Await sendMessage so that we wait until all chunks are received.
-        await sendMessage({
-          chatId: localChatId,
-          content: promptText.trim(),
-          documents: documentsToSend,
-          onChunkUpdate: (chunk) => {
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === aiMessageId ? { ...msg, content: chunk } : msg
-              )
-            );
-          },
-          signal, // Pass the abort signal.
-        });
-      } else {
-        // For non-streaming responses.
+      if (mentionType) {
         const response = await addMessageNoStream({
           chatId: localChatId,
           content: promptText.trim(),
-          documents: documentsToSend,
+          documents: uploadedFiles.map(f => f.rawFile),
           return_type: mentionType,
-          signal, // Pass the abort signal.
+          signal,
         });
-        setMessages((prev) =>
-          prev.map((msg) => (msg.id === aiMessageId ? response : msg))
-        );
+        setBubbles(prev => {
+          const copy = [...prev];
+          const idx = copy.findIndex((el): el is React.ReactElement => React.isValidElement(el) && el.key === aiKey.toString());
+          if (idx > -1) {
+            copy[idx] = <ChatBubble key={aiKey} message={response} />;
+          }
+          return copy;
+        });
+      } else {
+        await sendMessage({
+          chatId: localChatId,
+          content: promptText.trim(),
+          documents: uploadedFiles.map(f => f.rawFile),
+          signal,
+          onChunkUpdate: chunk => {
+            setBubbles(prev => {
+              const copy = [...prev];
+              const idx = copy.findIndex((el): el is React.ReactElement => React.isValidElement(el) && el.key === aiKey.toString());
+              if (idx > -1) {
+                const updated = { ...placeholder, content: chunk };
+                copy[idx] = <ChatBubble key={aiKey} message={updated} />;
+              }
+              return copy;
+            });
+          },
+        });
       }
-
-      // Once chunking/response is complete, refetch messages using the currentChatId.
-      const refetchResult = await refetch();
-      if (refetchResult.data) {
-        setMessages(refetchResult.data);
-      }
-
-      // Clear the prompt text (i.e. message) and reset file uploads/mention.
+    } catch (err) {
+      console.error(err);
+    } finally {
+      abortRef.current = null;
       setTrigger(false);
       setPromptText('');
       setUploadedFiles([]);
       setMentionType(null);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    } finally {
-      // Reset the AbortController.
-      abortControllerRef.current = null;
     }
   };
-
   const handleStop = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    if (abortRef.current) {
+      abortRef.current.abort();
     }
   };
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -328,52 +320,6 @@ export function MessageInput({
     }
   };
 
-  // // Handle key events for the textarea and mention menu.
-  // const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-  //   if (event.key === 'Escape' && showMentionMenu) {
-  //     event.preventDefault();
-  //     setShowMentionMenu(false);
-  //     return;
-  //   }
-  //   if (showMentionMenu) {
-  //     if (event.key === 'ArrowDown') {
-  //       event.preventDefault();
-  //       setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
-  //       return;
-  //     }
-  //     if (event.key === 'ArrowUp') {
-  //       event.preventDefault();
-  //       setSelectedMentionIndex(
-  //         (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
-  //       );
-  //       return;
-  //     }
-  //     if (event.ctrlKey && event.key === 'Enter') {
-  //       event.preventDefault();
-  //       const match = promptText.match(/@(\w+)$/);
-  //       let selectedOption: string;
-  //       if (match) {
-  //         const query = match[1].toLowerCase();
-  //         const found = mentionOptions.find((option) => option.value === query);
-  //         selectedOption = found
-  //           ? found.value
-  //           : mentionOptions[selectedMentionIndex].value;
-  //       } else {
-  //         selectedOption = mentionOptions[selectedMentionIndex].value;
-  //       }
-  //       handleSelectMention(selectedOption as 'pdf' | 'docx');
-  //       return;
-  //     }
-  //   }
-  //   if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
-  //     event.preventDefault();
-  //     setMentionType(null);
-  //   }
-  //   if (event.key === 'Enter') {
-  //     event.preventDefault();
-  //     handleSendMessage();
-  //   }
-  // };
 
   const handleSelectMention = (type: 'pdf' | 'docx') => {
     setMentionType(type);

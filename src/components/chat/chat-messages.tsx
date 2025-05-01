@@ -1,50 +1,47 @@
-import { useEffect, useRef, useState } from 'react';
-import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
-import { useUserContext } from '@/contexts/user-context';
 import { ArrowDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage } from '@/types/chat';
 
+import { useChatContext } from '@/contexts/chat-context';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
+
+import { useChatMessages } from '@/hooks/useChat';
+import { ChatMessage } from '@/types/chat';
 import { ChatBubble } from './chat-bubble';
 
-export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
+export function ChatMessages({chatId}: { chatId: string }) {
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const { user } = useUserContext();
+  // const { user } = useUserContext();
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const { trigger } = useSendMessageTrigger();
+  // const { trigger } = useSendMessageTrigger();
+  const { bubbles,setBubbles } = useChatContext();
   // Use IntersectionObserver to detect if the bottom element is visible.
   // If it's not visible, we assume the user has scrolled up.
+  const { data: chatMessages } = useChatMessages(chatId);
+  
+
+   useEffect(() => {
+    if (chatMessages && bubbles.length === 0) {
+      const initialBubbles = chatMessages.map((msg: ChatMessage) => (
+        <ChatBubble key={msg.id} message={msg} />
+      ));
+      setBubbles(initialBubbles);
+    }
+  }, [chatMessages, bubbles.length, setBubbles]);
   useEffect(() => {
-    const scrollContainer = scrollAreaRef.current;
-    const bottomElement = bottomRef.current;
-    if (!scrollContainer || !bottomElement) return;
-
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        // When the bottom is not in view, show the button.
-        setShowScrollButton(!entry.isIntersecting);
-      },
-      {
-        root: scrollContainer,
-        threshold: 0.1,
-      }
+      ([entry]) => setShowScrollButton(!entry.isIntersecting),
+      { root: scrollAreaRef.current, threshold: 0.1 }
     );
-
-    observer.observe(bottomElement);
-    return () => {
-      observer.disconnect();
-    };
+    if (bottomRef.current) observer.observe(bottomRef.current);
+    return () => observer.disconnect();
   }, []);
 
-  // Auto scroll when new messages arrive only if the user is at the bottom.
   useEffect(() => {
-    if (!showScrollButton || trigger) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, showScrollButton, trigger]);
+    if (!showScrollButton) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [bubbles, showScrollButton]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,10 +52,8 @@ export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
       ref={scrollAreaRef}
       className="relative h-[calc(100vh-2rem)] overflow-y-auto"
     >
-      <div className="mx-auto md:max-w-[80%] md:p-4">
-        {messages.map((msg) => (
-          <ChatBubble key={msg.id} message={msg} user={user} />
-        ))}
+    <div className="mx-auto md:max-w-[80%] md:p-4 flex flex-col gap-3">
+        {bubbles.map(b => b)}
         <div ref={bottomRef} />
       </div>
 

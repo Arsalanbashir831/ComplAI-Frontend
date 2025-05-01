@@ -1,22 +1,20 @@
-// ChatContext.tsx
+// contexts/chat-context.tsx
 'use client';
 
 import { createContext, ReactNode, useContext, useState } from 'react';
 
-import type { ChatMessage } from '@/types/chat';
-
 interface ChatContextProps {
-  messages: ChatMessage[];
-  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+  /** Array of rendered chat bubble components */
+  bubbles: ReactNode[];
+  setBubbles: React.Dispatch<React.SetStateAction<ReactNode[]>>;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-
+  const [bubbles, setBubbles] = useState<ReactNode[]>([]);
   return (
-    <ChatContext.Provider value={{ messages, setMessages }}>
+    <ChatContext.Provider value={{ bubbles, setBubbles }}>
       {children}
     </ChatContext.Provider>
   );
@@ -24,8 +22,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
 export const useChatContext = () => {
   const context = useContext(ChatContext);
-  if (context === undefined) {
-    throw new Error('useChatContext must be used within a ChatProvider');
-  }
+  if (!context) throw new Error('useChatContext must be used within ChatProvider');
   return context;
 };
