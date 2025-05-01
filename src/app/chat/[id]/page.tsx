@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
+
 // import { useChatMessages } from '@/hooks/useChat';
 // import { useEffect } from 'react';
 // import { useChatContext } from '@/contexts/chat-context';
@@ -16,7 +17,7 @@ export default function SpecificChatPage() {
 
   // const { data: chatMessages } = useChatMessages(chatId);
   // const { bubbles , setBubbles } = useChatContext();
- 
+
   // const { data: chatMessages } = useChatMessages(chatId);
   // const { bubbles, setBubbles } = useChatContext();
 

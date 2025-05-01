@@ -1,5 +1,8 @@
 'use client';
 
+import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -7,17 +10,14 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { Button } from '@/components/ui/button';
-import { useChat } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
-
 import { ChatMessage } from '@/types/chat';
+import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
+
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { ChatBubble } from './chat-bubble';
@@ -172,7 +172,7 @@ export function MessageInput({
       router.push(ROUTES.CHAT_ID(localChatId));
     }
 
-    const userKey =Date.now();
+    const userKey = Date.now();
     const userMsg: ChatMessage = {
       id: userKey,
       chat: Number(localChatId),
@@ -181,9 +181,12 @@ export function MessageInput({
       created_at: new Date().toISOString(),
       tokens_used: 0,
       is_system_message: false,
-      files: uploadedFiles.map(f => f.rawFile),
+      files: uploadedFiles.map((f) => f.rawFile),
     };
-    setBubbles(prev => [...prev, <ChatBubble key={userKey} message={userMsg} />]);
+    setBubbles((prev) => [
+      ...prev,
+      <ChatBubble key={userKey} message={userMsg} />,
+    ]);
 
     const aiKey = Date.now();
     const placeholder: ChatMessage = {
@@ -196,20 +199,26 @@ export function MessageInput({
       is_system_message: true,
       files: null,
     };
-    setBubbles(prev => [...prev, <ChatBubble key={aiKey} message={placeholder} />]);
+    setBubbles((prev) => [
+      ...prev,
+      <ChatBubble key={aiKey} message={placeholder} />,
+    ]);
 
     try {
       if (mentionType) {
         const response = await addMessageNoStream({
           chatId: localChatId,
           content: promptText.trim(),
-          documents: uploadedFiles.map(f => f.rawFile),
+          documents: uploadedFiles.map((f) => f.rawFile),
           return_type: mentionType,
           signal,
         });
-        setBubbles(prev => {
+        setBubbles((prev) => {
           const copy = [...prev];
-          const idx = copy.findIndex((el): el is React.ReactElement => React.isValidElement(el) && el.key === aiKey.toString());
+          const idx = copy.findIndex(
+            (el): el is React.ReactElement =>
+              React.isValidElement(el) && el.key === aiKey.toString()
+          );
           if (idx > -1) {
             copy[idx] = <ChatBubble key={aiKey} message={response} />;
           }
@@ -219,12 +228,15 @@ export function MessageInput({
         await sendMessage({
           chatId: localChatId,
           content: promptText.trim(),
-          documents: uploadedFiles.map(f => f.rawFile),
+          documents: uploadedFiles.map((f) => f.rawFile),
           signal,
-          onChunkUpdate: chunk => {
-            setBubbles(prev => {
+          onChunkUpdate: (chunk) => {
+            setBubbles((prev) => {
               const copy = [...prev];
-              const idx = copy.findIndex((el): el is React.ReactElement => React.isValidElement(el) && el.key === aiKey.toString());
+              const idx = copy.findIndex(
+                (el): el is React.ReactElement =>
+                  React.isValidElement(el) && el.key === aiKey.toString()
+              );
               if (idx > -1) {
                 const updated = { ...placeholder, content: chunk };
                 copy[idx] = <ChatBubble key={aiKey} message={updated} />;
@@ -319,7 +331,6 @@ export function MessageInput({
       setPromptText(input);
     }
   };
-
 
   const handleSelectMention = (type: 'pdf' | 'docx') => {
     setMentionType(type);
