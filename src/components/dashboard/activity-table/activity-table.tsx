@@ -3,15 +3,14 @@
 import { useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
-import type { ActivityItem } from '@/types/dashboard';
-import { cn, getDefaultDateRange } from '@/lib/utils';
-import useTokensHistory from '@/hooks/useTokensHistory';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DateRangePicker } from '@/components/common/date-range-picker';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import useTokensHistory from '@/hooks/useTokensHistory';
+import { cn, getDefaultDateRange } from '@/lib/utils';
+import type { ActivityItem } from '@/types/dashboard';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
@@ -27,7 +26,7 @@ export function ActivityTable({
   showTitle = true,
   showActions = true,
 }: ActivityTableProps) {
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab] = useState('all');
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
   const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
 
@@ -84,7 +83,7 @@ export function ActivityTable({
           {showTitle && (
             <CardTitle className="flex items-center gap-2 text-[#1D1F2C]">
               Recent Activity
-              <Badge className="bg-[#E9FAF7] text-[#09B975]">17</Badge>
+              <Badge className="bg-[#E9FAF7] text-[#09B975]">{filteredData?.length}</Badge>
             </CardTitle>
           )}
 
@@ -93,7 +92,7 @@ export function ActivityTable({
               value={dateRange}
               onChange={(newRange) => newRange && setDateRange(newRange)}
             />
-            <Tabs
+            {/* <Tabs
               defaultValue="all"
               onValueChange={(value) => setActiveTab(value)}
             >
@@ -117,7 +116,7 @@ export function ActivityTable({
                   All
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
+            </Tabs> */}
           </div>
         </CardHeader>
         <CardContent className="p-0">

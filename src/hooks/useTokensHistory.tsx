@@ -2,8 +2,8 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 import { DateRange } from 'react-day-picker';
 
-import { ActivityItem } from '@/types/dashboard';
 import apiCaller from '@/config/apiCaller';
+import { ActivityItem } from '@/types/dashboard';
 
 const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
   if (!dateRange?.from || !dateRange?.to)
@@ -50,6 +50,7 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
   console.log(response);
   return response.data.map((item: ActivityItem) => ({
     ...item,
+    tokens_used: (item.tokens_used / 1000).toFixed(1),
     activity_type: item?.user_message?.file ? 'Uploaded Document' : 'query',
   }));
 };

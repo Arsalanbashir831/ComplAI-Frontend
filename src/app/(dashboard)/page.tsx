@@ -3,13 +3,13 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { ActivityTable } from '@/components/dashboard/activity-table/activity-table';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { DonutChart } from '@/components/dashboard/donut-chart';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { TokenChart } from '@/components/dashboard/token-chart';
+import apiCaller from '@/config/apiCaller';
 
 type TokensSummary = {
   remaining_tokens: number;
@@ -51,19 +51,19 @@ export default function DashboardPage() {
     );
 
   // Ensure tokens are non-negative
-  const totalTokens = Math.max(tokensSummary?.total_tokens || 0, 0);
-  const usedTokens = Math.max(tokensSummary?.used_tokens || 0, 0);
-  const remainingTokens = Math.max(tokensSummary?.remaining_tokens || 0, 0);
+  const totalTokens = Math.max(Number(((tokensSummary?.total_tokens ?? 0)/1000).toFixed(0)), 0);
+  const usedTokens = Math.max(Number(((tokensSummary?.used_tokens ?? 0)/1000).toFixed(0)), 0);
+  const remainingTokens = Math.max(Number(((tokensSummary?.remaining_tokens ?? 0)/1000).toFixed(0)), 0);
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center px-6 py-8">
       <DashboardHeader title="Dashboard" />
       <div className="flex flex-col items-center justify-center flex-1 w-full mt-2 gap-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full">
-          <MetricCard title="Total Tokens" value={totalTokens} type="total" />
-          <MetricCard title="Used Tokens" value={usedTokens} type="used" />
+          <MetricCard title="Total Credits" value={totalTokens} type="total" />
+          <MetricCard title="Used Credits" value={usedTokens} type="used" />
           <MetricCard
-            title="Remaining Tokens"
+            title="Remaining Credits"
             value={remainingTokens}
             type="remaining"
           />

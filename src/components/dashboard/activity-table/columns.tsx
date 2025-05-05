@@ -3,8 +3,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
 
-import type { ActivityItem } from '@/types/dashboard';
 import { Button } from '@/components/ui/button';
+import type { ActivityItem } from '@/types/dashboard';
 
 export const createColumns = (
   showActions = false,
@@ -59,7 +59,7 @@ export const createColumns = (
 
     {
       accessorKey: 'tokens_used',
-      header: 'Tokens Deducted',
+      header: 'Credits Deducted',
       enableSorting: false,
       cell: ({ row }) => {
         const amount = Number.parseFloat(row.getValue('tokens_used'));

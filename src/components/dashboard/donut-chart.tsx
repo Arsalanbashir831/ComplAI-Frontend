@@ -24,7 +24,7 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
   return (
     <Card className="rounded-lg shadow-md border-none md:max-w-none">
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-[#030229]">Tokens Summary</CardTitle>
+        <CardTitle className="text-[#030229]">Credits Summary</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center px-4">
         <div className="h-60 w-60 md:h-80 md:w-80">
@@ -78,7 +78,7 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
                               y={(viewBox.cy || 0) + 24}
                               className="fill-muted-foreground text-xs md:text-sm"
                             >
-                              Remaining Tokens
+                              Remaining Credits
                             </tspan>
                           </text>
                         );
@@ -102,7 +102,7 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
                 }}
               />
               <span className="text-sm text-muted-foreground">
-                {entry.name}: {entry.value}
+                {entry.name}: {(entry.value)}
               </span>
             </div>
           ))}
