@@ -1,6 +1,8 @@
-'use client'
+'use client';
+
 import { useState } from 'react';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,9 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-
-
 
 export default function SupportForm() {
   const [selectedVersion, setSelectedVersion] = useState('');
@@ -43,8 +42,6 @@ export default function SupportForm() {
           Submit Support Request
         </Button>
       </div>
-
-    
     </div>
   );
 }

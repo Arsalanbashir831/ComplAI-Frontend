@@ -7,19 +7,16 @@ import SupportForm from '@/components/dashboard/help-support/help-form-support';
 export default function Page() {
   return (
     <>
-    <div className='p-5 flex flex-col gap-y-10'>
-    <DashboardHeader
-                title="Help & Support"
-                subtitle="Please Menion any issues you are facing"
-              />
+      <div className="p-5 flex flex-col gap-y-10">
+        <DashboardHeader
+          title="Help & Support"
+          subtitle="Please Menion any issues you are facing"
+        />
 
-<div >
-       
-       <SupportForm />
-     </div>
-    </div>
-     
+        <div>
+          <SupportForm />
+        </div>
+      </div>
     </>
-   
   );
 }
