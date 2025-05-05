@@ -1,7 +1,9 @@
-'use client'
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import ProfileForm from '@/components/dashboard/profile/profile-form';
-import { useSearchParams } from 'next/navigation';
 
 export default function ProfilePage() {
   const searchParams = useSearchParams();

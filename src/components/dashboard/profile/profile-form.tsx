@@ -1,14 +1,15 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { Eye, EyeOff, UserIcon } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -16,7 +17,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import apiCaller from '@/config/apiCaller';
 
 import {
   ProfileFormFields,
@@ -44,7 +44,7 @@ export default function ProfileForm({ type }: ProfileFormProps) {
       email: '',
       phoneNumber: '',
       jobTitle: '',
-      organization_name:'',
+      organization_name: '',
       creationDate: new Date(),
     },
   });
@@ -198,16 +198,16 @@ export default function ProfileForm({ type }: ProfileFormProps) {
           onClick={() => setIsUploaderOpen(true)}
           className="relative aspect-square w-16 md:w-20 lg:w-24 group overflow-hidden rounded-full cursor-pointer"
         >
-         {profileImage || user?.profile_picture ? (
-    <Image
-      src={profileImage || user!.profile_picture!}
-      alt="Profile Avatar"
-      fill
-      className="rounded-full object-cover"
-    />
-  ) : (
-    <UserIcon className="h-[100%] w-[100%] text-gray-400" />
-  )}
+          {profileImage || user?.profile_picture ? (
+            <Image
+              src={profileImage || user!.profile_picture!}
+              alt="Profile Avatar"
+              fill
+              className="rounded-full object-cover"
+            />
+          ) : (
+            <UserIcon className="h-[100%] w-[100%] text-gray-400" />
+          )}
           <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <span className="text-white text-sm font-medium">Change</span>
           </div>

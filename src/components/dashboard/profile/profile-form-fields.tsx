@@ -2,10 +2,10 @@ import { BriefcaseBusiness, Building, Mail, User2 } from 'lucide-react';
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
-import { DatePicker } from '@/components/common/date-picker';
-import { PhoneInput } from '@/components/dashboard/profile/phone-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/common/date-picker';
+import { PhoneInput } from '@/components/dashboard/profile/phone-input';
 
 export const profileSchema = z.object({
   id: z.string(),
@@ -16,7 +16,9 @@ export const profileSchema = z.object({
 
   jobTitle: z.string().min(2, 'Job title must be at least 2 characters'),
   creationDate: z.date(),
-  organization_name: z.string().min(3, 'Username must be at least 3 characters'),
+  organization_name: z
+    .string()
+    .min(3, 'Username must be at least 3 characters'),
   // notificationsEnabled: z.boolean(),
   // emailUpdates: z.boolean(),
 });

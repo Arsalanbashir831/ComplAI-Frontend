@@ -1,11 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useUserContext } from '@/contexts/user-context';
-import Link from 'next/link';
-import { useEffect } from 'react';
-
 import { User as UserIcon } from 'lucide-react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 

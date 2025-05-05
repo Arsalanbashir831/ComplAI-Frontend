@@ -1,18 +1,18 @@
 'use client';
 
+import { useCallback, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
 import apiCaller from '@/config/apiCaller';
-
 import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+
 import {
   Form,
   FormControl,
@@ -41,7 +41,7 @@ export function IdentityVerificationForm() {
     type: 'success' | 'error';
     text: string;
   } | null>(null);
-const {signIn}  = useAuth()
+  const { signIn } = useAuth();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { code: '' },
@@ -101,7 +101,7 @@ const {signIn}  = useAuth()
           )
         ) {
           // new to call the login api to create session
-       await signIn({email, password,type:'new'});
+          await signIn({ email, password, type: 'new' });
           // setTimeout(() => router.push(ROUTES.LOGIN), 2000);
         }
       } else {

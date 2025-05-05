@@ -1,18 +1,18 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 
-import { useAuth } from '@/hooks/useAuth';
 import {
   Form,
   FormControl,
@@ -36,7 +36,7 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
-  const {signIn}= useAuth()
+  const { signIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -52,7 +52,11 @@ export function LoginForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     setErrorMessage(null);
-await signIn({ email: values.email, password: values.password,type:'old' })
+    await signIn({
+      email: values.email,
+      password: values.password,
+      type: 'old',
+    });
     // try {
     //   const response = await apiCaller(
     //     API_ROUTES.AUTH.LOGIN,
@@ -80,7 +84,6 @@ await signIn({ email: values.email, password: values.password,type:'old' })
     // } finally {
     //   setLoading(false);
     // }
-
   };
 
   return (

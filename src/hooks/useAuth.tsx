@@ -1,25 +1,24 @@
 // hooks/useAuth.ts
-import apiCaller from '@/config/apiCaller';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+
+import apiCaller from '@/config/apiCaller';
 
 interface SignInData {
   email: string;
   password: string;
-  type:string;
+  type: string;
 }
-
-
 
 export function useAuth() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signIn = async ({ email, password , type }: SignInData) => {
+  const signIn = async ({ email, password, type }: SignInData) => {
     setLoading(true);
     setError(null);
     try {
@@ -35,11 +34,11 @@ export function useAuth() {
         const { access, refresh } = response.data;
         localStorage.setItem('accessToken', access);
         localStorage.setItem('refreshToken', refresh);
-      if(type ==='old'){
+        if (type === 'old') {
           router.push(ROUTES.DASHBOARD);
-      }else{
-        router.push(ROUTES.PROFILE+`type=${type}`);
-      }
+        } else {
+          router.push(ROUTES.PROFILE + `type=${type}`);
+        }
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {
@@ -52,8 +51,6 @@ export function useAuth() {
       setLoading(false);
     }
   };
-
-
 
   return { signIn, loading, error };
 }
