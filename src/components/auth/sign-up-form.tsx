@@ -1,20 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -98,7 +98,7 @@ export function SignUpForm() {
           email: values.email,
         });
         router.push(
-          `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup`
+          `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup&&password=${values.password}`
         );
       }
     } catch (error: unknown) {

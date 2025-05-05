@@ -1,17 +1,18 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
+import apiCaller from '@/config/apiCaller';
 
+import { useAuth } from '@/hooks/useAuth';
 import {
   Form,
   FormControl,
@@ -33,13 +34,14 @@ export function IdentityVerificationForm() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const type = searchParams.get('type');
+  const password = searchParams.get('password');
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
   } | null>(null);
-
+const {signIn}  = useAuth()
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { code: '' },
@@ -70,7 +72,7 @@ export function IdentityVerificationForm() {
   };
 
   const onSubmit = async (value: z.infer<typeof formSchema>) => {
-    if (!email || !type) {
+    if (!email || !type || !password) {
       return setMessage({
         type: 'error',
         text: 'Email and type are required for verification.',
@@ -98,7 +100,9 @@ export function IdentityVerificationForm() {
             'Verification successful! Redirecting to login...'
           )
         ) {
-          setTimeout(() => router.push(ROUTES.LOGIN), 2000);
+          // new to call the login api to create session
+       await signIn({email, password,type:'new'});
+          // setTimeout(() => router.push(ROUTES.LOGIN), 2000);
         }
       } else {
         // ✅ Directly route to reset password with email & OTP

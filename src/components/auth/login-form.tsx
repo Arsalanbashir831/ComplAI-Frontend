@@ -1,21 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import { LockKeyhole, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 
+import { useAuth } from '@/hooks/useAuth';
 import {
   Form,
   FormControl,
@@ -39,7 +36,7 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
-  const router = useRouter();
+  const {signIn}= useAuth()
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -55,34 +52,35 @@ export function LoginForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     setErrorMessage(null);
+await signIn({ email: values.email, password: values.password,type:'old' })
+    // try {
+    //   const response = await apiCaller(
+    //     API_ROUTES.AUTH.LOGIN,
+    //     'POST',
+    //     { email: values.email, password: values.password },
+    //     {},
+    //     false,
+    //     'json'
+    //   );
 
-    try {
-      const response = await apiCaller(
-        API_ROUTES.AUTH.LOGIN,
-        'POST',
-        { email: values.email, password: values.password },
-        {},
-        false,
-        'json'
-      );
+    //   if (response.status === 200) {
+    //     const { access, refresh } = response.data;
+    //     localStorage.setItem('accessToken', access);
+    //     localStorage.setItem('refreshToken', refresh);
+    //     router.push(ROUTES.DASHBOARD);
+    //   }
+    // } catch (error: unknown) {
+    //   if (axios.isAxiosError(error) && error.response) {
+    //     setErrorMessage(
+    //       error.response.data?.message || 'Invalid email or password.'
+    //     );
+    //   } else {
+    //     setErrorMessage('A network error occurred. Please try again.');
+    //   }
+    // } finally {
+    //   setLoading(false);
+    // }
 
-      if (response.status === 200) {
-        const { access, refresh } = response.data;
-        localStorage.setItem('accessToken', access);
-        localStorage.setItem('refreshToken', refresh);
-        router.push(ROUTES.DASHBOARD);
-      }
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response) {
-        setErrorMessage(
-          error.response.data?.message || 'Invalid email or password.'
-        );
-      } else {
-        setErrorMessage('A network error occurred. Please try again.');
-      }
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useUserContext } from '@/contexts/user-context';
+import Link from 'next/link';
+import { useEffect } from 'react';
 
+import { User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 
@@ -44,24 +45,14 @@ export default function DashboardHeader({
           href={ROUTES.PROFILE}
           className="flex items-center gap-2 hover:bg-gray-300 p-2 rounded-md transition-all duration-200"
         >
-          {/* <Avatar className="w-10 h-10 transition-all duration-200 transform hover:scale-105">
-            <AvatarImage
-              src={user?.profile_picture || '/user.png'}
-              className="object-cover rounded-full"
-            />
-            <AvatarFallback>{user}</AvatarFallback>
-          </Avatar> */}
-
-          <Avatar className="w-10 h-10 transition-all duration-200 transform hover:scale-105">
-            {/* Avatar Image: Only loads if user.profile_picture is a valid string */}
+          <Avatar className="w-10 h-10 transition-all duration-200 transform hover:scale-105 bg-gray-100">
             <AvatarImage
               src={user?.profile_picture ?? undefined}
               alt={user?.username || 'User'}
+              className="object-cover w-full h-full"
             />
-
-            {/* Fallback Avatar (Displays initials or default text) */}
-            <AvatarFallback>
-              {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+            <AvatarFallback className="flex items-center justify-center">
+              <UserIcon className="w-6 h-6 text-gray-400" />
             </AvatarFallback>
           </Avatar>
           <div className="hidden md:flex flex-col">
