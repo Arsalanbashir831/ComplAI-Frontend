@@ -3,8 +3,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import type { ActivityItem } from '@/types/dashboard';
+import { Button } from '@/components/ui/button';
 
 export const createColumns = (
   showActions = false,

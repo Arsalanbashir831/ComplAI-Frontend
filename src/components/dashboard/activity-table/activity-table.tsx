@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
+import type { ActivityItem } from '@/types/dashboard';
+import { cn, getDefaultDateRange } from '@/lib/utils';
+import useTokensHistory from '@/hooks/useTokensHistory';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateRangePicker } from '@/components/common/date-range-picker';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import useTokensHistory from '@/hooks/useTokensHistory';
-import { cn, getDefaultDateRange } from '@/lib/utils';
-import type { ActivityItem } from '@/types/dashboard';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
@@ -83,7 +83,9 @@ export function ActivityTable({
           {showTitle && (
             <CardTitle className="flex items-center gap-2 text-[#1D1F2C]">
               Recent Activity
-              <Badge className="bg-[#E9FAF7] text-[#09B975]">{filteredData?.length}</Badge>
+              <Badge className="bg-[#E9FAF7] text-[#09B975]">
+                {filteredData?.length}
+              </Badge>
             </CardTitle>
           )}
 

@@ -102,7 +102,7 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
                 }}
               />
               <span className="text-sm text-muted-foreground">
-                {entry.name}: {(entry.value)}
+                {entry.name}: {entry.value}
               </span>
             </div>
           ))}

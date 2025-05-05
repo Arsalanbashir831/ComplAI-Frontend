@@ -12,10 +12,10 @@ import {
   YAxis,
 } from 'recharts';
 
+import { getDefaultDateRange } from '@/lib/utils';
+import useTokensHistory from '@/hooks/useTokensHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import useTokensHistory from '@/hooks/useTokensHistory';
-import { getDefaultDateRange } from '@/lib/utils';
 
 import { DateRangePicker } from '../common/date-range-picker';
 import LoadingSpinner from '../common/loading-spinner';
@@ -35,33 +35,35 @@ export function TokenChart() {
 
   // waiting state
   if (isLoading) return <LoadingSpinner />;
-  if (error)     return <div>Error loading data</div>;
+  if (error) return <div>Error loading data</div>;
 
   // filter and aggregate
   const filtered = Array.isArray(data)
     ? data.filter((d) => {
         const usage = new Date(d.usage_date);
         return (
-          usage >= new Date(dateRange.from!) &&
-          usage <= new Date(dateRange.to!)
+          usage >= new Date(dateRange.from!) && usage <= new Date(dateRange.to!)
         );
       })
     : [];
 
-  const aggregated: AggregatedData[] = filtered.reduce((acc, curr) => {
-    const d = new Date(curr.usage_date);
-    const key = `${d.getDate().toString().padStart(2,'0')}-${(
-      d.getMonth()+1
-    ).toString().padStart(2,'0')}-${d.getFullYear()}`;
-    const existing = acc.find((e:AggregatedData) => e.usage_date === key);
-    if (existing) {
-      existing.tokens += curr.tokens_used;
-    } else {
-      acc.push({ usage_date: key, tokens: curr.tokens_used });
-    }
-    return acc;
-  }, [] as AggregatedData[])
-    .filter((e:AggregatedData) => !isNaN(e.tokens));
+  const aggregated: AggregatedData[] = filtered
+    .reduce((acc, curr) => {
+      const d = new Date(curr.usage_date);
+      const key = `${d.getDate().toString().padStart(2, '0')}-${(
+        d.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, '0')}-${d.getFullYear()}`;
+      const existing = acc.find((e: AggregatedData) => e.usage_date === key);
+      if (existing) {
+        existing.tokens += curr.tokens_used;
+      } else {
+        acc.push({ usage_date: key, tokens: curr.tokens_used });
+      }
+      return acc;
+    }, [] as AggregatedData[])
+    .filter((e: AggregatedData) => !isNaN(e.tokens));
 
   // safe domain
   const yDomain: [number, 'dataMax'] = [0, 'dataMax'];
