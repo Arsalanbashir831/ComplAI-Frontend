@@ -1,9 +1,9 @@
 // hooks/useAuth.ts
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 
@@ -37,7 +37,7 @@ export function useAuth() {
         if (type === 'old') {
           router.push(ROUTES.DASHBOARD);
         } else {
-          router.push(ROUTES.PROFILE + `type=${type}`);
+          router.push(ROUTES.PROFILE + `?type=${type}`);
         }
       }
     } catch (err: unknown) {
