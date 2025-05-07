@@ -1,9 +1,5 @@
 'use client';
 
-import type React from 'react';
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -16,6 +12,10 @@ import {
   User2,
   Video,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import type React from 'react';
+import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -26,8 +26,8 @@ import { Separator } from '../ui/separator';
 
 // Updated sidebar links with sections
 const COMPLIANCE_TOOLS = [
-  { href: ROUTES.COMPLIANCE_GPT, icon: Bot, label: 'Compliance GPT' },
-  { href: ROUTES.DOC_COMPLIANCE, icon: FileText, label: 'Doc Compliance' },
+  { href: ROUTES.COMPLIANCE_GPT, icon: Bot, label: 'Companion' },
+  { href: ROUTES.DOC_COMPLIANCE, icon: FileText, label: 'Resolve' },
 ];
 
 const APP_NAVIGATION = [
