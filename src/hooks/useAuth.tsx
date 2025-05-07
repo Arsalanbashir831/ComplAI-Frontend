@@ -1,9 +1,9 @@
 // hooks/useAuth.ts
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 
