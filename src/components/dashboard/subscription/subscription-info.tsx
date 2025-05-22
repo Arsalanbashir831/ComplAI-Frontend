@@ -16,51 +16,52 @@ export function SubscriptionInfo({
   autoRenew,
   onAutoRenewChange,
 }: SubscriptionInfoProps) {
+  const isFree = plan === 'free';
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-semibold">Current Subscription</h2>
-        <div className="flex gap-2 text-sm">
-          <span className="">Subscription:</span>
-          <span className="capitalize">
-            {plan === 'subscription' ? 'Premium Plan' : 'Free'}
-          </span>
+    <section className="w-full bg-white px-8 py-10">
+      <h2 className="text-3xl font-semibold text-blue-800 mb-6">Current Subscription</h2>
+
+      <dl className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-6 mb-8">
+        <div>
+          <dt className="text-sm font-medium text-gray-600">Subscription</dt>
+          <dd className="mt-1 text-lg font-semibold text-gray-900 capitalize">
+            {isFree ? 'Free' : 'Premium Plan'}
+          </dd>
         </div>
-        <div className="flex gap-2 text-sm">
-          <span className="">Started on:</span>
-          <span>{startDate}</span>
+
+        <div>
+          <dt className="text-sm font-medium text-gray-600">Started On</dt>
+          <dd className="mt-1 text-lg text-gray-900">{startDate}</dd>
         </div>
-        <div className="flex gap-2 text-sm">
-          <span className="">Contract Period:</span>
-          <span>12 Months</span>
-        </div>
-      </div>
-      <div className="flex items-center justify-between gap-4">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-4">
-            <Label htmlFor="auto-renew" className="text-2xl font-semibold">
-              Enable auto Renew
-            </Label>
-            <Switch
-              id="auto-renew"
-              checked={autoRenew}
-              className="data-[state=unchecked]:bg-gray-400 mt-1.5"
-              onCheckedChange={plan === 'free' ? () => {} : onAutoRenewChange}
-            />
+
+        {!isFree && (
+          <div>
+            <dt className="text-sm font-medium text-gray-600">Renewal Date</dt>
+            <dd className="mt-1 text-lg text-gray-900">{renewalDate}</dd>
           </div>
-          <div className="text-sm">
-            {plan === 'free' ? (
-              <>
-                Automatically renew your subscription before it expires,
-                ensuring uninterrupted service.
-              </>
-            ) : (
-              // show renewal date of one year from start date
-              <>Auto renew your subscription at this {renewalDate}</>
-            )}
-          </div>
+        )}
+      </dl>
+
+      <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Label htmlFor="auto-renew" className="text-lg font-medium text-gray-700">
+            Auto Renew
+          </Label>
+          <Switch
+            id="auto-renew"
+            checked={autoRenew}
+            onCheckedChange={isFree ? undefined : onAutoRenewChange}
+            className="h-6 w-11 data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-300"
+          />
         </div>
+
+        <p className="text-sm text-gray-600">
+          {isFree
+            ? 'Upgrade to premium to enable auto-renew and ensure uninterrupted service.'
+            : `Your subscription will automatically renew on ${renewalDate}.`}
+        </p>
       </div>
-    </div>
+    </section>
   );
 }

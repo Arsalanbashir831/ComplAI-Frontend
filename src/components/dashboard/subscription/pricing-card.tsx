@@ -1,96 +1,69 @@
 import { Check } from 'lucide-react';
 
-import type { Plan } from '@/types/subscription';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type { Plan } from '@/types/subscription';
 
 interface PricingCardProps {
   plan: Plan;
   isActive?: boolean;
-  isDisbaled?: boolean;
+  isDisabled?: boolean;
 }
 
-export function PricingCard({ plan, isActive, isDisbaled }: PricingCardProps) {
-  const isPayAsYouUse = plan.type === 'free';
+export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
+  const isFree = plan.type === 'free';
 
   return (
     <Card
       className={cn(
-        'w-full h-full flex flex-col relative border-2',
-        !isPayAsYouUse ? 'bg-blue-dark ' : 'bg-[#fafffa',
-        isActive && 'border-[#008000]'
+        'w-full h-full flex flex-col relative border rounded-2xl shadow-md transition-transform transform hover:scale-[1.02]',
+        isActive ? 'border-blue-600' : 'border-gray-200',
+        'bg-white'
       )}
     >
       {isActive && (
-        <div className="absolute -top-2 -right-2">
-          <Check className="text-white bg-[#008000] rounded-full p-1 size-8" />
+        <div className="absolute -top-4 -right-4 bg-gradient-to-r from-blue-500 to-blue-700 p-3 rounded-full shadow-xl">
+          <Check className="text-white w-5 h-5" />
         </div>
       )}
 
       {plan.special && (
-        <div className="absolute -left-0.5 -top-0.5  bg-green-600 text-white text-sm px-2 py-1 rounded-tl-lg rounded-br-lg">
+        <div className="absolute -left-5 -top-5 bg-gradient-to-r from-blue-600 to-blue-400 text-white text-sm font-semibold px-5 py-2 rounded-br-xl rounded-tl-xl shadow-xl">
           Recommended
         </div>
       )}
 
-      <CardContent className="p-6 flex flex-col h-full">
-        <div className="flex flex-col justify-between space-y-4 h-full">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-end justify-between">
-                <h3
-                  className={cn(
-                    'font-medium text-xl',
-                    !isPayAsYouUse && 'text-white'
-                  )}
-                >
-                  {plan.title}
-                </h3>
-                <div className="flex flex-col items-baseline">
-                  <div
-                    className={cn(
-                      'text-sm text-right',
-                      !isPayAsYouUse ? 'text-white' : 'text-gray-dark'
-                    )}
-                  >
-                    {plan.minimumTerm} Minimum
-                  </div>
-                  <div
-                    className={cn(!isPayAsYouUse ? 'text-white' : 'text-black')}
-                  >
-                    <span className="text-xl font-bold">{plan.price}</span>
-                    {plan.interval && (
-                      <span className="ml-1">/{plan.interval}</span>
-                    )}
-                  </div>
-                </div>
+      <CardContent className="p-10 flex flex-col justify-between h-full">
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h3 className="text-2xl font-semibold text-blue-800">{plan.title}</h3>
+            <div className="text-right">
+              <div className="text-xs text-gray-500 mb-1">{plan.minimumTerm} Minimum</div>
+              <div className="text-3xl font-bold text-blue-900">
+                {plan.price}
+                {plan.interval && <span className="text-base font-medium text-gray-500">/{plan.interval}</span>}
               </div>
             </div>
-            <p
-              className={cn(
-                'text-sm text-muted-foreground',
-                !isPayAsYouUse ? 'text-blue-light' : 'text-gray-dark'
-              )}
-            >
-              {plan.description}
-            </p>
           </div>
-          <div>
-            <Button
-              onClick={plan.buttonAction}
-              variant="outline"
-              disabled={isDisbaled}
-              className={cn(
-                'w-fit',
-                !isPayAsYouUse
-                  ? 'text-blue-dark hover:bg-gray-200 hover:text-blue-700'
-                  : 'border-gray-dark text-gray-dark'
-              )}
-            >
-              {plan.special && isDisbaled ? 'Subscribed' : plan.buttonText}
-            </Button>
-          </div>
+
+          <p className="text-sm text-gray-600 leading-relaxed">{plan.description}</p>
+        </div>
+
+        <div className="mt-8">
+          <Button
+            onClick={plan.buttonAction}
+            variant={isFree ? 'outline' : 'default'}
+            disabled={isDisabled}
+            className={cn(
+              'w-full py-4 rounded-lg font-medium transition',
+              isFree
+                ? 'border-blue-600 text-blue-600 hover:bg-blue-50'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            )}
+          >
+            {plan.special && isDisabled ? 'Subscribed' : plan.buttonText}
+          </Button>
         </div>
       </CardContent>
     </Card>

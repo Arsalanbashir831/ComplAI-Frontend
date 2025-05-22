@@ -3,8 +3,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
 
-import type { ActivityItem } from '@/types/dashboard';
 import { Button } from '@/components/ui/button';
+import type { ActivityItem } from '@/types/dashboard';
 
 export const createColumns = (
   showActions = false,
@@ -44,18 +44,31 @@ export const createColumns = (
       },
     },
     {
-      accessorKey: 'activity_type',
-      header: 'Activity Type',
+      accessorKey: 'tool',
+      header: 'Tool',
       enableSorting: true,
-      cell: ({ row }) => {
-        const activityType = row.getValue('activity_type') as string;
+      cell: () => {
+        // const activityType = row.getValue('activity_type') as string;
         return (
           <div className="font-medium text-[#667085] capitalize">
-            {activityType}
+            {/* {activityType} */} Companion
           </div>
         );
       },
     },
+    // {
+    //   accessorKey: 'activity_type',
+    //   header: 'Activity Type',
+    //   enableSorting: true,
+    //   cell: ({ row }) => {
+    //     const activityType = row.getValue('activity_type') as string;
+    //     return (
+    //       <div className="font-medium text-[#667085] capitalize">
+    //         {activityType}
+    //       </div>
+    //     );
+    //   },
+    // },
 
     {
       accessorKey: 'tokens_used',
