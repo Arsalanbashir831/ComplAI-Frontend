@@ -9,13 +9,14 @@ import { User } from '@/types/user';
 import { cn } from '@/lib/utils';
 
 import LottieAnimation from '../common/lottie-animation';
+import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
 interface ChatBubbleProps {
-  message: ChatMessage;
+  message: ChatMessage & { isError?: boolean };
   user?: User | null;
 }
 
@@ -28,6 +29,15 @@ interface CodeProps {
 
 export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.is_system_message;
+  const isError = !!message.isError;
+  const isLoading = message.content === 'loading';
+  const showSkeleton = isLoading && !isError;
+  const showAvatar = isBot && !showSkeleton;
+
+  console.log('isLoading', isLoading);
+  console.log('isError', isError);
+  console.log('showSkeleton', showSkeleton);
+  console.log('isBot', isBot);
 
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
@@ -125,36 +135,37 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         )}
       >
         <div className="flex items-start gap-3">
-          {isBot &&
-            (message.content !== 'loading' ? (
-              <Image
-                src="/favicon.svg"
-                alt="Compt-AI"
-                width={40}
-                height={40}
-                className={cn(
-                  'rounded-full object-cover'
-                  // message.content === 'loading' && 'animate-pulse'
-                )}
+          {isBot && showSkeleton && (
+            <div className="flex items-center">
+              <LottieAnimation
+                animationData={chatLoading}
+                style={{ width: '100px', height: '100px' }}
+                className="w-6 h-6"
               />
-            ) : (
-              <>
-                <div className="flex items-center">
-                  <LottieAnimation
-                    animationData={chatLoading}
-                    style={{ width: '100px', height: '100px' }}
-                    className="w-6 h-6"
-                  />
-                  <div className="space-y-2 ">
-                    <Skeleton className="h-5 w-[350px]" />
-                    <Skeleton className="h-5 w-[350px]" />
-                  </div>
-                </div>
-              </>
-            ))}
+              <div className="space-y-2 ">
+                <Skeleton className="h-5 w-[350px]" />
+                <Skeleton className="h-5 w-[350px]" />
+              </div>
+            </div>
+          )}
+
+          {showAvatar && (
+            <Image
+              src="/favicon.svg"
+              alt="Compt-AI"
+              width={40}
+              height={40}
+              className="rounded-full object-cover"
+            />
+          )}
 
           <div className="flex flex-col gap-2 w-full">
-            <div className={cn('text-justify', 'text-black')}>
+            <div
+              className={cn(
+                'text-justify',
+                isError ? 'text-red-500 italic' : 'text-black'
+              )}
+            >
               {message.content !== 'loading' ? (
                 <Markdown
                   remarkPlugins={[remarkGfm]}
@@ -163,13 +174,6 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   {message.content}
                 </Markdown>
               ) : (
-                // isBot && (
-                //   <div className="space-y-2 ">
-                //     <Skeleton className="h-5 w-[350px]" />
-                //     <Skeleton className="h-5 w-[350px]" />
-                //   </div>
-
-                // )
                 <></>
               )}
             </div>
@@ -197,10 +201,22 @@ export function ChatBubble({ message }: ChatBubbleProps) {
               </ScrollArea>
             )}
 
-            {/* Copy button for bot messages */}
-            {isBot && message.content !== 'loading' && (
-              <CopyButton content={message.content} />
-            )}
+            <div className="flex gap-2">
+              {/* Copy button for bot messages */}
+              {isBot && message.content !== 'loading' && (
+                <CopyButton content={message.content} />
+              )}
+
+              {/* Refresh button for network errors */}
+              {isError && (
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="text-xs px-3 h-fit py-1 rounded-full text-white"
+                >
+                  Refresh Page
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

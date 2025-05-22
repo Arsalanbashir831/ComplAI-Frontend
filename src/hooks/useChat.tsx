@@ -223,6 +223,11 @@ const useChat = () => {
             signal,
           });
 
+          // if you get a 400, throw a special Error
+          if (sendResponse.status === 400) {
+            throw new Error('Network error');
+          }
+
           if (!sendResponse.ok || !sendResponse.body) {
             const errorData = await sendResponse.json();
             throw new Error(errorData.error || 'Failed to send message');

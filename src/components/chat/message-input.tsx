@@ -147,17 +147,48 @@ export function MessageInput({
   };
 
   const handleSendMessage = async () => {
-    if (isSending) return;
-    if (!promptText.trim() && uploadedFiles.length === 0) return;
+    if (isSending) return; // Already sending, do nothing
+    if (!promptText.trim() && uploadedFiles.length === 0) return; // Nothing to send
 
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
       return;
     }
-    setTrigger(true);
-    // Create a new AbortController and get its signal.
+
+    setTrigger(true); // Indicate sending process has started
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
+
+    // This ID will be used for the AI's response message (placeholder and final)
+    const aiMessageId = Date.now() + 1; // Using Date.now() for simplicity, consider a more robust UUID if needed
+
+    // Create the user message object first using the current promptText
+    const userMessagePayload = {
+      id: Date.now(), // User message gets its own ID
+      chat: Number(currentChatId), // Will be updated if new chat is created
+      user: user?.username || 'You',
+      content: promptText.trim(),
+      created_at: new Date().toISOString(),
+      tokens_used: 0,
+      is_system_message: false,
+      files:
+        uploadedFiles.length > 0
+          ? uploadedFiles.map((upFile) => upFile.rawFile)
+          : null,
+    };
+
+    // Create the placeholder for the AI's response
+    const placeholderAIMessage = {
+      id: aiMessageId,
+      chat: Number(currentChatId), // Will be updated if new chat is created
+      user: 'AI',
+      content: 'loading', // Initial content indicating loading
+      created_at: new Date().toISOString(),
+      tokens_used: 0,
+      is_system_message: true,
+      files: null,
+      isError: false, // Explicitly set initial error state to false
+    };
 
     try {
       let localChatId = currentChatId;
@@ -166,89 +197,129 @@ export function MessageInput({
       );
 
       if (!localChatId) {
-        // Create a new chat and update currentChatId state.
-        const response = await createChat(shortenText(promptText.trim(), 5));
+        const response = await createChat(
+          shortenText(userMessagePayload.content, 50)
+        ); // Use content from userMessagePayload
         localChatId = response.id;
         setCurrentChatId(localChatId);
+        // Update chat IDs for messages if a new chat was created
+        userMessagePayload.chat = Number(localChatId);
+        placeholderAIMessage.chat = Number(localChatId);
       }
 
       if (isNewChat && localChatId) {
-        setMessages([]);
+        setMessages([]); // Clear messages for a new chat context
         router.push(ROUTES.CHAT_ID(localChatId));
       }
 
-      // Create a user message and add it to the context.
-      const userMessage = {
-        id: Date.now(),
-        chat: Number(localChatId),
-        user: user?.username || 'You',
-        content: promptText.trim(),
-        created_at: new Date().toISOString(),
-        tokens_used: 0,
-        is_system_message: false,
-        files: documentsToSend.length > 0 ? documentsToSend : null,
-      };
-      setMessages((prev) => [...prev, userMessage]);
+      // Add user message and AI placeholder to the UI
+      setMessages((prev) => [
+        ...prev,
+        userMessagePayload,
+        placeholderAIMessage,
+      ]);
 
-      // Create a placeholder AI message.
-      const aiMessageId = Date.now() + 1;
-      const placeholderAIMessage = {
-        id: aiMessageId,
-        chat: Number(localChatId),
-        user: 'AI',
-        content: 'loading',
-        created_at: new Date().toISOString(),
-        tokens_used: 0,
-        is_system_message: true,
-        files: null,
-      };
-      setMessages((prev) => [...prev, placeholderAIMessage]);
+      // Clear input fields now that their values have been used
+      // Keeping this here before API call to make UI feel responsive.
+      // If you prefer to clear only on full success, move these to the end of the try block.
+      setPromptText('');
+      setUploadedFiles([]);
+      setMentionType(null);
 
       if (!mentionType) {
-        // Await sendMessage so that we wait until all chunks are received.
         await sendMessage({
           chatId: localChatId,
-          content: promptText.trim(),
+          content: userMessagePayload.content, // Use content from userMessagePayload
           documents: documentsToSend,
           onChunkUpdate: (chunk) => {
             setMessages((prev) =>
               prev.map((msg) =>
-                msg.id === aiMessageId ? { ...msg, content: chunk } : msg
+                msg.id === aiMessageId
+                  ? {
+                      ...msg,
+                      // If content is 'loading', replace it; otherwise, append.
+                      // Adjust if 'chunk' provides the full accumulated text each time.
+                      content:
+                        msg.content === 'loading' ? chunk : msg.content + chunk,
+                      isError: false, // Ensure error is false during streaming
+                    }
+                  : msg
               )
             );
           },
-          signal, // Pass the abort signal.
+          signal,
         });
+        // After successful streaming, ensure the final state of the message is not an error
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId ? { ...msg, isError: false } : msg
+          )
+        );
       } else {
-        // For non-streaming responses.
         const response = await addMessageNoStream({
           chatId: localChatId,
-          content: promptText.trim(),
+          content: userMessagePayload.content, // Use content from userMessagePayload
           documents: documentsToSend,
           return_type: mentionType,
-          signal, // Pass the abort signal.
+          signal,
         });
+        // Replace the placeholder with the actual response, ensuring correct ID and error state
         setMessages((prev) =>
-          prev.map((msg) => (msg.id === aiMessageId ? response : msg))
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? { ...response, id: aiMessageId, isError: false } // Use aiMessageId, set isError false
+              : msg
+          )
         );
       }
 
-      // Once chunking/response is complete, refetch messages using the currentChatId.
+      // This refetch was in your original code, kept for consistency.
+      // It might overwrite the client-side optimistic updates if backend state is different.
       const refetchResult = await refetch();
       if (refetchResult.data) {
         setMessages(refetchResult.data);
       }
 
-      // Clear the prompt text (i.e. message) and reset file uploads/mention.
-      setTrigger(false);
-      setPromptText('');
-      setUploadedFiles([]);
-      setMentionType(null);
-    } catch (error) {
+      // Input clearing was here in your original code, it's moved up for earlier UI feedback.
+      // If you want them cleared only on full success (after refetch), move them back here.
+      // setPromptText('');
+      // setUploadedFiles([]);
+      // setMentionType(null);
+    } catch (error: unknown) {
+      // Using 'any' for simplicity, type it properly if possible
       console.error('Error sending message:', error);
+
+      let errorContent = 'An unexpected error occurred. Please try again.';
+      let showErrorButton = true; // Determines if the 'Refresh Page' button shows
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        errorContent = 'Message generation was cancelled.';
+        showErrorButton = false; // No need for a refresh button if user cancelled
+      } else if (
+        error instanceof Error &&
+        error.message.toLowerCase().includes('network')
+      ) {
+        // More specific check for network errors if possible
+        errorContent =
+          'Network error. Please check your connection and try again.';
+      }
+      // Add more specific error handling based on error.code or other properties if available
+
+      // Update the placeholder message with error information
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === aiMessageId // Find the original placeholder
+            ? {
+                ...msg, // Keep existing properties like 'user', 'chat', 'created_at'
+                content: errorContent,
+                isError: showErrorButton,
+              }
+            : msg
+        )
+      );
     } finally {
-      // Reset the AbortController.
-      abortControllerRef.current = null;
+      setTrigger(false); // Reset sending state regardless of success or error
+      abortControllerRef.current = null; // Clean up AbortController
     }
   };
 
