@@ -2,8 +2,8 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 import { DateRange } from 'react-day-picker';
 
-import { ActivityItem } from '@/types/dashboard';
 import apiCaller from '@/config/apiCaller';
+import { ActivityItem } from '@/types/dashboard';
 
 const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
   if (!dateRange?.from || !dateRange?.to)
@@ -12,7 +12,8 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
       usage_date: '',
       activity_type: '',
       tokens_used: 0,
-      user_id: 0,
+      tool:'companion',
+            user_id: 0,
       ai_message: {
         id: 0,
         chat: 0,
