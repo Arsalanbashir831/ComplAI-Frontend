@@ -1,18 +1,19 @@
 import Image from 'next/image';
+import chatLoading from '@/assets/lottie/chat_loading_anime.json';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn } from '@/lib/utils';
 
-import chatLoading from '@/assets/lottie/chat_loading_anime.json';
 import LottieAnimation from '../common/lottie-animation';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
+
 interface ChatBubbleProps {
   message: ChatMessage;
   user?: User | null;
@@ -124,30 +125,33 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         )}
       >
         <div className="flex items-start gap-3">
-          {isBot && (
-            message.content !== 'loading' ? (
+          {isBot &&
+            (message.content !== 'loading' ? (
               <Image
                 src="/favicon.svg"
                 alt="Compt-AI"
                 width={40}
                 height={40}
                 className={cn(
-                  'rounded-full object-cover',
+                  'rounded-full object-cover'
                   // message.content === 'loading' && 'animate-pulse'
                 )}
               />
-            ):(<>
-            <div className='flex items-center'>
-
-            <LottieAnimation animationData={chatLoading} style={{width:'100px',height:'100px'}} className="w-6 h-6" />
-              <div className="space-y-2 ">
-                     <Skeleton className="h-5 w-[350px]" />
+            ) : (
+              <>
+                <div className="flex items-center">
+                  <LottieAnimation
+                    animationData={chatLoading}
+                    style={{ width: '100px', height: '100px' }}
+                    className="w-6 h-6"
+                  />
+                  <div className="space-y-2 ">
+                    <Skeleton className="h-5 w-[350px]" />
                     <Skeleton className="h-5 w-[350px]" />
                   </div>
-            </div>
-            </>)
-          )}
-            
+                </div>
+              </>
+            ))}
 
           <div className="flex flex-col gap-2 w-full">
             <div className={cn('text-justify', 'text-black')}>
@@ -164,7 +168,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 //     <Skeleton className="h-5 w-[350px]" />
                 //     <Skeleton className="h-5 w-[350px]" />
                 //   </div>
-               
+
                 // )
                 <></>
               )}

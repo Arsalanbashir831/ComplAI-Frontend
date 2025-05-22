@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 
+import type { Plan } from '@/types/subscription';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import type { Plan } from '@/types/subscription';
 
 interface PricingCardProps {
   plan: Plan;
@@ -37,17 +37,27 @@ export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
       <CardContent className="p-10 flex flex-col justify-between h-full">
         <div className="space-y-8">
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-semibold text-blue-800">{plan.title}</h3>
+            <h3 className="text-2xl font-semibold text-blue-800">
+              {plan.title}
+            </h3>
             <div className="text-right">
-              <div className="text-xs text-gray-500 mb-1">{plan.minimumTerm} Minimum</div>
+              <div className="text-xs text-gray-500 mb-1">
+                {plan.minimumTerm} Minimum
+              </div>
               <div className="text-3xl font-bold text-blue-900">
                 {plan.price}
-                {plan.interval && <span className="text-base font-medium text-gray-500">/{plan.interval}</span>}
+                {plan.interval && (
+                  <span className="text-base font-medium text-gray-500">
+                    /{plan.interval}
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
-          <p className="text-sm text-gray-600 leading-relaxed">{plan.description}</p>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            {plan.description}
+          </p>
         </div>
 
         <div className="mt-8">

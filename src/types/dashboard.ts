@@ -10,7 +10,7 @@ export interface ActivityItem {
   activity_type: string;
   tokens_used: number;
   user_id: number;
-  tool:string;
+  tool: string;
 
   ai_message: {
     id: number;
