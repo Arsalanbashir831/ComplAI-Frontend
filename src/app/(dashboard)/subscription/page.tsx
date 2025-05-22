@@ -1,26 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import {
-  useIsMutating,
   useMutation,
   useQuery,
-  useQueryClient,
+  useQueryClient
 } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import apiCaller from '@/config/apiCaller';
+import { formatDateLocal } from '@/lib/utils';
+import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -52,6 +51,7 @@ const fetchPaymentCards = async (): Promise<PaymentCard[]> => {
 
 // Fetch subscription items and build plans array.
 const fetchSubscriptionItems = async (): Promise<Plan[]> => {
+
   const response = await apiCaller(
     API_ROUTES.BILLING.ITEMS,
     'GET',
@@ -136,9 +136,11 @@ const fetchUserSubscriptions = async (): Promise<Subscription[]> => {
 };
 
 export default function SubscriptionPage() {
+  
   const { user, refresh } = useUserContext();
   const queryClient = useQueryClient();
-  const isSubscribing = useIsMutating() > 0;
+  // const isSubscribing = useIsMutating() > 0;
+
   const [autoRenew, setAutoRenew] = useState(true);
 
   useEffect(() => {
@@ -267,8 +269,15 @@ export default function SubscriptionPage() {
     } else {
       return {
         ...plan,
-        buttonAction: () => {},
+        buttonAction: () => {
+          window.open(
+            `${process.env.NEXT_PUBLIC_LANDING_URL}/contact`,
+            '_blank',
+            'noopener,noreferrer'
+          );
+        },
       };
+      
     }
   });
 
@@ -324,8 +333,7 @@ export default function SubscriptionPage() {
                     plan={plan}
                     isActive={plan.type === user?.subscription_type}
                     isDisabled={
-                      isSubscribing ||
-                      user?.subscription_type === 'subscription'
+                      plan.type === user?.subscription_type
                     }
                   />
                 ))}

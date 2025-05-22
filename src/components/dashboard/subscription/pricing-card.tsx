@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 
-import type { Plan } from '@/types/subscription';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type { Plan } from '@/types/subscription';
 
 interface PricingCardProps {
   plan: Plan;
@@ -14,6 +14,7 @@ interface PricingCardProps {
 export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
   const isFree = plan.type === 'free';
 
+console.log(plan.type+''+isDisabled)
   return (
     <Card
       className={cn(
