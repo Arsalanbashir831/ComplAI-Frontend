@@ -11,7 +11,6 @@ import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
 import TextareaAutosize from 'react-textarea-autosize';
-
 import { UploadedFile } from '@/types/upload';
 import { cn, shortenText } from '@/lib/utils';
 import { useChat, useChatMessages } from '@/hooks/useChat';
@@ -23,584 +22,641 @@ import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
 
 export function MessageInput({
-  chatId: propChatId = undefined,
-  isNewChat = false,
+    chatId,
+    isNewChat = false,
+    setRetryMap,             // <--- ADD THIS
+    setRetryingId,           // <--- ADD THIS
 }: {
-  chatId?: string;
-  isNewChat?: boolean;
+    chatId?: string;
+    isNewChat?: boolean;
+    setRetryMap: React.Dispatch<React.SetStateAction<Map<number, () => void>>>;
+    setRetryingId: React.Dispatch<React.SetStateAction<number | null>>;
 }) {
-  const router = useRouter();
-  const [currentChatId, setCurrentChatId] = useState<string | undefined>(
-    propChatId
-  );
-  const { createChat, sendMessage, addMessageNoStream } = useChat();
-  const { promptText, setPromptText } = usePrompt();
-  const { user } = useUserContext();
-  const { refetch } = useChatMessages(currentChatId || '');
-  const { setTrigger } = useSendMessageTrigger();
-  // Import chat messages context.
-  const { setMessages } = useChatContext();
+    const router = useRouter();
+    const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
+    const { createChat, sendMessage, addMessageNoStream } = useChat();
+    const { promptText, setPromptText } = usePrompt();
+    const { user } = useUserContext();
+    const { refetch } = useChatMessages(currentChatId || '');
+    const { setTrigger } = useSendMessageTrigger();
+    // Import chat messages context.
+    const { setMessages } = useChatContext();
 
-  // Global mutating state as our "isSending" indicator.
-  const isSending = useIsMutating() > 0;
-  // AbortController ref to cancel the ongoing request.
-  const abortControllerRef = useRef<AbortController | null>(null);
-  // Remove local message state since we’re using promptText from context.
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const [isUplaodModalOpen, setIsUplaodModalOpen] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [showMentionMenu, setShowMentionMenu] = useState(false);
-  const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
-  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
-  const maxChars = 10000;
-  console.log('prompt', promptText);
-  console.log('uploadedFiles', uploadedFiles);
+    // Global mutating state as our "isSending" indicator.
+    const isSending = useIsMutating() > 0;
+    // AbortController ref to cancel the ongoing request.
+    const abortControllerRef = useRef<AbortController | null>(null);
+    // Remove local message state since we’re using promptText from context.
+    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+    const [isUplaodModalOpen, setIsUplaodModalOpen] = useState(false);
+    const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+    const [showMentionMenu, setShowMentionMenu] = useState(false);
+    const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
+    const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
+    const maxChars = 10000;
+    console.log('prompt', promptText);
+    console.log('uploadedFiles', uploadedFiles);
 
-  // Define available mention options.
-  const mentionOptions = [
-    { value: 'pdf', label: 'PDF DOCUMENT', icon: '/icons/pdf-document.svg' },
-    { value: 'docx', label: 'DOCX DOCUMENT', icon: '/icons/word-document.svg' },
-  ];
+    // Define available mention options.
+    const mentionOptions = [
+        { value: 'pdf', label: 'PDF DOCUMENT', icon: '/icons/pdf-document.svg' },
+        { value: 'docx', label: 'DOCX DOCUMENT', icon: '/icons/word-document.svg' },
+    ];
 
-  // Ref for the mention menu container.
-  const mentionMenuRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        mentionMenuRef.current &&
-        !mentionMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowMentionMenu(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Temporary file upload simulation.
-  const simulateUpload = (fileId: string) => {
-    return new Promise<void>((resolve) => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        setUploadedFiles((prev) =>
-          prev.map((file) =>
-            file.id === fileId
-              ? { ...file, progress: Math.min(progress, 100) }
-              : file
-          )
-        );
-        progress += 10;
-        if (progress > 100) {
-          clearInterval(interval);
-          resolve();
+    // Ref for the mention menu container.
+    const mentionMenuRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                mentionMenuRef.current &&
+                !mentionMenuRef.current.contains(event.target as Node)
+            ) {
+                setShowMentionMenu(false);
+            }
         }
-      }, 200);
-    });
-  };
-
-  /**
-   * Handle file uploads. Only one file is stored.
-   */
-  const handleUpload = async (files: File[]) => {
-    const file = files[0];
-    if (!file) return;
-
-    const newUploadedFiles: UploadedFile[] = files
-      .map((file) => {
-        if (!file) {
-          console.warn('Skipping an invalid entry in the files array.');
-          return null;
-        }
-        return {
-          id: crypto.randomUUID(),
-          lastModified: file.lastModified,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          webkitRelativePath: file.webkitRelativePath,
-          progress: 0,
-          rawFile: file,
-          arrayBuffer: () => file.arrayBuffer(),
-          bytes: async () => new Uint8Array(await file.arrayBuffer()),
-          slice: (start?: number, end?: number, contentType?: string) =>
-            file.slice(start, end, contentType),
-          stream: () => file.stream(),
-          text: () => file.text(),
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
         };
-      })
-      .filter((file) => file !== null) as UploadedFile[];
+    }, []);
 
-    if (newUploadedFiles.length === 0) {
-      console.log('No valid files to upload.');
-      return;
-    }
-
-    setUploadedFiles(newUploadedFiles);
-    // Simulate upload progress for each file.
-    await Promise.all(newUploadedFiles.map((file) => simulateUpload(file.id)));
-  };
-
-  const handleCloseModal = () => {
-    setIsUplaodModalOpen(false);
-  };
-
-  const handleSendMessage = async () => {
-    if (isSending) return; // Already sending, do nothing
-    if (!promptText.trim() && uploadedFiles.length === 0) return; // Nothing to send
-
-    if ((user?.tokens ?? 0) <= 0) {
-      setIsUpgradeModalOpen(true);
-      return;
-    }
-
-    setTrigger(true); // Indicate sending process has started
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
-
-    // This ID will be used for the AI's response message (placeholder and final)
-    const aiMessageId = Date.now() + 1; // Using Date.now() for simplicity, consider a more robust UUID if needed
-
-    // Create the user message object first using the current promptText
-    const userMessagePayload = {
-      id: Date.now(), // User message gets its own ID
-      chat: Number(currentChatId), // Will be updated if new chat is created
-      user: user?.username || 'You',
-      content: promptText.trim(),
-      created_at: new Date().toISOString(),
-      tokens_used: 0,
-      is_system_message: false,
-      files:
-        uploadedFiles.length > 0
-          ? uploadedFiles.map((upFile) => upFile.rawFile)
-          : null,
-    };
-
-    // Create the placeholder for the AI's response
-    const placeholderAIMessage = {
-      id: aiMessageId,
-      chat: Number(currentChatId), // Will be updated if new chat is created
-      user: 'AI',
-      content: 'loading', // Initial content indicating loading
-      created_at: new Date().toISOString(),
-      tokens_used: 0,
-      is_system_message: true,
-      files: null,
-      isError: false, // Explicitly set initial error state to false
-    };
-
-    try {
-      let localChatId = currentChatId;
-      const documentsToSend: File[] = uploadedFiles.map(
-        (upFile) => upFile.rawFile
-      );
-
-      if (!localChatId) {
-        const response = await createChat(
-          shortenText(userMessagePayload.content, 50)
-        ); // Use content from userMessagePayload
-        localChatId = response.id;
-        setCurrentChatId(localChatId);
-        // Update chat IDs for messages if a new chat was created
-        userMessagePayload.chat = Number(localChatId);
-        placeholderAIMessage.chat = Number(localChatId);
-      }
-
-      if (isNewChat && localChatId) {
-        setMessages([]); // Clear messages for a new chat context
-        router.push(ROUTES.CHAT_ID(localChatId));
-      }
-
-      // Add user message and AI placeholder to the UI
-      setMessages((prev) => [
-        ...prev,
-        userMessagePayload,
-        placeholderAIMessage,
-      ]);
-
-      // Clear input fields now that their values have been used
-      // Keeping this here before API call to make UI feel responsive.
-      // If you prefer to clear only on full success, move these to the end of the try block.
-      setPromptText('');
-      setUploadedFiles([]);
-      setMentionType(null);
-
-      if (!mentionType) {
-        await sendMessage({
-          chatId: localChatId,
-          content: userMessagePayload.content, // Use content from userMessagePayload
-          documents: documentsToSend,
-          onChunkUpdate: (chunk) => {
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === aiMessageId
-                  ? {
-                      ...msg,
-                      // If content is 'loading', replace it; otherwise, append.
-                      // Adjust if 'chunk' provides the full accumulated text each time.
-                      content:
-                        msg.content === 'loading' ? chunk : msg.content + chunk,
-                      isError: false, // Ensure error is false during streaming
-                    }
-                  : msg
-              )
-            );
-          },
-          signal,
-        });
-        // After successful streaming, ensure the final state of the message is not an error
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId ? { ...msg, isError: false } : msg
-          )
-        );
-      } else {
-        const response = await addMessageNoStream({
-          chatId: localChatId,
-          content: userMessagePayload.content, // Use content from userMessagePayload
-          documents: documentsToSend,
-          return_type: mentionType,
-          signal,
-        });
-        // Replace the placeholder with the actual response, ensuring correct ID and error state
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? { ...response, id: aiMessageId, isError: false } // Use aiMessageId, set isError false
-              : msg
-          )
-        );
-      }
-
-      // This refetch was in your original code, kept for consistency.
-      // It might overwrite the client-side optimistic updates if backend state is different.
-      const refetchResult = await refetch();
-      if (refetchResult.data) {
-        setMessages(refetchResult.data);
-      }
-
-      // Input clearing was here in your original code, it's moved up for earlier UI feedback.
-      // If you want them cleared only on full success (after refetch), move them back here.
-      // setPromptText('');
-      // setUploadedFiles([]);
-      // setMentionType(null);
-    } catch (error: unknown) {
-      // Using 'any' for simplicity, type it properly if possible
-      console.error('Error sending message:', error);
-
-      let errorContent = 'An unexpected error occurred. Please try again.';
-      let showErrorButton = true; // Determines if the 'Refresh Page' button shows
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        errorContent = 'Message generation was cancelled.';
-        showErrorButton = false; // No need for a refresh button if user cancelled
-      } else if (
-        error instanceof Error &&
-        error.message.toLowerCase().includes('network')
-      ) {
-        // More specific check for network errors if possible
-        errorContent =
-          'Network error. Please check your connection and try again.';
-      }
-      // Add more specific error handling based on error.code or other properties if available
-
-      // Update the placeholder message with error information
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.id === aiMessageId // Find the original placeholder
-            ? {
-                ...msg, // Keep existing properties like 'user', 'chat', 'created_at'
-                content: errorContent,
-                isError: showErrorButton,
-              }
-            : msg
-        )
-      );
-    } finally {
-      setTrigger(false); // Reset sending state regardless of success or error
-      abortControllerRef.current = null; // Clean up AbortController
-    }
-  };
-
-  const handleStop = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-  };
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // If the user presses Escape and the mention menu is open, close it.
-    if (event.key === 'Escape' && showMentionMenu) {
-      event.preventDefault();
-      setShowMentionMenu(false);
-      return;
-    }
-
-    // If the mention menu is open, handle up/down navigation.
-    if (showMentionMenu) {
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
-        return;
-      }
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        setSelectedMentionIndex(
-          (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
-        );
-        return;
-      }
-      // You can remove or disable any Ctrl+Enter logic here if you don't want it to conflict.
-    }
-
-    // If Ctrl+Enter is pressed, insert a newline at the cursor position.
-    if (event.ctrlKey && event.key === 'Enter') {
-      event.preventDefault();
-      // Get the current cursor position.
-      const { selectionStart, selectionEnd } = event.currentTarget;
-      const newText =
-        promptText.slice(0, selectionStart) +
-        '\n' +
-        promptText.slice(selectionEnd);
-      setPromptText(newText);
-      // Optionally, update the cursor position here if needed.
-      return;
-    }
-
-    // If Backspace is pressed and there's no text, clear the mention type.
-    if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
-      event.preventDefault();
-      setMentionType(null);
-    }
-
-    // If plain Enter is pressed, send the message.
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  // // When the user types, check for a mention trigger.
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const input = event.target.value;
-    const mentionMatch = input.match(/@(\w*)$/);
-    if (mentionMatch) {
-      setShowMentionMenu(true);
-      const query = mentionMatch[1].toLowerCase();
-      const foundIndex = mentionOptions.findIndex((option) =>
-        option.value.startsWith(query)
-      );
-      setSelectedMentionIndex(foundIndex !== -1 ? foundIndex : 0);
-    } else {
-      setShowMentionMenu(false);
-    }
-    if (input.length <= maxChars) {
-      setPromptText(input);
-    }
-  };
-
-  // // Handle key events for the textarea and mention menu.
-  // const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-  //   if (event.key === 'Escape' && showMentionMenu) {
-  //     event.preventDefault();
-  //     setShowMentionMenu(false);
-  //     return;
-  //   }
-  //   if (showMentionMenu) {
-  //     if (event.key === 'ArrowDown') {
-  //       event.preventDefault();
-  //       setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
-  //       return;
-  //     }
-  //     if (event.key === 'ArrowUp') {
-  //       event.preventDefault();
-  //       setSelectedMentionIndex(
-  //         (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
-  //       );
-  //       return;
-  //     }
-  //     if (event.ctrlKey && event.key === 'Enter') {
-  //       event.preventDefault();
-  //       const match = promptText.match(/@(\w+)$/);
-  //       let selectedOption: string;
-  //       if (match) {
-  //         const query = match[1].toLowerCase();
-  //         const found = mentionOptions.find((option) => option.value === query);
-  //         selectedOption = found
-  //           ? found.value
-  //           : mentionOptions[selectedMentionIndex].value;
-  //       } else {
-  //         selectedOption = mentionOptions[selectedMentionIndex].value;
-  //       }
-  //       handleSelectMention(selectedOption as 'pdf' | 'docx');
-  //       return;
-  //     }
-  //   }
-  //   if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
-  //     event.preventDefault();
-  //     setMentionType(null);
-  //   }
-  //   if (event.key === 'Enter') {
-  //     event.preventDefault();
-  //     handleSendMessage();
-  //   }
-  // };
-
-  const handleSelectMention = (type: 'pdf' | 'docx') => {
-    setMentionType(type);
-    setPromptText((prev) => prev.replace(/@(\w+)$/i, '').trim());
-    setShowMentionMenu(false);
-  };
-
-  return (
-    <div>
-      <div className="relative py-4">
-        {showMentionMenu && (
-          <div
-            ref={mentionMenuRef}
-            className="absolute -top-20 left-0 z-10 w-[200px] rounded-md border border-gray-300 bg-white shadow-md"
-          >
-            {mentionOptions.map((option, index) => (
-              <div
-                key={option.value}
-                className={cn(
-                  'flex cursor-pointer items-center gap-2 px-2 py-2',
-                  index === selectedMentionIndex
-                    ? 'bg-gray-200'
-                    : 'hover:bg-gray-100'
-                )}
-                onClick={() =>
-                  handleSelectMention(option.value as 'pdf' | 'docx')
+    // Temporary file upload simulation.
+    const simulateUpload = (fileId: string) => {
+        return new Promise<void>((resolve) => {
+            let progress = 0;
+            const interval = setInterval(() => {
+                setUploadedFiles((prev) =>
+                    prev.map((file) =>
+                        file.id === fileId
+                            ? { ...file, progress: Math.min(progress, 100) }
+                            : file
+                    )
+                );
+                progress += 10;
+                if (progress > 100) {
+                    clearInterval(interval);
+                    resolve();
                 }
-              >
-                <Image
-                  src={option.icon}
-                  width={20}
-                  height={20}
-                  alt={`${option.label} icon`}
-                />
-                <span className="text-sm text-gray-700">{option.label}</span>
-              </div>
-            ))}
-          </div>
-        )}
+            }, 200);
+        });
+    };
 
-        <div className="bg-gray-light rounded-xl p-4">
-          <div className="flex items-start space-x-2">
-            {mentionType && (
-              <div
-                className={cn(
-                  'mt-1 rounded-full px-3 py-1 text-sm text-white',
-                  mentionType === 'pdf' ? 'bg-[#B1362F]' : 'bg-[#07378C]'
-                )}
-              >
-                {mentionType === 'pdf' ? '@PDF' : '@DOCX'}
-              </div>
-            )}
+    /**
+     * Handle file uploads. Only one file is stored.
+     */
+    const handleUpload = async (files: File[]) => {
+        const file = files[0];
+        if (!file) return;
 
-            <TextareaAutosize
-              placeholder="Message Companion"
-              value={promptText}
-              onChange={handleChange}
-              onKeyDown={handleKeyDown}
-              disabled={isSending}
-              className="min-h-[40px] max-h-[100px] outline-none flex-1 resize-none border-none bg-transparent pr-20 shadow-none focus-visible:ring-0"
-            />
-          </div>
+        const newUploadedFiles: UploadedFile[] = files
+            .map((file) => {
+                if (!file) {
+                    console.warn('Skipping an invalid entry in the files array.');
+                    return null;
+                }
+                return {
+                    id: crypto.randomUUID(),
+                    lastModified: file.lastModified,
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    webkitRelativePath: file.webkitRelativePath,
+                    progress: 0,
+                    rawFile: file,
+                    arrayBuffer: () => file.arrayBuffer(),
+                    bytes: async () => new Uint8Array(await file.arrayBuffer()),
+                    slice: (start?: number, end?: number, contentType?: string) =>
+                        file.slice(start, end, contentType),
+                    stream: () => file.stream(),
+                    text: () => file.text(),
+                };
+            })
+            .filter((file) => file !== null) as UploadedFile[];
 
-          <div className="mt-2 flex items-center justify-between gap-2">
-            <div className="flex items-center">
-              {uploadedFiles.length > 0 && (
-                <ScrollArea className="whitespace-nowrap w-full max-w-[160px] min-[425px]:max-w-[250px] md:max-w-[600px]">
-                  <div className="flex w-max space-x-2 p-2 h-14">
-                    {uploadedFiles.map((file) => (
-                      <FileCard
-                        key={file.id}
-                        file={file}
-                        showExtraInfo={false}
-                        onRemove={(id) =>
-                          setUploadedFiles((prev) =>
-                            prev.filter((f) => f.id !== id)
-                          )
+        if (newUploadedFiles.length === 0) {
+            console.log('No valid files to upload.');
+            return;
+        }
+
+        setUploadedFiles(newUploadedFiles);
+        // Simulate upload progress for each file.
+        await Promise.all(newUploadedFiles.map((file) => simulateUpload(file.id)));
+    };
+
+    const handleCloseModal = () => {
+        setIsUplaodModalOpen(false);
+    };
+    
+
+    const handleSendMessage = async () => {
+        if (isSending) return; // Already sending, do nothing
+        if (!promptText.trim() && uploadedFiles.length === 0) return; // Nothing to send
+
+        if ((user?.tokens ?? 0) <= 0) {
+            setIsUpgradeModalOpen(true);
+            return;
+        }
+
+        setTrigger(true); // Indicate sending process has started
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+
+        // This ID will be used for the AI's response message (placeholder and final)
+        const aiMessageId = Date.now() + 1; // Using Date.now() for simplicity, consider a more robust UUID if needed
+
+        // Create the user message object first using the current promptText
+        const userMessagePayload = {
+            id: Date.now(), // User message gets its own ID
+            chat: Number(currentChatId), // Will be updated if new chat is created
+            user: user?.username || 'You',
+            content: promptText.trim(),
+            created_at: new Date().toISOString(),
+            tokens_used: 0,
+            is_system_message: false,
+            files:
+                uploadedFiles.length > 0
+                    ? uploadedFiles.map((upFile) => upFile.rawFile)
+                    : null,
+        };
+
+        // Create the placeholder for the AI's response
+        const placeholderAIMessage = {
+            id: aiMessageId,
+            chat: Number(currentChatId), // Will be updated if new chat is created
+            user: 'AI',
+            content: 'loading', // Initial content indicating loading
+            created_at: new Date().toISOString(),
+            tokens_used: 0,
+            is_system_message: true,
+            files: null,
+            isError: false, // Explicitly set initial error state to false
+        };
+
+        try {
+            let localChatId = currentChatId;
+            const documentsToSend: File[] = uploadedFiles.map(
+                (upFile) => upFile.rawFile
+            );
+
+            if (!localChatId) {
+                const response = await createChat(
+                    shortenText(userMessagePayload.content, 50)
+                ); // Use content from userMessagePayload
+                localChatId = response.id;
+                setCurrentChatId(localChatId);
+                // Update chat IDs for messages if a new chat was created
+                userMessagePayload.chat = Number(localChatId);
+                placeholderAIMessage.chat = Number(localChatId);
+            }
+
+            if (isNewChat && localChatId) {
+                setMessages([]); // Clear messages for a new chat context
+                router.push(ROUTES.CHAT_ID(localChatId));
+            }
+
+            // Add messages to UI
+            setMessages((prev) => [...prev, userMessagePayload, placeholderAIMessage]);
+
+            // Store retry logic for this message
+            setRetryMap((prev) => {
+                const newMap = new Map(prev);
+                newMap.set(aiMessageId, () => {
+                    retrySendMessage(localChatId!, userMessagePayload.content, documentsToSend, aiMessageId);
+                });
+                return newMap;
+            });
+
+
+            // Clear input fields now that their values have been used
+            // Keeping this here before API call to make UI feel responsive.
+            // If you prefer to clear only on full success, move these to the end of the try block.
+            setPromptText('');
+            setUploadedFiles([]);
+            setMentionType(null);
+
+            if (!mentionType) {
+                await sendMessage({
+                    chatId: localChatId,
+                    content: userMessagePayload.content, // Use content from userMessagePayload
+                    documents: documentsToSend,
+                    onChunkUpdate: (chunk) => {
+                        setMessages((prev) =>
+                            prev.map((msg) =>
+                                msg.id === aiMessageId
+                                    ? {
+                                        ...msg,
+                                        // If content is 'loading', replace it; otherwise, append.
+                                        // Adjust if 'chunk' provides the full accumulated text each time.
+                                        content:
+                                            msg.content === 'loading' ? chunk : msg.content + chunk,
+                                        isError: false, // Ensure error is false during streaming
+                                    }
+                                    : msg
+                            )
+                        );
+                    },
+                    signal,
+                });
+                // After successful streaming, ensure the final state of the message is not an error
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg.id === aiMessageId ? { ...msg, isError: false } : msg
+                    )
+                );
+            } else {
+                const response = await addMessageNoStream({
+                    chatId: localChatId,
+                    content: userMessagePayload.content, // Use content from userMessagePayload
+                    documents: documentsToSend,
+                    return_type: mentionType,
+                    signal,
+                });
+                // Replace the placeholder with the actual response, ensuring correct ID and error state
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg.id === aiMessageId
+                            ? { ...response, id: aiMessageId, isError: false } // Use aiMessageId, set isError false
+                            : msg
+                    )
+                );
+            }
+
+            // This refetch was in your original code, kept for consistency.
+            // It might overwrite the client-side optimistic updates if backend state is different.
+            const refetchResult = await refetch();
+            if (refetchResult.data) {
+                setMessages(refetchResult.data);
+            }
+
+            // Input clearing was here in your original code, it's moved up for earlier UI feedback.
+            // If you want them cleared only on full success (after refetch), move them back here.
+            // setPromptText('');
+            // setUploadedFiles([]);
+            // setMentionType(null);
+        } catch (error: unknown) {
+            // Using 'any' for simplicity, type it properly if possible
+            console.error('Error sending message:', error);
+
+            let errorContent = 'An unexpected error occurred. Please try again.';
+            let showErrorButton = true; // Determines if the 'Refresh Page' button shows
+
+            if (error instanceof Error && error.name === 'AbortError') {
+                errorContent = 'Message generation was cancelled.';
+                showErrorButton = false; // No need for a refresh button if user cancelled
+            } else if (
+                error instanceof Error &&
+                error.message.toLowerCase().includes('network')
+            ) {
+                // More specific check for network errors if possible
+                errorContent =
+                    'Network error. Please check your connection and try again.';
+            }
+            // Add more specific error handling based on error.code or other properties if available
+
+            // Update the placeholder message with error information
+            setMessages((prevMessages) =>
+                prevMessages.map((msg) =>
+                    msg.id === aiMessageId // Find the original placeholder
+                        ? {
+                            ...msg, // Keep existing properties like 'user', 'chat', 'created_at'
+                            content: errorContent,
+                            isError: showErrorButton,
                         }
-                      />
-                    ))}
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              )}
+                        : msg
+                )
+            );
+        } finally {
+            setTrigger(false); // Reset sending state regardless of success or error
+            abortControllerRef.current = null; // Clean up AbortController
+        }
+    };
+    
+    const retrySendMessage = async (
+        chatId: string,
+        content: string,
+        documents: File[] | undefined, // use File[] only, not Blob[]
+        messageId: number
+    ) => {
+        setRetryingId(messageId); // 🔁 set currently retrying message
+        setTrigger(true);
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
 
-              <Button
-                variant={uploadedFiles.length > 0 ? 'default' : 'ghost'}
-                size={uploadedFiles.length > 0 ? 'icon' : 'default'}
-                onClick={() => setIsUplaodModalOpen(true)}
-                disabled={isSending}
-                className={cn(
-                  uploadedFiles.length > 0
-                    ? 'text-white rounded-full p-1 w-fit h-fit'
-                    : 'text-gray-dark hover:text-gray-600'
+        try {
+            await sendMessage({
+                chatId,
+                content,
+                documents,
+                onChunkUpdate: (chunk) => {
+                    setMessages((prev) =>
+                        prev.map((msg) =>
+                            msg.id === messageId
+                                ? {
+                                    ...msg,
+                                    content: msg.content === 'loading' ? chunk : msg.content + chunk,
+                                    isError: false,
+                                }
+                                : msg
+                        )
+                    );
+                },
+                signal,
+            });
+
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === messageId ? { ...msg, isError: false } : msg
+                )
+            );
+        } catch (err) {
+            console.error('Retry failed:', err);
+        } finally {
+            setTrigger(false);
+            setRetryingId(null); // 🔁 clear retrying state
+            abortControllerRef.current = null;
+        }
+    };
+
+
+
+    const handleStop = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+    };
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // If the user presses Escape and the mention menu is open, close it.
+        if (event.key === 'Escape' && showMentionMenu) {
+            event.preventDefault();
+            setShowMentionMenu(false);
+            return;
+        }
+
+        // If the mention menu is open, handle up/down navigation.
+        if (showMentionMenu) {
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
+                return;
+            }
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setSelectedMentionIndex(
+                    (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
+                );
+                return;
+            }
+            // You can remove or disable any Ctrl+Enter logic here if you don't want it to conflict.
+        }
+
+        // If Ctrl+Enter is pressed, insert a newline at the cursor position.
+        if (event.ctrlKey && event.key === 'Enter') {
+            event.preventDefault();
+            // Get the current cursor position.
+            const { selectionStart, selectionEnd } = event.currentTarget;
+            const newText =
+                promptText.slice(0, selectionStart) +
+                '\n' +
+                promptText.slice(selectionEnd);
+            setPromptText(newText);
+            // Optionally, update the cursor position here if needed.
+            return;
+        }
+
+        // If Backspace is pressed and there's no text, clear the mention type.
+        if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
+            event.preventDefault();
+            setMentionType(null);
+        }
+
+        // If plain Enter is pressed, send the message.
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    // // When the user types, check for a mention trigger.
+    const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const input = event.target.value;
+        const mentionMatch = input.match(/@(\w*)$/);
+        if (mentionMatch) {
+            setShowMentionMenu(true);
+            const query = mentionMatch[1].toLowerCase();
+            const foundIndex = mentionOptions.findIndex((option) =>
+                option.value.startsWith(query)
+            );
+            setSelectedMentionIndex(foundIndex !== -1 ? foundIndex : 0);
+        } else {
+            setShowMentionMenu(false);
+        }
+        if (input.length <= maxChars) {
+            setPromptText(input);
+        }
+    };
+
+    // // Handle key events for the textarea and mention menu.
+    // const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    //   if (event.key === 'Escape' && showMentionMenu) {
+    //     event.preventDefault();
+    //     setShowMentionMenu(false);
+    //     return;
+    //   }
+    //   if (showMentionMenu) {
+    //     if (event.key === 'ArrowDown') {
+    //       event.preventDefault();
+    //       setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
+    //       return;
+    //     }
+    //     if (event.key === 'ArrowUp') {
+    //       event.preventDefault();
+    //       setSelectedMentionIndex(
+    //         (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
+    //       );
+    //       return;
+    //     }
+    //     if (event.ctrlKey && event.key === 'Enter') {
+    //       event.preventDefault();
+    //       const match = promptText.match(/@(\w+)$/);
+    //       let selectedOption: string;
+    //       if (match) {
+    //         const query = match[1].toLowerCase();
+    //         const found = mentionOptions.find((option) => option.value === query);
+    //         selectedOption = found
+    //           ? found.value
+    //           : mentionOptions[selectedMentionIndex].value;
+    //       } else {
+    //         selectedOption = mentionOptions[selectedMentionIndex].value;
+    //       }
+    //       handleSelectMention(selectedOption as 'pdf' | 'docx');
+    //       return;
+    //     }
+    //   }
+    //   if (event.key === 'Backspace' && promptText.length === 0 && mentionType) {
+    //     event.preventDefault();
+    //     setMentionType(null);
+    //   }
+    //   if (event.key === 'Enter') {
+    //     event.preventDefault();
+    //     handleSendMessage();
+    //   }
+    // };
+
+    const handleSelectMention = (type: 'pdf' | 'docx') => {
+        setMentionType(type);
+        setPromptText((prev) => prev.replace(/@(\w+)$/i, '').trim());
+        setShowMentionMenu(false);
+    };
+
+    return (
+        <div>
+            <div className="relative py-4">
+                {showMentionMenu && (
+                    <div
+                        ref={mentionMenuRef}
+                        className="absolute -top-20 left-0 z-10 w-[200px] rounded-md border border-gray-300 bg-white shadow-md"
+                    >
+                        {mentionOptions.map((option, index) => (
+                            <div
+                                key={option.value}
+                                className={cn(
+                                    'flex cursor-pointer items-center gap-2 px-2 py-2',
+                                    index === selectedMentionIndex
+                                        ? 'bg-gray-200'
+                                        : 'hover:bg-gray-100'
+                                )}
+                                onClick={() =>
+                                    handleSelectMention(option.value as 'pdf' | 'docx')
+                                }
+                            >
+                                <Image
+                                    src={option.icon}
+                                    width={20}
+                                    height={20}
+                                    alt={`${option.label} icon`}
+                                />
+                                <span className="text-sm text-gray-700">{option.label}</span>
+                            </div>
+                        ))}
+                    </div>
                 )}
-              >
-                {uploadedFiles.length > 0 ? (
-                  <Plus className="h-4 w-4" />
-                ) : (
-                  <>
-                    <PlusCircle className="h-4 w-4" />
-                    <span>Upload Files</span>
-                  </>
-                )}
-              </Button>
+
+                <div className="bg-gray-light rounded-xl p-4">
+                    <div className="flex items-start space-x-2">
+                        {mentionType && (
+                            <div
+                                className={cn(
+                                    'mt-1 rounded-full px-3 py-1 text-sm text-white',
+                                    mentionType === 'pdf' ? 'bg-[#B1362F]' : 'bg-[#07378C]'
+                                )}
+                            >
+                                {mentionType === 'pdf' ? '@PDF' : '@DOCX'}
+                            </div>
+                        )}
+
+                        <TextareaAutosize
+                            placeholder="Message Companion"
+                            value={promptText}
+                            onChange={handleChange}
+                            onKeyDown={handleKeyDown}
+                            disabled={isSending}
+                            className="min-h-[40px] max-h-[100px] outline-none flex-1 resize-none border-none bg-transparent pr-20 shadow-none focus-visible:ring-0"
+                        />
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                        <div className="flex items-center">
+                            {uploadedFiles.length > 0 && (
+                                <ScrollArea className="whitespace-nowrap w-full max-w-[160px] min-[425px]:max-w-[250px] md:max-w-[600px]">
+                                    <div className="flex w-max space-x-2 p-2 h-14">
+                                        {uploadedFiles.map((file) => (
+                                            <FileCard
+                                                key={file.id}
+                                                file={file}
+                                                showExtraInfo={false}
+                                                onRemove={(id) =>
+                                                    setUploadedFiles((prev) =>
+                                                        prev.filter((f) => f.id !== id)
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </div>
+                                    <ScrollBar orientation="horizontal" />
+                                </ScrollArea>
+                            )}
+
+                            <Button
+                                variant={uploadedFiles.length > 0 ? 'default' : 'ghost'}
+                                size={uploadedFiles.length > 0 ? 'icon' : 'default'}
+                                onClick={() => setIsUplaodModalOpen(true)}
+                                disabled={isSending}
+                                className={cn(
+                                    uploadedFiles.length > 0
+                                        ? 'text-white rounded-full p-1 w-fit h-fit'
+                                        : 'text-gray-dark hover:text-gray-600'
+                                )}
+                            >
+                                {uploadedFiles.length > 0 ? (
+                                    <Plus className="h-4 w-4" />
+                                ) : (
+                                    <>
+                                        <PlusCircle className="h-4 w-4" />
+                                        <span>Upload Files</span>
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-dark">
+                                {promptText.length} / {maxChars}
+                            </span>
+                            <Button
+                                size="icon"
+                                className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
+                                onClick={isSending ? handleStop : handleSendMessage}
+                            >
+                                {isSending ? (
+                                    <Image
+                                        className="animate-pulse"
+                                        width={10}
+                                        height={10}
+                                        src={'/pause.svg'}
+                                        alt=""
+                                    />
+                                ) : (
+                                    <Send className="h-4 w-4" />
+                                )}
+                                <span className="sr-only">Send message</span>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <p className="mt-2 text-center text-gray-500 italic">
+                    Companion is intended for informational purposes only. It may contain
+                    errors and does not constitute legal advice
+                </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-dark">
-                {promptText.length} / {maxChars}
-              </span>
-              <Button
-                size="icon"
-                className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
-                onClick={isSending ? handleStop : handleSendMessage}
-              >
-                {isSending ? (
-                  <Image
-                    className="animate-pulse"
-                    width={10}
-                    height={10}
-                    src={'/pause.svg'}
-                    alt=""
-                  />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                <span className="sr-only">Send message</span>
-              </Button>
-            </div>
-          </div>
+            <UploadModal
+                isOpen={isUplaodModalOpen}
+                uploadedFiles={uploadedFiles}
+                setUploadedFiles={setUploadedFiles}
+                onClose={handleCloseModal}
+                onUpload={handleUpload}
+            />
+
+            <ConfirmationModal
+                isOpen={isUpgradeModalOpen}
+                onOpenChange={setIsUpgradeModalOpen}
+                title="Out of Tokens"
+                description="You are out of tokens. Would you like to upgrade your account?"
+                confirmText="Upgrade"
+                cancelText="Cancel"
+                onConfirm={() => router.push(ROUTES.SUPSCRIPTION)}
+            />
         </div>
-
-        <p className="mt-2 text-center text-gray-500 italic">
-          Companion is intended for informational purposes only. It may contain
-          errors and does not constitute legal advice
-        </p>
-      </div>
-
-      <UploadModal
-        isOpen={isUplaodModalOpen}
-        uploadedFiles={uploadedFiles}
-        setUploadedFiles={setUploadedFiles}
-        onClose={handleCloseModal}
-        onUpload={handleUpload}
-      />
-
-      <ConfirmationModal
-        isOpen={isUpgradeModalOpen}
-        onOpenChange={setIsUpgradeModalOpen}
-        title="Out of Tokens"
-        description="You are out of tokens. Would you like to upgrade your account?"
-        confirmText="Upgrade"
-        cancelText="Cancel"
-        onConfirm={() => router.push(ROUTES.SUPSCRIPTION)}
-      />
-    </div>
-  );
+    );
 }

@@ -9,6 +9,7 @@ import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -18,6 +19,7 @@ import { Input } from '../ui/input';
 export function ChatSidebar() {
   const { chats } = useChat();
   const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
 
   // For client-side filtering
   const [searchTerm, setSearchTerm] = useState('');
@@ -111,11 +113,9 @@ export function ChatSidebar() {
           <div className="space-y-2">
             {/* 4. Map over `filteredChats` instead of `chats`. */}
             {sortedChats?.map((chat) => (
-              <React.Fragment key={chat.id}>
+              <div key={chat.id}>
                 <Button
-                  onClick={() =>
-                    (window.location.href = ROUTES.CHAT_ID(chat.id))
-                  }
+                  onClick={() => router.push(ROUTES.CHAT_ID(chat.id))}
                   variant="ghost"
                   className={cn(
                     'w-full justify-start text-left font-normal text-gray-dark',
@@ -127,7 +127,7 @@ export function ChatSidebar() {
                     {chat.name}
                   </span>
                 </Button>
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </div>
