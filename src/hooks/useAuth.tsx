@@ -1,42 +1,38 @@
 // hooks/useAuth.ts
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
-
+import { API_ROUTES } from '@/constants/apiRoutes';
+import { ROUTES } from '@/constants/routes';
 import { useSubscription } from './useSubscription';
 
 interface SignInData {
   email: string;
   password: string;
-  type: string;
+  type: 'new' | 'old';
 }
 
 export function useAuth() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const subscription = searchParams.get('subscription') as
+    | 'monthly'
+    | 'topup'
+    | null;
+
+  const { handleSubscription } = useSubscription();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-  const subscription = searchParams.get('subscription');
-  const { handleSubscription } = useSubscription();
-  //   useEffect(() => {
-  //     if (!subscription) return;
-  // if(subscription==='monthly' ){
-  //   handleSubscription('monthly');
-  // }else if(subscription==='topup'){
-  //   handleSubscription('topup');
-  // }
-
-  //   }, [subscription, handleSubscription]);
 
   const signIn = async ({ email, password, type }: SignInData) => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await apiCaller(
         API_ROUTES.AUTH.LOGIN,
@@ -46,36 +42,34 @@ export function useAuth() {
         false,
         'json'
       );
-      if (response.status === 200) {
-        const { access, refresh } = response.data;
-        localStorage.setItem('accessToken', access);
-        localStorage.setItem('refreshToken', refresh);
-        if (type === 'old' && !subscription) {
-          router.push(ROUTES.DASHBOARD);
-        } else if (type === 'new' && !subscription) {
-          router.push(ROUTES.PROFILE + `?type=${type}`);
-        } else if (type === 'new' && subscription) {
-          if (subscription === 'monthly') {
-            handleSubscription('monthly');
-          } else if (subscription === 'topup') {
-            handleSubscription('topup');
-          }
-        } else if (type === 'old' && subscription) {
-          if (subscription === 'monthly') {
-            handleSubscription('monthly');
-          } else if (subscription === 'topup') {
-            handleSubscription('topup');
-          }
-        } else {
-          router.push(ROUTES.DASHBOARD);
-        }
+
+      if (response.status !== 200 || !response.data) {
+        throw new Error('Login failed');
+      }
+
+      const { access, refresh } = response.data;
+      localStorage.setItem('accessToken', access);
+      localStorage.setItem('refreshToken', refresh);
+
+      // 1️⃣ If they arrived via a subscription link, trigger it and stop.
+      if (subscription === 'monthly' || subscription === 'topup') {
+        await handleSubscription(subscription);
+        return;
+      }
+
+      // 2️⃣ Otherwise, route based on new vs. old user
+      if (type === 'new') {
+        router.push(`${ROUTES.PROFILE}?type=new`);
+      } else {
+        router.push(ROUTES.DASHBOARD);
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data?.message || 'Invalid email or password.');
+        setError(err.response.data?.message || 'Invalid credentials.');
       } else {
-        setError('A network error occurred. Please try again.');
+        setError('Network error — please try again.');
       }
+      // re-throw only if you need upstream handlers to catch it
       throw err;
     } finally {
       setLoading(false);

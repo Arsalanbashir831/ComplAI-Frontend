@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
 import DocxViewer from '@/components/common/DocxViewer';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function UserAgreementPage() {
   const [agreed, setAgreed] = useState(false);
@@ -15,6 +15,7 @@ export default function UserAgreementPage() {
 
   const email = searchParams.get('email');
   const password = searchParams.get('password');
+  const subscription = searchParams.get('subscription');
   const handleCheckboxChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ): void => {
@@ -22,10 +23,16 @@ export default function UserAgreementPage() {
   };
 
   const handleContinue = async () => {
-    if (agreed && email && password) {
+    if (agreed && email && password && !subscription) {
       await signIn({ email, password, type: 'new' });
       console.log('User agreed. Continue...');
+    } 
+    if (agreed && email && password && subscription==='monthly') {
+      await signIn({ email, password, type: 'new' });
+    }else if (agreed && email && password && subscription==='topup') {
+      await signIn({ email, password, type: 'new' });
     }
+    
   };
 
   return (

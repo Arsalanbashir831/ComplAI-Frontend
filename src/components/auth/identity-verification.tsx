@@ -1,16 +1,16 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
+import apiCaller from '@/config/apiCaller';
 
 // import { useAuth } from '@/hooks/useAuth';
 
@@ -36,6 +36,7 @@ export function IdentityVerificationForm() {
   const email = searchParams.get('email');
   const type = searchParams.get('type');
   const password = searchParams.get('password');
+  const subscription = searchParams.get('subscription');
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [message, setMessage] = useState<{
@@ -43,6 +44,8 @@ export function IdentityVerificationForm() {
     text: string;
   } | null>(null);
   // const { signIn } = useAuth();
+  
+  
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { code: '' },
@@ -103,9 +106,20 @@ export function IdentityVerificationForm() {
         ) {
           // new to call the login api to create session
           // await signIn({ email, password, type: 'new' });
+         if(subscription && subscription==='topup'){
+          router.push(
+            `${ROUTES.USER_AGGREMENT}?email=${email}&password=${password}&subscription=topup`
+          );
+         }else if (subscription && subscription==='monthly'){
+          router.push(
+            `${ROUTES.USER_AGGREMENT}?email=${email}&password=${password}&subscription=monthly`
+          );
+         }else{
           router.push(
             `${ROUTES.USER_AGGREMENT}?email=${email}&password=${password}`
           );
+         }
+         
           // setTimeout(() => router.push(ROUTES.LOGIN), 2000);
         }
       } else {
