@@ -1,15 +1,15 @@
-import { Suspense } from 'react';
-import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
 import { ChatProvider } from '@/contexts/chat-context';
 import { LoaderProvider } from '@/contexts/loader-context';
 import { PromptProvider } from '@/contexts/prompt-context';
 import { UserProvider } from '@/contexts/user-context';
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
+import { Suspense } from 'react';
 
-import { Toaster } from '@/components/ui/sonner';
 import LoadingSpinner from '@/components/common/loading-spinner';
+import { Toaster } from '@/components/ui/sonner';
 
 import './globals.css';
 
@@ -35,8 +35,6 @@ export default function RootLayout({
         <ChatProvider>
           <PromptProvider>
             <QueryProvider>
-              <AuthProvider>
-                <LoaderProvider>
                   <Suspense
                     fallback={
                       <div className="flex items-center justify-center h-screen">
@@ -44,12 +42,14 @@ export default function RootLayout({
                       </div>
                     }
                   >
+              <AuthProvider>
+                <LoaderProvider>
                     <UserProvider>{children}</UserProvider>
-                  </Suspense>
 
                   <Toaster richColors />
                 </LoaderProvider>
               </AuthProvider>
+                  </Suspense>
             </QueryProvider>
           </PromptProvider>
         </ChatProvider>
