@@ -1,9 +1,10 @@
 'use client';
 
-import apiCaller from '@/config/apiCaller';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
+
+import apiCaller from '@/config/apiCaller';
 
 interface AuthProviderProps {
   children: React.ReactNode;
