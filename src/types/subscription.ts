@@ -6,7 +6,7 @@ export interface Plan {
   title: string;
   price: string;
   interval?: string;
-  description: string;
+  description: Array<{ text: string }>;
   minimumTerm?: string;
   buttonText: string;
   special: boolean;

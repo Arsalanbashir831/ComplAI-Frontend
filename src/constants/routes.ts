@@ -6,6 +6,7 @@ export const ROUTES = {
   VERIFY_IDENTITY: '/auth/verify-identity',
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
+  USER_AGGREMENT: '/auth/user-agreement',
   CHAT: '/chat',
   CHAT_ID: (id: string) => `/chat/${id}`,
   DASHBOARD: '/',
@@ -22,4 +23,5 @@ export const ROUTES = {
   HELP_CENTER: '/help-center',
   TERMS: '/terms',
   PRIVACY: '/privacy',
+  
 } as const;

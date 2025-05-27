@@ -1,49 +1,48 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { PaymentCard, Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
-import { PaymentMethod } from '@/components/dashboard/subscription/payment-method';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import apiCaller from '@/config/apiCaller';
+import { formatDateLocal } from '@/lib/utils';
+import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
 );
 
 // Fetch payment cards
-const fetchPaymentCards = async (): Promise<PaymentCard[]> => {
-  const response = await apiCaller(
-    API_ROUTES.BILLING.LIST_CARDS,
-    'GET',
-    {},
-    {},
-    true,
-    'json'
-  );
-  return response.data.cards.map(
-    (card: {
-      id: string;
-      card: { funding: string; brand: string; last4: string };
-    }) => ({
-      id: card.id,
-      type: card.card.funding, // "credit" or "debit"
-      brand: card.card.brand,
-      lastFour: card.card.last4, // rename last4 to lastFour
-      isDefault: false,
-    })
-  );
-};
+// const fetchPaymentCards = async (): Promise<PaymentCard[]> => {
+//   const response = await apiCaller(
+//     API_ROUTES.BILLING.LIST_CARDS,
+//     'GET',
+//     {},
+//     {},
+//     true,
+//     'json'
+//   );
+//   return response.data.cards.map(
+//     (card: {
+//       id: string;
+//       card: { funding: string; brand: string; last4: string };
+//     }) => ({
+//       id: card.id,
+//       type: card.card.funding, // "credit" or "debit"
+//       brand: card.card.brand,
+//       lastFour: card.card.last4, // rename last4 to lastFour
+//       isDefault: false,
+//     })
+//   );
+// };
 
 // Fetch subscription items and build plans array.
 const fetchSubscriptionItems = async (): Promise<Plan[]> => {
@@ -65,7 +64,14 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       type: 'free',
       title: product.name,
       price: `£${(product.price / 100).toFixed(0)}`,
-      description: product.description,
+      description: [  { text: ' Buy credits as needed, with a minimum top-up of £50.' },
+        {
+          text: 'Access to Companion, your AI-powered compliance expert.',
+        },
+        { text: 'Basic email support for general assistance.' },
+        {
+          text: 'Suitable for occasional users who require flexible, pay-as-you-go access.',
+        },],
       buttonText: 'Purchase Tokens',
       special: false,
       buttonAction: () => {},
@@ -80,7 +86,19 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       title: subPlan.name,
       price: `£${(subPlan.price / 100).toFixed(0)}`,
       interval: subPlan.interval,
-      description: subPlan.description,
+      description: [ { text: '500 credits per month with no rollover.' },
+        {
+          text: 'Access to Resolve, our AI-powered tool for efficient complaint handling.',
+        },
+        {
+          text: 'File upload feature on Companion for documents up to 5MB.',
+        },
+        {
+          text: 'Priority email support for quicker assistance when you need it.',
+        },
+        {
+          text: 'Suitable for regular users who need consistent and reliable AI support.',
+        },],
       buttonText: 'Subscribe',
       special: true,
       buttonAction: () => {},
@@ -93,8 +111,21 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
     title: 'Enterprise',
     price: '£POA',
     minimumTerm: '24 Months',
-    description:
-      'Our most powerful solution, packed with every feature to meet the highest compliance demands. Ideal for firms operating in high‑risk sectors, servicing multiple areas of law, or managing high‑volume litigation. Custom solutions are also available to meet specific needs.',
+    description:[ {
+      text: 'Access all solutions with unlimited usage across the platform ',
+    },
+    {
+      text: 'File upload on Companion for documents up to 30MB',
+    },
+    {
+      text: 'Dedicated account manager to support your team and ensure success',
+    },
+    {
+      text: 'Exclusive demos and walkthroughs for every solution to maximise value.',
+    },
+    {
+      text: 'Ideal for teams and professionals who require comprehensive access and support.',
+    },],
     buttonText: 'Contact Sales',
     special: false,
     buttonAction: () => {},
@@ -104,19 +135,19 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
 };
 
 // Fetch the stripe customer info, which includes the default card ID
-const fetchStripeCustomer = async (): Promise<{
-  default_payment_method: string;
-}> => {
-  const response = await apiCaller(
-    API_ROUTES.BILLING.STRIPE_CUSTOMER,
-    'GET',
-    {},
-    {},
-    true,
-    'json'
-  );
-  return response.data;
-};
+// const fetchStripeCustomer = async (): Promise<{
+//   default_payment_method: string;
+// }> => {
+//   const response = await apiCaller(
+//     API_ROUTES.BILLING.STRIPE_CUSTOMER,
+//     'GET',
+//     {},
+//     {},
+//     true,
+//     'json'
+//   );
+//   return response.data;
+// };
 
 const fetchUserSubscriptions = async (): Promise<Subscription[]> => {
   const response = await apiCaller(
@@ -132,7 +163,7 @@ const fetchUserSubscriptions = async (): Promise<Subscription[]> => {
 
 export default function SubscriptionPage() {
   const { user, refresh } = useUserContext();
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   // const isSubscribing = useIsMutating() > 0;
 
   const [autoRenew, setAutoRenew] = useState(true);
@@ -141,13 +172,13 @@ export default function SubscriptionPage() {
     refresh();
   }, [refresh]);
 
-  const { data: paymentCards = [], isLoading: cardsLoading } = useQuery<
-    PaymentCard[]
-  >({
-    queryKey: ['paymentCards'],
-    queryFn: fetchPaymentCards,
-    staleTime: 1000 * 60 * 5,
-  });
+  // const { data: paymentCards = [], isLoading: cardsLoading } = useQuery<
+  //   PaymentCard[]
+  // >({
+  //   queryKey: ['paymentCards'],
+  //   queryFn: fetchPaymentCards,
+  //   staleTime: 1000 * 60 * 5,
+  // });
 
   const { data: fetchedPlans = [], isLoading: plansLoading } = useQuery<Plan[]>(
     {
@@ -158,11 +189,11 @@ export default function SubscriptionPage() {
   );
 
   // Query to fetch the stripe customer info
-  const { data: stripeCustomer, refetch: refetchCustomer } = useQuery({
-    queryKey: ['stripeCustomer'],
-    queryFn: fetchStripeCustomer,
-    staleTime: 1000 * 60 * 5,
-  });
+  // const { data: stripeCustomer, } = useQuery({
+  //   queryKey: ['stripeCustomer'],
+  //   queryFn: fetchStripeCustomer,
+  //   staleTime: 1000 * 60 * 5,
+  // });
 
   // New query to fetch user subscriptions data
   const {
@@ -183,52 +214,51 @@ export default function SubscriptionPage() {
     }
   }, [userSubscriptions, refetch]);
 
-  const purchaseTokensMutation = useMutation({
-    mutationFn: async (productId: number) => {
-      let paymentMethodId: string | undefined;
-      const defaultCard = paymentCards.find((card) => card.isDefault);
-      if (defaultCard) {
-        paymentMethodId = defaultCard.id;
-      } else if (paymentCards.length > 0) {
-        paymentMethodId = paymentCards[0].id;
-      }
-      if (!paymentMethodId) {
-        throw new Error(
-          'Please add a payment method before purchasing tokens.'
-        );
-      }
-      const response = await apiCaller(
-        API_ROUTES.BILLING.CREATE_ONE_TIME_PAYMENT_INTENT,
-        'POST',
-        { product_id: productId, payment_method_id: paymentMethodId },
-        {},
-        true,
-        'json'
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      refresh();
-      toast.success('Token purchase successful!');
-    },
-    onError: () => {
-      toast.error('Token purchase failed, please try again.');
-    },
-  });
+  // const purchaseTokensMutation = useMutation({
+  //   mutationFn: async (productId: number) => {
+  //     let paymentMethodId: string | undefined;
+  //     const defaultCard = paymentCards.find((card) => card.isDefault);
+  //     if (defaultCard) {
+  //       paymentMethodId = defaultCard.id;
+  //     } else if (paymentCards.length > 0) {
+  //       paymentMethodId = paymentCards[0].id;
+  //     }
+  //     if (!paymentMethodId) {
+  //       throw new Error(
+  //         'Please add a payment method before purchasing tokens.'
+  //       );
+  //     }
+  //     const response = await apiCaller(
+  //       API_ROUTES.BILLING.CREATE_ONE_TIME_PAYMENT_INTENT,
+  //       'POST',
+  //       { product_id: productId, payment_method_id: paymentMethodId },
+  //       {},
+  //       true,
+  //       'json'
+  //     );
+  //     return response.data;
+  //   },
+  //   onSuccess: () => {
+  //     refresh();
+  //     toast.success('Token purchase successful!');
+  //   },
+  //   onError: () => {
+  //     toast.error('Token purchase failed, please try again.');
+  //   },
+  // });
 
   const subscribeMutation = useMutation({
     mutationFn: async (subscriptionPlanId: number) => {
-      const paymentMethodId = stripeCustomer?.default_payment_method;
-
-      if (!paymentMethodId) {
-        throw new Error('Please add a payment method before subscribing.');
-      }
+      // const paymentMethodId = stripeCustomer?.default_payment_method;
+      // if (!paymentMethodId) {
+      //   throw new Error('Please add a payment method before subscribing.');
+      // }
       const response = await apiCaller(
-        API_ROUTES.BILLING.SUBSCRIBE,
+        API_ROUTES.BILLING.MONTHLY_BILLING_PROCESS,
         'POST',
         {
           subscription_plan_id: subscriptionPlanId,
-          payment_method_id: paymentMethodId,
+        
         },
         {},
         true,
@@ -236,9 +266,10 @@ export default function SubscriptionPage() {
       );
       return response.data;
     },
-    onSuccess: () => {
-      refresh();
-      toast.success('Subscription successful!');
+    onSuccess: (response) => {
+      window.location.href=response.checkout_url
+      // refresh();
+      // toast.success('Subscription successful!');
     },
     onError: (error) => {
       toast.error(
@@ -249,11 +280,45 @@ export default function SubscriptionPage() {
     },
   });
 
+  const OneTimePaymentMutation = useMutation({
+    mutationFn: async (planId: number) => {
+      // const paymentMethodId = stripeCustomer?.default_payment_method;
+      // if (!paymentMethodId) {
+      //   throw new Error('Please add a payment method before subscribing.');
+      // }
+      const response = await apiCaller(
+        API_ROUTES.BILLING.ONE_TIME_PAYMENT_BILLING_PROCESS,
+        'POST',
+        {
+          product_id: planId,
+        
+        },
+        {},
+        true,
+        'json'
+      );
+      return response.data;
+    },
+    onSuccess: (response) => {
+      window.location.href=response.checkout_url
+      // refresh();
+      // toast.success('Subscription successful!');
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Subscription failed, please try again.'
+      );
+    },
+  });
+
+
   const plansWithActions = fetchedPlans.map((plan) => {
     if (plan.type === 'free') {
       return {
         ...plan,
-        buttonAction: () => purchaseTokensMutation.mutate(plan.id),
+        buttonAction: () => OneTimePaymentMutation.mutate(plan.id),
       };
     } else if (plan.type === 'subscription') {
       return {
@@ -296,17 +361,17 @@ export default function SubscriptionPage() {
     },
   });
 
-  const handleAddCard = () => {
-    queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
-  };
+  // const handleAddCard = () => {
+  //   queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
+  // };
 
-  const handleUpdateCard = () => {
-    queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
-  };
+  // const handleUpdateCard = () => {
+  //   queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
+  // };
 
-  const handleRemoveCard = () => {
-    queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
-  };
+  // const handleRemoveCard = () => {
+  //   queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
+  // };
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-8">
@@ -355,8 +420,7 @@ export default function SubscriptionPage() {
             autoRenew={autoRenew && user?.subscription_type === 'subscription'}
             onAutoRenewChange={handleAutoRenewChange.mutate}
           />
-
-          <PaymentMethod
+          {/* <PaymentMethod
             stripeCustomer={stripeCustomer}
             refetchCustomer={refetchCustomer}
             cards={paymentCards}
@@ -364,7 +428,7 @@ export default function SubscriptionPage() {
             onCardUpdated={handleUpdateCard}
             onCardRemoved={handleRemoveCard}
             isLoading={cardsLoading}
-          />
+          /> */}
         </div>
       </Elements>
     </div>
