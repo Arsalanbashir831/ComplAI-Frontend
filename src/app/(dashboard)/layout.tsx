@@ -1,11 +1,11 @@
 'use client';
 
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
 
-import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import apiCaller from '@/config/apiCaller';
+import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 
 type RequestData =
   | FormData
@@ -61,12 +61,9 @@ export default function ChatLayout({
   }, [subscription]);
 
   return (
-  
-
-   <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       <DashboardSidebar />
       <main className="flex-1 overflow-auto bg-[#F9F9FC]">{children}</main>
     </div>
- 
   );
 }

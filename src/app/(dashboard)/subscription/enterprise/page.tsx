@@ -3,12 +3,10 @@ import { EnterpriseForm } from '@/components/dashboard/subscription/enterprise-f
 
 export default function EnterpriceSubscriptionPage() {
   return (
-
-   <div className="p-6 flex flex-col gap-y-8">
+    <div className="p-6 flex flex-col gap-y-8">
       <DashboardHeader title="Enterprise Subscription Form" />
 
       <EnterpriseForm />
     </div>
-   
   );
 }

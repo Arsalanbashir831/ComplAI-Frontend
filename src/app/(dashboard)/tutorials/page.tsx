@@ -1,16 +1,16 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
 
+import { Video } from '@/types/video';
+import apiCaller from '@/config/apiCaller';
+import { Separator } from '@/components/ui/separator';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { SearchInput } from '@/components/dashboard/tutorials/search-input';
 import { VideoSection } from '@/components/dashboard/tutorials/video-section';
-import { Separator } from '@/components/ui/separator';
-import apiCaller from '@/config/apiCaller';
-import { Video } from '@/types/video';
 
 const fetchVideos = async (): Promise<Video[]> => {
   const response = await apiCaller(
@@ -64,10 +64,6 @@ export default function TutorialsPage() {
   }
 
   return (
- 
-
-
-  
     <div className="min-h-screen flex flex-col items-center px-6 py-8">
       <DashboardHeader
         title="Tutorials and Guides"
@@ -93,6 +89,5 @@ export default function TutorialsPage() {
         />
       </div>
     </div>
-  
   );
 }
