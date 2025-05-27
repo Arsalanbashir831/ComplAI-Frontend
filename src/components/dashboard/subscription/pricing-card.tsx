@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 
+import type { Plan } from '@/types/subscription';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import type { Plan } from '@/types/subscription';
 
 interface PricingCardProps {
   plan: Plan;
@@ -57,23 +57,23 @@ export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
           </div>
 
           {plan.description.map((feature, index) => (
-                <div key={index} className="flex items-start gap-3 text-left">
-                  <Check
-                    className={cn(
-                      'h-4 w-4 shrink-0 mt-0.5 text-[#454545]',
-                      // plan.color === 'blue' ? 'text-white' : 'text-[#454545]'
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      'text-sm text-[#454545]',
-                      // plan.color === 'blue' ? 'text-blue-50' : 'text-[#454545]'
-                    )}
-                  >
-                    {feature.text}
-                  </span>
-                </div>
-              ))}
+            <div key={index} className="flex items-start gap-3 text-left">
+              <Check
+                className={cn(
+                  'h-4 w-4 shrink-0 mt-0.5 text-[#454545]'
+                  // plan.color === 'blue' ? 'text-white' : 'text-[#454545]'
+                )}
+              />
+              <span
+                className={cn(
+                  'text-sm text-[#454545]'
+                  // plan.color === 'blue' ? 'text-blue-50' : 'text-[#454545]'
+                )}
+              >
+                {feature.text}
+              </span>
+            </div>
+          ))}
         </div>
 
         <div className="mt-8">

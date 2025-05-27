@@ -23,5 +23,4 @@ export const ROUTES = {
   HELP_CENTER: '/help-center',
   TERMS: '/terms',
   PRIVACY: '/privacy',
-  
 } as const;

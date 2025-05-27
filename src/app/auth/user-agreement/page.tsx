@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-
-import DocxViewer from '@/components/common/DocxViewer';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'next/navigation';
+
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import DocxViewer from '@/components/common/DocxViewer';
 
 export default function UserAgreementPage() {
   const [agreed, setAgreed] = useState(false);
@@ -21,9 +21,9 @@ export default function UserAgreementPage() {
     setAgreed(e.target.checked);
   };
 
-  const handleContinue = async() => {
+  const handleContinue = async () => {
     if (agreed && email && password) {
-      await signIn({email, password, type: 'new'})
+      await signIn({ email, password, type: 'new' });
       console.log('User agreed. Continue...');
     }
   };

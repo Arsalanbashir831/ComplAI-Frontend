@@ -1,20 +1,20 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import type { Plan, Subscription } from '@/types/subscription';
+import apiCaller from '@/config/apiCaller';
+import { formatDateLocal } from '@/lib/utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
-import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -64,14 +64,16 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       type: 'free',
       title: product.name,
       price: `£${(product.price / 100).toFixed(0)}`,
-      description: [  { text: ' Buy credits as needed, with a minimum top-up of £50.' },
+      description: [
+        { text: ' Buy credits as needed, with a minimum top-up of £50.' },
         {
           text: 'Access to Companion, your AI-powered compliance expert.',
         },
         { text: 'Basic email support for general assistance.' },
         {
           text: 'Suitable for occasional users who require flexible, pay-as-you-go access.',
-        },],
+        },
+      ],
       buttonText: 'Purchase Tokens',
       special: false,
       buttonAction: () => {},
@@ -86,7 +88,8 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       title: subPlan.name,
       price: `£${(subPlan.price / 100).toFixed(0)}`,
       interval: subPlan.interval,
-      description: [ { text: '500 credits per month with no rollover.' },
+      description: [
+        { text: '500 credits per month with no rollover.' },
         {
           text: 'Access to Resolve, our AI-powered tool for efficient complaint handling.',
         },
@@ -98,7 +101,8 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
         },
         {
           text: 'Suitable for regular users who need consistent and reliable AI support.',
-        },],
+        },
+      ],
       buttonText: 'Subscribe',
       special: true,
       buttonAction: () => {},
@@ -111,21 +115,23 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
     title: 'Enterprise',
     price: '£POA',
     minimumTerm: '24 Months',
-    description:[ {
-      text: 'Access all solutions with unlimited usage across the platform ',
-    },
-    {
-      text: 'File upload on Companion for documents up to 30MB',
-    },
-    {
-      text: 'Dedicated account manager to support your team and ensure success',
-    },
-    {
-      text: 'Exclusive demos and walkthroughs for every solution to maximise value.',
-    },
-    {
-      text: 'Ideal for teams and professionals who require comprehensive access and support.',
-    },],
+    description: [
+      {
+        text: 'Access all solutions with unlimited usage across the platform ',
+      },
+      {
+        text: 'File upload on Companion for documents up to 30MB',
+      },
+      {
+        text: 'Dedicated account manager to support your team and ensure success',
+      },
+      {
+        text: 'Exclusive demos and walkthroughs for every solution to maximise value.',
+      },
+      {
+        text: 'Ideal for teams and professionals who require comprehensive access and support.',
+      },
+    ],
     buttonText: 'Contact Sales',
     special: false,
     buttonAction: () => {},
@@ -258,7 +264,6 @@ export default function SubscriptionPage() {
         'POST',
         {
           subscription_plan_id: subscriptionPlanId,
-        
         },
         {},
         true,
@@ -267,7 +272,7 @@ export default function SubscriptionPage() {
       return response.data;
     },
     onSuccess: (response) => {
-      window.location.href=response.checkout_url
+      window.location.href = response.checkout_url;
       // refresh();
       // toast.success('Subscription successful!');
     },
@@ -291,7 +296,6 @@ export default function SubscriptionPage() {
         'POST',
         {
           product_id: planId,
-        
         },
         {},
         true,
@@ -300,7 +304,7 @@ export default function SubscriptionPage() {
       return response.data;
     },
     onSuccess: (response) => {
-      window.location.href=response.checkout_url
+      window.location.href = response.checkout_url;
       // refresh();
       // toast.success('Subscription successful!');
     },
@@ -312,7 +316,6 @@ export default function SubscriptionPage() {
       );
     },
   });
-
 
   const plansWithActions = fetchedPlans.map((plan) => {
     if (plan.type === 'free') {

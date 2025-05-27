@@ -47,7 +47,7 @@ export const API_ROUTES = {
     CANCEL_AUTO_RENEW: '/api/billing/cancel-subscription/',
     USER_SUBSCRIPTIONS: '/api/billing/detailed-subscription/',
     MONTHLY_BILLING_PROCESS: '/api/billing/create-subscription-checkout/',
-    ONE_TIME_PAYMENT_BILLING_PROCESS:'/api/billing/create-onetime-checkout/'
+    ONE_TIME_PAYMENT_BILLING_PROCESS: '/api/billing/create-onetime-checkout/',
   },
   TUTORIALS: {
     GET: '/api/videos/',
