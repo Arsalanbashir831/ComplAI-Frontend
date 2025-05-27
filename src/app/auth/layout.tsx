@@ -1,4 +1,3 @@
-
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import { AuthSlider } from '@/components/auth/auth-slider';
@@ -9,10 +8,7 @@ export default function AuthLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
-    
-    
     <GoogleOAuthProvider
       clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}
     >
@@ -28,6 +24,5 @@ export default function AuthLayout({
         </div>
       </div>
     </GoogleOAuthProvider>
-   
   );
 }

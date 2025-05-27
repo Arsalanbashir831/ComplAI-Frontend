@@ -1,12 +1,14 @@
 // hooks/useAuth.ts
-'use client'
+'use client';
+
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
+
 import { useSubscription } from './useSubscription';
 
 interface SignInData {
@@ -21,19 +23,16 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const subscription = searchParams.get('subscription');
-const {handleSubscription} = useSubscription()
-//   useEffect(() => {
-//     if (!subscription) return;
-// if(subscription==='monthly' ){
-//   handleSubscription('monthly');
-// }else if(subscription==='topup'){
-//   handleSubscription('topup');
-// }
-   
-//   }, [subscription, handleSubscription]);
+  const { handleSubscription } = useSubscription();
+  //   useEffect(() => {
+  //     if (!subscription) return;
+  // if(subscription==='monthly' ){
+  //   handleSubscription('monthly');
+  // }else if(subscription==='topup'){
+  //   handleSubscription('topup');
+  // }
 
-
-
+  //   }, [subscription, handleSubscription]);
 
   const signIn = async ({ email, password, type }: SignInData) => {
     setLoading(true);
@@ -53,21 +52,21 @@ const {handleSubscription} = useSubscription()
         localStorage.setItem('refreshToken', refresh);
         if (type === 'old' && !subscription) {
           router.push(ROUTES.DASHBOARD);
-        } else if(type === 'new' && !subscription) {
+        } else if (type === 'new' && !subscription) {
           router.push(ROUTES.PROFILE + `?type=${type}`);
-        }else if(type==='new' && subscription){
-          if(subscription==='monthly'){
+        } else if (type === 'new' && subscription) {
+          if (subscription === 'monthly') {
             handleSubscription('monthly');
-          }else if(subscription==='topup'){
+          } else if (subscription === 'topup') {
             handleSubscription('topup');
           }
-        }else if(type==='old' && subscription){
-          if(subscription==='monthly'){
+        } else if (type === 'old' && subscription) {
+          if (subscription === 'monthly') {
             handleSubscription('monthly');
-          }else if(subscription==='topup'){
+          } else if (subscription === 'topup') {
             handleSubscription('topup');
           }
-        }else{
+        } else {
           router.push(ROUTES.DASHBOARD);
         }
       }

@@ -1,11 +1,10 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { useSubscription } from '@/hooks/useSubscription';
-
+import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 
 export default function ChatLayout({
   children,
@@ -14,15 +13,14 @@ export default function ChatLayout({
 }) {
   const searchParams = useSearchParams();
   const subscription = searchParams.get('subscription');
-const {handleSubscription} = useSubscription()
+  const { handleSubscription } = useSubscription();
   useEffect(() => {
     if (!subscription) return;
-if(subscription==='monthly' ){
-  handleSubscription('monthly');
-}else if(subscription==='topup'){
-  handleSubscription('topup');
-}
-   
+    if (subscription === 'monthly') {
+      handleSubscription('monthly');
+    } else if (subscription === 'topup') {
+      handleSubscription('topup');
+    }
   }, [subscription, handleSubscription]);
 
   return (

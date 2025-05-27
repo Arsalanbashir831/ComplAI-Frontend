@@ -1,13 +1,13 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
+import { ROUTES } from '@/constants/routes';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import apiCaller from '@/config/apiCaller';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { ROUTES } from '@/constants/routes';
 import { useSubscription } from '@/hooks/useSubscription'; // adjust path as needed
 
 export function OAuthButtons() {
@@ -65,9 +65,7 @@ export function OAuthButtons() {
     <div>
       <GoogleLogin
         onSuccess={handleGoogleSignIn}
-        onError={() =>
-          toast.error('An error occurred during Google sign-in')
-        }
+        onError={() => toast.error('An error occurred during Google sign-in')}
       />
     </div>
   );
