@@ -13,5 +13,5 @@ const DocComplianceClient = dynamic(
 );
 
 export default function Page() {
-  return <DocComplianceClient />;
+  return <DocComplianceClient /> ;
 }
