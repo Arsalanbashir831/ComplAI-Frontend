@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { API_ROUTES } from '@/constants/apiRoutes';
-
 import apiCaller from '@/config/apiCaller';
+import { API_ROUTES } from '@/constants/apiRoutes';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -13,14 +12,13 @@ interface AuthProviderProps {
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const subscription = searchParams.get('subscription');
 
   const logoutUser = () => {
-    // Clear tokens
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
 
-    // Build redirect URL, preserving subscription if present
     const redirectTo = subscription
       ? `/auth?subscription=${encodeURIComponent(subscription)}`
       : '/auth';
@@ -29,18 +27,21 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    // **Skip** on /auth and /auth/sign-up
+    if (pathname === '/auth' || pathname === '/auth/sign-up') {
+      return;
+    }
+
     const verifyAndRefreshToken = async () => {
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = localStorage.getItem('refreshToken');
 
-      // If either token is missing, bail straight to login
       if (!accessToken || !refreshToken) {
         logoutUser();
         return;
       }
 
       try {
-        // 1) Verify current access token
         await apiCaller(
           API_ROUTES.AUTH.VERIFY_TOKEN,
           'POST',
@@ -51,9 +52,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         );
       } catch {
         console.warn('Access token expired. Refreshing…');
-
         try {
-          // 2) Refresh with the refresh-token
           const refreshResponse = await apiCaller(
             API_ROUTES.AUTH.REFRESH_TOKEN,
             'POST',
@@ -66,22 +65,20 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (refreshResponse.status === 200 && refreshResponse.data) {
             const { accessToken: newAccess, refreshToken: newRefresh } =
               refreshResponse.data;
-
-            // 3) Store new tokens
             localStorage.setItem('accessToken', newAccess);
             localStorage.setItem('refreshToken', newRefresh);
           } else {
-            throw new Error('Refresh endpoint didn’t return new tokens');
+            throw new Error('No tokens returned');
           }
         } catch {
-          console.error('Token refresh failed—logging out');
+          console.error('Refresh failed—logging out');
           logoutUser();
         }
       }
     };
 
     verifyAndRefreshToken();
-  }, [subscription]); // re-run if `subscription` changes
+  }, [pathname, subscription, router]);
 
   return <>{children}</>;
 };

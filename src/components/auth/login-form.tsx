@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
 
 import {
   Form,
@@ -24,6 +24,8 @@ import {
 import { Separator } from '../ui/separator';
 import AuthFormLayout from './form-layout';
 import { OAuthButtons } from './outh-buttons';
+// import { useSearchParams } from 'next/navigation';
+// import { useSubscription } from '@/hooks/useSubscription';
 
 // ✅ No restriction on password length but it is required
 const formSchema = z.object({
@@ -39,7 +41,18 @@ export function LoginForm() {
   const { signIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
+//   const searchParams = useSearchParams();
+//   const subscription = searchParams.get('subscription');
+// const {handleSubscription} = useSubscription()
+//   useEffect(() => {
+//     if (!subscription) return;
+// if(subscription==='monthly' ){
+//   handleSubscription('monthly');
+// }else if(subscription==='topup'){
+//   handleSubscription('topup');
+// }
+   
+//   }, [subscription, handleSubscription]);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {

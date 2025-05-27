@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from 'clsx';
 import { DateRange } from 'react-day-picker';
 import { twMerge } from 'tailwind-merge';
@@ -133,3 +134,6 @@ export const getDefaultDateRange = (): DateRange => {
 export function shortenText(text: string, wordLimit = 50) {
   return text.split(/\s+/).slice(0, wordLimit).join(' ') + '...';
 }
+
+
+
