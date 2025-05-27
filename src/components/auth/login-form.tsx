@@ -1,19 +1,19 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
 
-import { useSearchParams } from 'next/navigation';
 import {
   Form,
   FormControl,
@@ -43,8 +43,8 @@ export function LoginForm() {
   const { signIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const searchParams = useSearchParams();
-    const subscription = searchParams.get('subscription');
+  const searchParams = useSearchParams();
+  const subscription = searchParams.get('subscription');
   // const {handleSubscription} = useSubscription()
   //   useEffect(() => {
   //     if (!subscription) return;
@@ -106,7 +106,13 @@ export function LoginForm() {
       title="Login to your account"
       subtitle="Glad to see you again! Please enter your details."
       footerText="Don't have an account?"
-      footerLinkHref={ subscription? subscription==='topup'? `${ROUTES.SIGN_UP}?subscription=topup` : `${ROUTES.SIGN_UP}?subscription=monthly` : ROUTES.SIGN_UP}
+      footerLinkHref={
+        subscription
+          ? subscription === 'topup'
+            ? `${ROUTES.SIGN_UP}?subscription=topup`
+            : `${ROUTES.SIGN_UP}?subscription=monthly`
+          : ROUTES.SIGN_UP
+      }
       footerLinkText="Sign up"
     >
       <div className="m-auto text-center">

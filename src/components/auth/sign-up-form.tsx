@@ -1,20 +1,20 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -60,7 +60,7 @@ export function SignUpForm() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-      const subscription = searchParams.get('subscription');
+  const subscription = searchParams.get('subscription');
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -99,16 +99,15 @@ export function SignUpForm() {
         await apiCaller(API_ROUTES.AUTH.RESEND_VERIFICATION, 'POST', {
           email: values.email,
         });
-        if(subscription && subscription==='topup'){
+        if (subscription && subscription === 'topup') {
           router.push(
             `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup&&password=${values.password}&&subscription=topup`
           );
-        }else if(subscription && subscription==='monthly'){
+        } else if (subscription && subscription === 'monthly') {
           router.push(
             `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup&&password=${values.password}&&subscription=monthly`
           );
-        }else{
-
+        } else {
           router.push(
             `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup&&password=${values.password}`
           );
@@ -137,7 +136,13 @@ export function SignUpForm() {
       title="Create your account"
       subtitle="Please fill this to create an account"
       footerText="Already have an account?"
-      footerLinkHref={ subscription? subscription==='topup'? `${ROUTES.LOGIN}?subscription=topup` : `${ROUTES.LOGIN}?subscription=monthly` : ROUTES.LOGIN}
+      footerLinkHref={
+        subscription
+          ? subscription === 'topup'
+            ? `${ROUTES.LOGIN}?subscription=topup`
+            : `${ROUTES.LOGIN}?subscription=monthly`
+          : ROUTES.LOGIN
+      }
       footerLinkText="Login"
     >
       <OAuthButtons />

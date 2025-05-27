@@ -1,13 +1,14 @@
 // hooks/useAuth.ts
 'use client';
 
-import axios from 'axios';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-
-import apiCaller from '@/config/apiCaller';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
+import axios from 'axios';
+
+import apiCaller from '@/config/apiCaller';
+
 import { useSubscription } from './useSubscription';
 
 interface SignInData {
