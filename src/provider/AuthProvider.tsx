@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 
@@ -29,9 +29,10 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // **Skip** on /auth and /auth/sign-up
-    if (pathname === '/auth' || pathname === '/auth/sign-up') {
-      return;
-    }
+   // skip on /auth *and* any sub-route under /auth
+if (pathname.startsWith('/auth')) {
+  return;
+}
 
     const verifyAndRefreshToken = async () => {
       const accessToken = localStorage.getItem('accessToken');
