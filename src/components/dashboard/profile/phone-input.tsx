@@ -1,6 +1,7 @@
-import { Input } from '@/components/ui/input';
-import { Phone } from 'lucide-react';
 import React from 'react';
+import { Phone } from 'lucide-react';
+
+import { Input } from '@/components/ui/input';
 
 interface PhoneInputProps {
   value: string;
