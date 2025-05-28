@@ -1,20 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail, User2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -101,15 +101,15 @@ export function SignUpForm() {
         });
         if (subscription && subscription === 'topup') {
           router.push(
-            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup&&password=${values.password}&&subscription=topup`
+            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&type=signup&password=${values.password}&subscription=topup`
           );
         } else if (subscription && subscription === 'monthly') {
           router.push(
-            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup&&password=${values.password}&&subscription=monthly`
+            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&type=signup&password=${values.password}&subscription=monthly`
           );
         } else {
           router.push(
-            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&&type=signup&&password=${values.password}`
+            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&type=signup&&password=${values.password}`
           );
         }
       }
