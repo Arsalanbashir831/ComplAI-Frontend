@@ -1,5 +1,5 @@
-import { useUserContext } from '@/contexts/user-context';
 import { useRef } from 'react';
+import { useUserContext } from '@/contexts/user-context';
 
 import type { ChatMessage } from '@/types/chat';
 
@@ -23,7 +23,7 @@ export function ChatMessages({ messages }: { messages: ChatMessage[] }) {
       className="relative h-[calc(100vh-2rem)] overflow-y-auto"
     >
       <div className="mx-auto md:max-w-[80%] md:p-4">
-        {messages.map(msg => (
+        {messages.map((msg) => (
           <ChatBubble key={msg.id} message={msg} user={user} />
         ))}
         <div ref={bottomRef} />

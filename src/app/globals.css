@@ -287,14 +287,14 @@ body {
 }
 /* Container: hide overflow and show caret */
 .typing-effect {
-  display: inline-block;          /* shrink to text */
-  white-space: nowrap;            /* prevent wrapping */
-  overflow: hidden;               /* hide unseen text */
+  display: inline-block; /* shrink to text */
+  white-space: nowrap; /* prevent wrapping */
+  overflow: hidden; /* hide unseen text */
   border-right: 2px solid currentColor; /* the “caret” */
-  
+
   /* make sure you set a fixed width equal to the full text length,
      or use ch units (1ch ≈ width of “0”) */
-  width: 0;                       
+  width: 0;
   animation:
     typing 3s steps(30, end) forwards,
     blink-caret 0.7s step-end infinite;
@@ -302,12 +302,21 @@ body {
 
 /* “Typing” keyframes: expand width from 0 to 100% */
 @keyframes typing {
-  from { width: 0; }
-  to   { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 /* Caret blink: hide/show border-right */
 @keyframes blink-caret {
-  from, to { border-color: transparent; }
-  50%      { border-color: currentColor; }
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: currentColor;
+  }
 }

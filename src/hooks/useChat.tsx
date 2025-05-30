@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import type { Chat, ChatMessage } from '@/types/chat';
+import apiCaller from '@/config/apiCaller';
 
 type MutationVars = {
   chatId: string;
@@ -183,24 +183,32 @@ const useChat = () => {
     },
   });
 
-   function useSendMessageMutation() {
+  function useSendMessageMutation() {
     const queryClient = useQueryClient();
-  
+
     return useMutation<ChatMessage, Error, MutationVars>({
-      mutationFn: async ({ chatId, content, documents, onChunkUpdate, signal }) => {
+      mutationFn: async ({
+        chatId,
+        content,
+        documents,
+        onChunkUpdate,
+        signal,
+      }) => {
         const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
-  
+
         // Build form data
         const formData = new FormData();
         formData.append('content', content);
         if (documents) {
           if (Array.isArray(documents)) {
-            documents.forEach((file) => formData.append('document', file, file.name));
+            documents.forEach((file) =>
+              formData.append('document', file, file.name)
+            );
           } else {
             formData.append('document', documents);
           }
         }
-  
+
         return new Promise<ChatMessage>(async (resolve, reject) => {
           try {
             const response = await fetch(streamUrl, {
@@ -212,7 +220,7 @@ const useChat = () => {
               },
               signal,
             });
-  
+
             if (response.status === 400) {
               throw new Error('Network error');
             }
@@ -220,24 +228,24 @@ const useChat = () => {
               const err = await response.json();
               throw new Error(err.error || 'Failed to send message');
             }
-  
+
             const reader = response.body.getReader();
             const decoder = new TextDecoder('utf-8');
             let aiResponse = '';
             let buffer = '';
-  
+
             // Read chunks until the stream ends:
             while (true) {
               const { done, value } = await reader.read();
               if (done) break;
-  
+
               buffer += decoder.decode(value, { stream: true });
               const lines = buffer.split('\n');
               buffer = lines.pop() || '';
-  
+
               for (const line of lines) {
                 if (!line.trim()) continue;
-  
+
                 let data: { reasoning?: string; summary?: ChatMessage };
                 try {
                   data = JSON.parse(line.trim());
@@ -245,16 +253,16 @@ const useChat = () => {
                   console.error('Error parsing JSON chunk:', e);
                   continue;
                 }
-  
+
                 if (data.reasoning) {
                   aiResponse += data.reasoning;
                   onChunkUpdate?.(aiResponse, false); // still streaming
                 }
-  
+
                 if (data.summary) {
                   // final message arrived
                   onChunkUpdate?.(aiResponse, true);
-  
+
                   const finalMessage: ChatMessage = {
                     id: data.summary.id,
                     chat: data.summary.chat,
@@ -271,7 +279,7 @@ const useChat = () => {
                 }
               }
             }
-  
+
             // If we exit the loop without a summary, resolve a fallback message
             resolve({
               id: Date.now(),
@@ -290,7 +298,7 @@ const useChat = () => {
           }
         });
       },
-  
+
       onSuccess: (_newMsg, { chatId }) => {
         // Refetch the chat’s messages so your UI updates cleanly
         queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
@@ -350,4 +358,3 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
-

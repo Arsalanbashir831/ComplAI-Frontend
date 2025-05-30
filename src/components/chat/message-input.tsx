@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -7,15 +10,12 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { Button } from '@/components/ui/button';
-import { useChat, useChatMessages } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
 import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat, useChatMessages } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -205,46 +205,41 @@ export function MessageInput({
         files: null,
       };
       setMessages((prev) => [...prev, placeholderAIMessage]);
-// 5) Stream in the AI response, character by character
-let typedSoFar = '';
-if (!mentionType) {
-  await sendMessage({
-    chatId: localChatId,
-    content: promptText.trim(),
-    documents: uploadedFiles.map(f => f.rawFile),
-    onChunkUpdate: async (fullChunk: string) => {
-      // grab only the newly arrived text
-      const delta = fullChunk.slice(typedSoFar.length);
-      // split into “words” plus their trailing spaces
-      const tokens = delta.match(/\S+\s*/g) || [];
-  
-      for (const token of tokens) {
-        // append one word at a time
-        typedSoFar += token;
-        setMessages(prev =>
-          prev.map(m =>
-            m.id === aiMessageId
-              ? { ...m, content: typedSoFar }
-              : m
+      // 5) Stream in the AI response, character by character
+      let typedSoFar = '';
+      if (!mentionType) {
+        await sendMessage({
+          chatId: localChatId,
+          content: promptText.trim(),
+          documents: uploadedFiles.map((f) => f.rawFile),
+          onChunkUpdate: async (fullChunk: string) => {
+            // grab only the newly arrived text
+            const delta = fullChunk.slice(typedSoFar.length);
+            // split into “words” plus their trailing spaces
+            const tokens = delta.match(/\S+\s*/g) || [];
+
+            for (const token of tokens) {
+              // append one word at a time
+              typedSoFar += token;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === aiMessageId ? { ...m, content: typedSoFar } : m
+                )
+              );
+              // wait ~100ms between words
+              await new Promise((res) => setTimeout(res, 100));
+            }
+          },
+          signal,
+        });
+
+        // 6) Once done, flip off streaming
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === aiMessageId ? { ...m, is_streaming: false } : m
           )
         );
-        // wait ~100ms between words
-        await new Promise(res => setTimeout(res, 100));
-      }
-    },
-    signal,
-  });
-  
-
-  // 6) Once done, flip off streaming
-  setMessages(prev =>
-    prev.map(m =>
-      m.id === aiMessageId
-        ? { ...m, is_streaming: false }
-        : m
-    )
-  );
-}  else {
+      } else {
         // For non-streaming responses.
         const response = await addMessageNoStream({
           chatId: localChatId,
