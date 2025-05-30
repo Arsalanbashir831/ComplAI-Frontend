@@ -1,17 +1,15 @@
 import Image from 'next/image';
-import chatLoading from '@/assets/lottie/chat_loading_anime.json';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn } from '@/lib/utils';
 
-import LottieAnimation from '../common/lottie-animation';
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import { Skeleton } from '../ui/skeleton';
+import BounceDots from './BounceDotAnimation';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
@@ -134,18 +132,20 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             : 'bg-blue-light text-white border-gray-light border-2 '
         )}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           {isBot && showSkeleton && (
-            <div className="flex items-center">
-              <LottieAnimation
+            <div className="flex items-center ">
+              {/* <LottieAnimation
                 animationData={chatLoading}
                 style={{ width: '100px', height: '100px' }}
                 className="w-6 h-6"
-              />
-              <div className="space-y-2 ">
-                <Skeleton className="h-5 w-[350px]" />
-                <Skeleton className="h-5 w-[350px]" />
-              </div>
+              /> */}
+            
+           
+  <BounceDots dotColor="#0a59ec" size={6} duration={1} />
+  <span className='text-gray-600 ml-2 text-lg'>Thinking...</span>
+
+            
             </div>
           )}
 
@@ -173,6 +173,18 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 >
                   {message.content}
                 </Markdown>
+//                 <Typewriter
+//   text={message.content}
+//   speed={40}
+//   className="prose"
+// >
+//   {(displayed) => (
+//     <Markdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
+//       {displayed}
+//     </Markdown>
+//   )}
+// </Typewriter>
+                
               ) : (
                 <></>
               )}
