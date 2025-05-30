@@ -1,15 +1,15 @@
-import { motion } from 'framer-motion'
-import React from 'react'
+import React from 'react';
+import { motion } from 'framer-motion';
 
 interface BounceDotsProps {
   /** Additional CSS classes for the container */
-  className?: string
+  className?: string;
   /** Color of the dots */
-  dotColor?: string
+  dotColor?: string;
   /** Diameter of each dot in px */
-  size?: number
+  size?: number;
   /** Seconds per bounce cycle */
-  duration?: number
+  duration?: number;
 }
 
 /**
@@ -26,7 +26,7 @@ export default function BounceDots({
     height: size,
     backgroundColor: dotColor,
     borderRadius: '50%',
-  }
+  };
 
   return (
     <div className={`flex items-center ${className}`.trim()}>
@@ -46,8 +46,7 @@ export default function BounceDots({
             delay: (duration / 3) * i,
           }}
         />
-        
       ))}
     </div>
-  )
+  );
 }

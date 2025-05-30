@@ -3,9 +3,9 @@ import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -140,12 +140,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 style={{ width: '100px', height: '100px' }}
                 className="w-6 h-6"
               /> */}
-            
-           
-  <BounceDots dotColor="#0a59ec" size={6} duration={1} />
-  <span className='text-gray-600 ml-2 text-lg'>Thinking...</span>
 
-            
+              <BounceDots dotColor="#0a59ec" size={6} duration={1} />
+              <span className="text-gray-600 ml-2 text-lg">Thinking...</span>
             </div>
           )}
 
@@ -173,19 +170,19 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 >
                   {message.content}
                 </Markdown>
-//                 <Typewriter
-//   text={message.content}
-//   speed={40}
-//   className="prose"
-// >
-//   {(displayed) => (
-//     <Markdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
-//       {displayed}
-//     </Markdown>
-//   )}
-// </Typewriter>
-                
               ) : (
+                //                 <Typewriter
+                //   text={message.content}
+                //   speed={40}
+                //   className="prose"
+                // >
+                //   {(displayed) => (
+                //     <Markdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
+                //       {displayed}
+                //     </Markdown>
+                //   )}
+                // </Typewriter>
+
                 <></>
               )}
             </div>

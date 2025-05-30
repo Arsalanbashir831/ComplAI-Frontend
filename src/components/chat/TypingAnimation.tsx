@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface TypewriterProps {
   /** Full text to display with typing animation */
