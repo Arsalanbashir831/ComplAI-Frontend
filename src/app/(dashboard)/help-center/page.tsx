@@ -9,8 +9,8 @@ export default function Page() {
     <>
       <div className="p-5 flex flex-col gap-y-10">
         <DashboardHeader
-          title="Help & Support"
-          subtitle="Please Menion any issues you are facing"
+          title=""
+          subtitle=""
         />
 
         <div>

@@ -12,10 +12,10 @@ import {
   YAxis,
 } from 'recharts';
 
-import { getDefaultDateRange } from '@/lib/utils';
-import useTokensHistory from '@/hooks/useTokensHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import useTokensHistory from '@/hooks/useTokensHistory';
+import { getDefaultDateRange } from '@/lib/utils';
 
 import { DateRangePicker } from '../common/date-range-picker';
 import LoadingSpinner from '../common/loading-spinner';
