@@ -1,11 +1,12 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -32,20 +33,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const showSkeleton = isLoading && !isError;
   const showAvatar = isBot && !showSkeleton;
 
-  console.log('isLoading', isLoading);
-  console.log('isError', isError);
-  console.log('showSkeleton', showSkeleton);
-  console.log('isBot', isBot);
-
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
     Array.isArray(message.files) && message.files.length > 0
       ? (message.files as Array<{ id?: number; file: string }>)
       : typeof message.files === 'string'
-        ? [{ file: message.files }]
-        : [];
-
-  console.log('message', message);
+      ? [{ file: message.files }]
+      : [];
 
   // Customized markdown components
   const markdownComponents: Components = {
@@ -121,7 +115,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   };
 
   return (
-    <div className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}>
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}
+    >
       <div
         className={cn(
           `flex flex-col gap-2 rounded-2xl py-2 items-center justify-center ${
@@ -132,15 +132,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             : 'bg-blue-light text-white border-gray-light border-2 '
         )}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           {isBot && showSkeleton && (
-            <div className="flex items-center ">
-              {/* <LottieAnimation
-                animationData={chatLoading}
-                style={{ width: '100px', height: '100px' }}
-                className="w-6 h-6"
-              /> */}
-
+            <div className="flex items-center">
               <BounceDots dotColor="#0a59ec" size={6} duration={1} />
               <span className="text-gray-600 ml-2 text-lg">Thinking...</span>
             </div>
@@ -164,25 +158,23 @@ export function ChatBubble({ message }: ChatBubbleProps) {
               )}
             >
               {message.content !== 'loading' ? (
-                <Markdown
-                  remarkPlugins={[remarkGfm]}
-                  components={markdownComponents}
-                >
-                  {message.content}
-                </Markdown>
+                <AnimatePresence>
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                      components={markdownComponents}
+                    >
+                      {message.content}
+                    </Markdown>
+                  </motion.div>
+                </AnimatePresence>
               ) : (
-                //                 <Typewriter
-                //   text={message.content}
-                //   speed={40}
-                //   className="prose"
-                // >
-                //   {(displayed) => (
-                //     <Markdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
-                //       {displayed}
-                //     </Markdown>
-                //   )}
-                // </Typewriter>
-
                 <></>
               )}
             </div>
@@ -229,6 +221,6 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
