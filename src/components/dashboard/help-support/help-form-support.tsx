@@ -1,6 +1,10 @@
 'use client';
 
-import SuccessSubmissionModal from '@/components/modals/SuccessSubmissionModal';
+import { FormEvent, useState } from 'react';
+import { API_ROUTES } from '@/constants/apiRoutes';
+
+import apiCaller from '@/config/apiCaller';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,10 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import apiCaller from '@/config/apiCaller';
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { cn } from '@/lib/utils';
-import { FormEvent, useState } from 'react';
+import SuccessSubmissionModal from '@/components/modals/SuccessSubmissionModal';
 
 export default function SupportForm() {
   const [fullName, setFullName] = useState('');
@@ -73,7 +74,9 @@ export default function SupportForm() {
         <h1 className="text-3xl font-bold py-10">Help and Support Form</h1>
         <form
           onSubmit={handleSubmit}
-          className={cn('w-full max-w-3xl space-y-6 bg-white p-8 rounded-lg shadow-md')}
+          className={cn(
+            'w-full max-w-3xl space-y-6 bg-white p-8 rounded-lg shadow-md'
+          )}
         >
           {error && <div className="text-red-600 text-sm">{error}</div>}
 
@@ -94,12 +97,12 @@ export default function SupportForm() {
             required
           />
 
-          <Select
-            onValueChange={setSelectedVersion}
-            value={selectedVersion}
-          >
+          <Select onValueChange={setSelectedVersion} value={selectedVersion}>
             <SelectTrigger
-              className={cn(!selectedVersion && 'text-muted-foreground', 'py-3')}
+              className={cn(
+                !selectedVersion && 'text-muted-foreground',
+                'py-3'
+              )}
             >
               <SelectValue placeholder="Version" />
             </SelectTrigger>

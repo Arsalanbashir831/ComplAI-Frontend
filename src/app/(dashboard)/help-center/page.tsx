@@ -8,10 +8,7 @@ export default function Page() {
   return (
     <>
       <div className="p-5 flex flex-col gap-y-10">
-        <DashboardHeader
-          title=""
-          subtitle=""
-        />
+        <DashboardHeader title="" subtitle="" />
 
         <div>
           <SupportForm />
