@@ -1,12 +1,12 @@
-import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -38,8 +38,8 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     Array.isArray(message.files) && message.files.length > 0
       ? (message.files as Array<{ id?: number; file: string }>)
       : typeof message.files === 'string'
-      ? [{ file: message.files }]
-      : [];
+        ? [{ file: message.files }]
+        : [];
 
   // Customized markdown components
   const markdownComponents: Components = {
