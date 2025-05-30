@@ -24,7 +24,7 @@ export interface ChatMessage {
   files: UploadedFile | File | null | File[] | [];
   userName?: string;
   avatarUrl?: string;
-
+  is_streaming: boolean, 
   tokens_used: number;
 }
 

@@ -1,9 +1,16 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
+type MutationVars = {
+  chatId: string;
+  content: string;
+  documents?: File[] | Blob;
+  onChunkUpdate?: (chunk: string, done: boolean) => void;
+  signal?: AbortSignal;
+};
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
   const response = await apiCaller(
@@ -176,134 +183,120 @@ const useChat = () => {
     },
   });
 
-  const sendMessageMutation = useMutation({
-    mutationFn: async ({
-      chatId,
-      content,
-      documents,
-      onChunkUpdate,
-      signal,
-    }: {
-      chatId: string;
-      content: string;
-      documents?: File[] | Blob;
-      onChunkUpdate?: (chunk: string) => void;
-      signal?: AbortSignal;
-    }): Promise<ChatMessage> => {
-      const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
-
-      // Prepare FormData for sending the message with optional file.
-      const formData = new FormData();
-      formData.append('content', content);
-      if (documents) {
-        if (Array.isArray(documents)) {
-          documents.forEach((file, index) => {
-            console.log(
-              ` - Appending file ${index + 1}: ${file.name} with key 'document'`
-            );
-            // Use the key 'document' as required by backend
-            formData.append('document', file, file.name);
-          });
-        } else {
-          // Handle single Blob
-          formData.append('document', documents);
+   function useSendMessageMutation() {
+    const queryClient = useQueryClient();
+  
+    return useMutation<ChatMessage, Error, MutationVars>({
+      mutationFn: async ({ chatId, content, documents, onChunkUpdate, signal }) => {
+        const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
+  
+        // Build form data
+        const formData = new FormData();
+        formData.append('content', content);
+        if (documents) {
+          if (Array.isArray(documents)) {
+            documents.forEach((file) => formData.append('document', file, file.name));
+          } else {
+            formData.append('document', documents);
+          }
         }
-      }
-
-      return new Promise<ChatMessage>(async (resolve, reject) => {
-        try {
-          // Step 1: Send message and initiate streaming.
-          const sendResponse = await fetch(streamUrl, {
-            method: 'POST',
-            body: formData,
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-              Accept: '*/*',
-            },
-            signal,
-          });
-
-          // if you get a 400, throw a special Error
-          if (sendResponse.status === 400) {
-            throw new Error('Network error');
-          }
-
-          if (!sendResponse.ok || !sendResponse.body) {
-            const errorData = await sendResponse.json();
-            throw new Error(errorData.error || 'Failed to send message');
-          }
-
-          // Step 2: Read the streaming response in chunks.
-          const reader = sendResponse.body.getReader();
-          let aiResponse = '';
-          const decoder = new TextDecoder('utf-8'); // Single decoder instance.
-          let buffer = ''; // Buffer for incomplete JSON chunks
-
-          const readStream = async () => {
+  
+        return new Promise<ChatMessage>(async (resolve, reject) => {
+          try {
+            const response = await fetch(streamUrl, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                Accept: '*/*',
+              },
+              signal,
+            });
+  
+            if (response.status === 400) {
+              throw new Error('Network error');
+            }
+            if (!response.ok || !response.body) {
+              const err = await response.json();
+              throw new Error(err.error || 'Failed to send message');
+            }
+  
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let aiResponse = '';
+            let buffer = '';
+  
+            // Read chunks until the stream ends:
             while (true) {
               const { done, value } = await reader.read();
               if (done) break;
+  
               buffer += decoder.decode(value, { stream: true });
               const lines = buffer.split('\n');
               buffer = lines.pop() || '';
-
+  
               for (const line of lines) {
                 if (!line.trim()) continue;
+  
+                let data: { reasoning?: string; summary?: ChatMessage };
                 try {
-                  const data = JSON.parse(line.trim());
-
-                  // Append reasoning to the current response.
-                  if (data?.reasoning && data?.reasoning.trim() !== '') {
-                    aiResponse += data.reasoning;
-                    if (onChunkUpdate) {
-                      onChunkUpdate(aiResponse);
-                    }
-                  }
-
-                  // If a summary is received, resolve the promise.
-                  if (data?.summary) {
-                    const finalMessage: ChatMessage = {
-                      id: data.summary.id,
-                      chat: data.summary.chat,
-                      user: data.summary.user,
-                      content: aiResponse.trim(),
-                      created_at: data.summary.created_at,
-                      tokens_used: data.summary.tokens_used,
-                      is_system_message: true,
-                      files: null,
-                    };
-                    resolve(finalMessage);
-                  }
-                } catch (error) {
-                  console.error('Error parsing JSON chunk:', error);
+                  data = JSON.parse(line.trim());
+                } catch (e) {
+                  console.error('Error parsing JSON chunk:', e);
+                  continue;
+                }
+  
+                if (data.reasoning) {
+                  aiResponse += data.reasoning;
+                  onChunkUpdate?.(aiResponse, false); // still streaming
+                }
+  
+                if (data.summary) {
+                  // final message arrived
+                  onChunkUpdate?.(aiResponse, true);
+  
+                  const finalMessage: ChatMessage = {
+                    id: data.summary.id,
+                    chat: data.summary.chat,
+                    user: data.summary.user,
+                    content: aiResponse,
+                    created_at: data.summary.created_at,
+                    tokens_used: data.summary.tokens_used,
+                    is_system_message: true,
+                    is_streaming: false,
+                    files: null,
+                  };
+                  resolve(finalMessage);
+                  return;
                 }
               }
             }
-            // Optionally, try to process any remaining buffer.
-            // if (buffer.trim()) {
-            //   try {
-            //     const data = JSON.parse(buffer.trim());
-            //     // Process any final data if needed.
-            //   } catch (error) {
-            //     console.error('Error parsing final buffer:', error);
-            //   }
-            // }
-          };
-
-          await readStream();
-        } catch (error) {
-          console.error('Error sending message:', error);
-          reject(error);
-        }
-      });
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['chatMessages', variables.chatId],
-      });
-    },
-  });
-
+  
+            // If we exit the loop without a summary, resolve a fallback message
+            resolve({
+              id: Date.now(),
+              chat: Number(chatId),
+              user: 'AI',
+              content: aiResponse,
+              created_at: new Date().toISOString(),
+              tokens_used: 0,
+              is_system_message: true,
+              is_streaming: false,
+              files: null,
+            });
+          } catch (err: unknown) {
+            console.error('Error in sendMessage stream:', err);
+            reject(err);
+          }
+        });
+      },
+  
+      onSuccess: (_newMsg, { chatId }) => {
+        // Refetch the chat’s messages so your UI updates cleanly
+        queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
+      },
+    });
+  }
   // Mutation: Delete chat
   const deleteChatMutation = useMutation({
     mutationFn: async (chatId: string): Promise<void> => {
@@ -328,7 +321,7 @@ const useChat = () => {
     isLoading,
     error,
     createChat: createChatMutation.mutateAsync,
-    sendMessage: sendMessageMutation.mutateAsync,
+    sendMessage: useSendMessageMutation().mutateAsync,
     deleteChat: deleteChatMutation.mutateAsync,
     addMessageNoStream: addMessageMutation.mutateAsync,
     searchChats: searchUserChats,
@@ -357,3 +350,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+
