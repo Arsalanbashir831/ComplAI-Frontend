@@ -133,3 +133,44 @@ export const getDefaultDateRange = (): DateRange => {
 export function shortenText(text: string, wordLimit = 50) {
   return text.split(/\s+/).slice(0, wordLimit).join(' ') + '...';
 }
+
+
+export function preprocessMarkdown(text: string): string {
+  if (!text) {
+    return '';
+  }
+
+  let processedText = text;
+
+  // 1. Normalize line endings to LF
+  processedText = processedText.replace(/\r\n/g, '\n');
+
+  // 2. Clamp headers to a maximum of 6 levels (e.g., "####### Heading" -> "###### Heading")
+  // This also captures the heading text to preserve it.
+  processedText = processedText.replace(/^(#{7,})\s*(.*)/gm, '###### $2');
+
+  // 3. Remove trailing hashes from headings (e.g., "### Heading ###" -> "### Heading")
+  // This cleans up a common copy-paste error from some editors.
+  processedText = processedText.replace(/^(#{1,6})(.*?)\s*#+\s*$/gm, '$1$2');
+
+  // 4. Normalize headings with leading numbers (e.g., "## 1. Heading" -> "## Heading")
+  // This correctly preserves the heading level and adds a space.
+  processedText = processedText.replace(/^(#{1,6})\s*\d+\.\s*/gm, '$1 ');
+
+  // 5. Ensure there is a space after heading hashes (e.g., "###Heading" -> "### Heading")
+  // This is a requirement for many Markdown parsers to recognize a heading.
+  processedText = processedText.replace(/^(#{1,6})([^#\s\n].*)/gm, '$1 $2');
+
+  // 6. Remove lines that contain multiple, invalid heading markers (e.g., "## ## Something")
+  processedText = processedText.replace(/^#+\s+#+\s+.*$/gm, '');
+
+  // 7. Remove lines that are only hashes or invalid lone "#" characters
+  processedText = processedText.replace(/^#+\s*$/gm, '');
+
+  // 8. Collapse 3 or more consecutive newlines into just 2
+  processedText = processedText.replace(/\n{3,}/g, '\n\n');
+
+  processedText=processedText.replace(/\s*###(?=\d+\.\s*)/g, '\n\n').trim();
+  // 9. Trim leading/trailing whitespace from the entire text
+  return processedText.trim();
+}

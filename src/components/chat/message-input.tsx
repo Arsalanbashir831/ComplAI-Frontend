@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,12 +7,15 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat, useChatMessages } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat, } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -36,7 +36,7 @@ export function MessageInput({
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { promptText, setPromptText } = usePrompt();
   const { user } = useUserContext();
-  const { refetch } = useChatMessages(currentChatId || '');
+  // const { refetch } = useChatMessages(currentChatId || '');
   const { setTrigger } = useSendMessageTrigger();
   // Import chat messages context.
   const { setMessages } = useChatContext();
@@ -206,19 +206,34 @@ export function MessageInput({
 
       if (!mentionType) {
         // Await sendMessage so that we wait until all chunks are received.
-        await sendMessage({
+        const completedResponse = await sendMessage({
           chatId: localChatId,
           content: promptText.trim(),
           documents: documentsToSend,
-          // onChunkUpdate: (chunk) => {
-          //   setMessages((prev) =>
-          //     prev.map((msg) =>
-          //       msg.id === aiMessageId ? { ...msg, content: chunk } : msg
-          //     )
-          //   );
-          // },
-          signal, // Pass the abort signal.
+
+          signal,
         });
+
+        // Add typing animation effect after streaming is complete
+        let currentLength = 0;
+        const fullText = completedResponse.content;
+      
+        const charsPerInterval = 5; // Reveal 5 characters at a time
+        const animationInterval = setInterval(() => {
+          if (currentLength < fullText.length) {
+            // Increase currentLength by the step amount
+            currentLength = Math.min(currentLength + charsPerInterval, fullText.length);
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessageId
+                  ? { ...msg, content: fullText.slice(0, currentLength) }
+                  : msg
+              )
+            );
+          } else {
+            clearInterval(animationInterval);
+          }
+        }, 15); // You can use a slightly higher interval like 10ms
       } else {
         // For non-streaming responses.
         const response = await addMessageNoStream({
@@ -234,10 +249,10 @@ export function MessageInput({
       }
 
       // Once chunking/response is complete, refetch messages using the currentChatId.
-      const refetchResult = await refetch();
-      if (refetchResult.data) {
-        setMessages(refetchResult.data);
-      }
+      // const refetchResult = await refetch();
+      // if (refetchResult.data) {
+      //   setMessages(refetchResult.data);
+      // }
 
       // Clear the prompt text (i.e. message) and reset file uploads/mention.
       setTrigger(false);

@@ -1,12 +1,12 @@
+import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn, preprocessMarkdown } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -44,17 +44,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   // Customized markdown components
   const markdownComponents: Components = {
     h1: ({ ...props }) => (
-      <h1 className="mt-6 mb-4 text-3xl font-bold tracking-wide" {...props} />
+      <h1 className="mt-6 mb-4 text-xl font-bold " {...props} />
     ),
     h2: ({ ...props }) => (
-      <h2 className="mt-5 mb-3 text-2xl font-bold tracking-wide" {...props} />
+      <h2 className="mt-5 mb-3 text-lg font-bold " {...props} />
     ),
-    h3: ({ ...props }) => (
-      <h3
-        className="mt-4 mb-2 text-xl font-semibold tracking-wide"
-        {...props}
-      />
-    ),
+  
     hr: ({ ...props }) => (
       <hr className="my-4 border-t border-gray-300" {...props} />
     ),
@@ -116,7 +111,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
   return (
     <motion.div
-      layout
+     
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -158,22 +153,14 @@ export function ChatBubble({ message }: ChatBubbleProps) {
               )}
             >
               {message.content !== 'loading' ? (
-                <AnimatePresence>
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
+              
                     <Markdown
                       remarkPlugins={[remarkGfm]}
                       components={markdownComponents}
                     >
-                      {message.content}
+                      { preprocessMarkdown( message.content)}
                     </Markdown>
-                  </motion.div>
-                </AnimatePresence>
+              
               ) : (
                 <></>
               )}
