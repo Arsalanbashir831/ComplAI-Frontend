@@ -1,12 +1,12 @@
-import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn, preprocessMarkdown } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { cn, preprocessMarkdown } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -49,7 +49,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     h2: ({ ...props }) => (
       <h2 className="mt-5 mb-3 text-lg font-bold " {...props} />
     ),
-  
+
     hr: ({ ...props }) => (
       <hr className="my-4 border-t border-gray-300" {...props} />
     ),
@@ -111,7 +111,6 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
   return (
     <motion.div
-     
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -153,14 +152,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
               )}
             >
               {message.content !== 'loading' ? (
-              
-                    <Markdown
-                      remarkPlugins={[remarkGfm]}
-                      components={markdownComponents}
-                    >
-                      { preprocessMarkdown( message.content)}
-                    </Markdown>
-              
+                <Markdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {preprocessMarkdown(message.content)}
+                </Markdown>
               ) : (
                 <></>
               )}

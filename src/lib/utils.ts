@@ -134,7 +134,6 @@ export function shortenText(text: string, wordLimit = 50) {
   return text.split(/\s+/).slice(0, wordLimit).join(' ') + '...';
 }
 
-
 export function preprocessMarkdown(text: string): string {
   if (!text) {
     return '';
@@ -170,7 +169,7 @@ export function preprocessMarkdown(text: string): string {
   // 8. Collapse 3 or more consecutive newlines into just 2
   processedText = processedText.replace(/\n{3,}/g, '\n\n');
 
-  processedText=processedText.replace(/\s*###(?=\d+\.\s*)/g, '\n\n').trim();
+  processedText = processedText.replace(/\s*###(?=\d+\.\s*)/g, '\n\n').trim();
   // 9. Trim leading/trailing whitespace from the entire text
   return processedText.trim();
 }

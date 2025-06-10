@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -7,15 +10,12 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { Button } from '@/components/ui/button';
-import { useChat, } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
 import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -217,12 +217,15 @@ export function MessageInput({
         // Add typing animation effect after streaming is complete
         let currentLength = 0;
         const fullText = completedResponse.content;
-      
+
         const charsPerInterval = 5; // Reveal 5 characters at a time
         const animationInterval = setInterval(() => {
           if (currentLength < fullText.length) {
             // Increase currentLength by the step amount
-            currentLength = Math.min(currentLength + charsPerInterval, fullText.length);
+            currentLength = Math.min(
+              currentLength + charsPerInterval,
+              fullText.length
+            );
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === aiMessageId
