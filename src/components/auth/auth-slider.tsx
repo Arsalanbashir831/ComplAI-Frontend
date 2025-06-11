@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import * as React from 'react';
+import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
 
@@ -20,17 +20,17 @@ interface Slide {
 const slides: Slide[] = [
   {
     question: '/auth-slider/new/auth-slider-1.svg',
-   
+
     className: 'h-[100%]',
   },
   {
     question: '/auth-slider/new/auth-slider-2.svg',
-   
+
     className: 'h-[100%]',
   },
   {
     question: '/auth-slider/new/auth-slider-3.svg',
-   
+
     className: 'h-[100%]',
   },
 ];
@@ -92,7 +92,6 @@ export function AuthSlider() {
       </div>
 
       {/* Answer Card */}
-     
 
       {/* Navigation Dots */}
       <div className="absolute bottom-5 right-0 left-0 flex justify-center gap-2 mt-8">
