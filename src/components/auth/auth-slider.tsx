@@ -1,58 +1,37 @@
 'use client';
 
-import * as React from 'react';
 import Image from 'next/image';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-interface Answer {
-  src: string;
-  alt: string;
-  className?: string;
-}
+// interface Answer {
+//   src: string;
+//   alt: string;
+//   className?: string;
+// }
 
 interface Slide {
   question: string;
-  answers: Answer[];
+
   className?: string;
 }
 
 const slides: Slide[] = [
   {
-    question: '/auth-slider/q1.svg',
-    answers: [
-      { src: '/auth-slider/a1-a.svg', alt: 'Answer-1', className: 'h-16' },
-      {
-        src: '/auth-slider/a1-b.svg',
-        alt: 'Answer-2',
-        className: 'h-64 -top-8',
-      },
-    ],
-    className: 'h-20',
+    question: '/auth-slider/new/auth-slider-1.svg',
+   
+    className: 'h-[100%]',
   },
   {
-    question: '/auth-slider/q2.svg',
-    answers: [
-      { src: '/auth-slider/a2-a.svg', alt: 'Answer-1', className: 'h-16' },
-      {
-        src: '/auth-slider/a2-b.svg',
-        alt: 'Answer-2',
-        className: 'h-64 -top-8',
-      },
-    ],
-    className: 'h-28',
+    question: '/auth-slider/new/auth-slider-2.svg',
+   
+    className: 'h-[100%]',
   },
   {
-    question: '/auth-slider/q3.svg',
-    answers: [
-      { src: '', alt: '', className: '' },
-      {
-        src: '/auth-slider/a3.svg',
-        alt: 'Answer-1',
-        className: 'h-40 top-0 left-10',
-      },
-    ],
-    className: 'h-24',
+    question: '/auth-slider/new/auth-slider-3.svg',
+   
+    className: 'h-[100%]',
   },
 ];
 
@@ -98,7 +77,7 @@ export function AuthSlider() {
       {/* Question Card */}
       <div
         className={cn(
-          'relative w-full right-10',
+          'relative w-full ',
           currentSlide.className,
           fadeInClass(0),
           fadeOutClass
@@ -113,59 +92,7 @@ export function AuthSlider() {
       </div>
 
       {/* Answer Card */}
-      <div className="overflow-hidden">
-        {currentSlide.answers[0].src && (
-          <div
-            className={cn(
-              'relative w-full z-10',
-              currentSlide.answers[0].className,
-              fadeInClass(1),
-              fadeOutClass
-            )}
-          >
-            <Image
-              src={currentSlide.answers[0].src || '/placeholder.svg'}
-              alt={currentSlide.answers[0].alt}
-              fill
-              className="object-contain"
-            />
-          </div>
-        )}
-
-        {currentSlide.answers[1] && (
-          <div
-            className={cn(
-              'relative w-full left-20',
-              currentSlide.answers[1].className,
-              fadeInClass(2),
-              fadeOutClass
-            )}
-          >
-            <Image
-              src={currentSlide.answers[1].src || '/placeholder.svg'}
-              alt={currentSlide.answers[1].alt}
-              fill
-              className="object-contain"
-            />
-          </div>
-        )}
-
-        <div
-          className={cn(
-            'relative bottom-4 w-full h-16 flex items-center justify-center',
-            currentSlideNo === 2 ? 'mt-8' : '',
-            fadeInClass(3),
-            fadeOutClass
-          )}
-        >
-          <Image
-            src="/auth-slider/input.svg"
-            alt="Input"
-            fill
-            className="object-contain"
-          />
-        </div>
-      </div>
+     
 
       {/* Navigation Dots */}
       <div className="absolute bottom-5 right-0 left-0 flex justify-center gap-2 mt-8">
