@@ -38,16 +38,16 @@ export default function DocxViewer({
 
   return (
     <div
-      className={`p-6 max-w-full mx-auto bg-white rounded-lg ${containerClassName}`}
+      className={`    rounded-lg ${containerClassName}`}
     >
-      <h2 className={`text-2xl font-bold mb-4 ${headingClassName}`}>
+      <h2 className={`text-2xl text-center font-bold mb-4 ${headingClassName}`}>
         {heading}
       </h2>
       {error ? (
         <p className="text-red-600">{error}</p>
       ) : (
         <div
-          className="prose prose-lg max-h-[500px] overflow-y-auto px-4 py-2 border rounded-md"
+          className="prose prose-lg bg-white max-h-[500px] overflow-y-auto px-4 py-4 border rounded-md"
           style={{ scrollbarGutter: 'stable' }}
           dangerouslySetInnerHTML={{ __html: content }}
         />

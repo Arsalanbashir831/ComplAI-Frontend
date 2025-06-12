@@ -71,7 +71,7 @@ export default function SupportForm() {
   return (
     <>
       <div className="flex flex-col items-center justify-start  px-4 md:px-0 bg-gray-50">
-        <h1 className="text-3xl font-bold py-10">Help and Support Form</h1>
+        <h1 className="text-5xl font-bold py-10">Help and Support Form</h1>
         <form
           onSubmit={handleSubmit}
           className={cn(

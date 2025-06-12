@@ -11,7 +11,6 @@ import { toast } from 'sonner';
 import type { Plan, Subscription } from '@/types/subscription';
 import apiCaller from '@/config/apiCaller';
 import { formatDateLocal } from '@/lib/utils';
-import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
@@ -19,6 +18,7 @@ import { SubscriptionInfo } from '@/components/dashboard/subscription/subscripti
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
 );
+
 
 // Fetch payment cards
 // const fetchPaymentCards = async (): Promise<PaymentCard[]> => {
@@ -171,9 +171,9 @@ export default function SubscriptionPage() {
   const { user, refresh } = useUserContext();
   // const queryClient = useQueryClient();
   // const isSubscribing = useIsMutating() > 0;
-
   const [autoRenew, setAutoRenew] = useState(true);
 
+    
   useEffect(() => {
     refresh();
   }, [refresh]);
@@ -375,7 +375,48 @@ export default function SubscriptionPage() {
 
   // const handleRemoveCard = () => {
   //   queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
-  // };
+    // };
+    
+   
+    const isLoading = plansLoading || subscriptionsLoading;
+
+    // Early-return a full-screen skeleton overlay:
+    if (isLoading) {
+        return (
+            <div
+                className="
+          h-screen 
+          bg-white 
+          flex flex-col items-center justify-center px-6 py-8 
+          animate-pulse
+        "
+            >
+                {/* Header skeleton */}
+                <div className="h-8 w-1/4 bg-gray-200 rounded mb-8" />
+
+                {/* Pricing cards skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="space-y-4">
+                            <div className="h-6 w-1/3 bg-gray-200 rounded" />
+                            <div className="h-40 bg-gray-200 rounded-lg" />
+                            <div className="h-4 bg-gray-200 rounded" />
+                            <div className="h-4 w-5/6 bg-gray-200 rounded" />
+                            <div className="h-8 w-1/2 bg-gray-200 rounded" />
+                        </div>
+                    ))}
+                </div>
+
+                {/* “Current Subscription” skeleton */}
+                <div className="mt-8 w-full border-t border-gray-100 pt-8 space-y-3">
+                    <div className="h-6 w-2/5 bg-gray-200 rounded" />
+                    <div className="h-4 w-1/4 bg-gray-200 rounded" />
+                    <div className="h-4 w-1/4 bg-gray-200 rounded" />
+                    <div className="h-8 w-24 bg-gray-200 rounded" />
+                </div>
+            </div>
+        );
+    }
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-8">
@@ -385,9 +426,7 @@ export default function SubscriptionPage() {
         <div className="flex flex-col justify-center flex-1 w-full bg-white rounded-xl p-8 space-y-8 mt-3">
           <div>
             {/* <h1 className="text-2xl font-semibold mb-6">Plans</h1> */}
-            {plansLoading || subscriptionsLoading ? (
-              <LoadingSpinner />
-            ) : (
+            {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {plansWithActions.map((plan) => (
                   <PricingCard
@@ -398,7 +437,7 @@ export default function SubscriptionPage() {
                   />
                 ))}
               </div>
-            )}
+            }
           </div>
 
           <SubscriptionInfo

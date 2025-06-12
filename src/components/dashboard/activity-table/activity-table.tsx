@@ -9,7 +9,6 @@ import useTokensHistory from '@/hooks/useTokensHistory';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateRangePicker } from '@/components/common/date-range-picker';
-import LoadingSpinner from '@/components/common/loading-spinner';
 import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
 
 import { DataTable } from '../../common/data-table';
@@ -39,7 +38,36 @@ export function ActivityTable({
     refetch();
   }, [dateRange, activeTab, refetch]);
 
-  if (isLoading) return <LoadingSpinner />;
+ if (isLoading) {
+    return (
+      <Card className="rounded-lg shadow-md border-none animate-pulse">
+        <CardHeader className="flex items-center justify-between">
+          
+          <div className="h-8 w-48 bg-gray-200 rounded" />
+        </CardHeader>
+
+        <CardContent className="p-4 space-y-4">
+          {/* table header skeleton */}
+          <div className="grid grid-cols-5 gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-12 bg-gray-200 rounded" />
+            ))}
+          </div>
+
+          {/* table rows skeleton */}
+          <div className="space-y-2">
+            {[...Array(5)].map((_, row) => (
+              <div key={row} className="grid grid-cols-5 gap-4">
+                {[...Array(5)].map((_, col) => (
+                  <div key={col} className="h-6 w-12 bg-gray-200 rounded" />
+                ))}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (error) return <div>Error loading data</div>;
 

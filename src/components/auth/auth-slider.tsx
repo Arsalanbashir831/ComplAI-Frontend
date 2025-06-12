@@ -73,11 +73,11 @@ export function AuthSlider() {
   const fadeOutClass = !isVisible ? 'animate-fade-out-bottom' : '';
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-4 py-8 h-full flex flex-col justify-center bg-white rounded-2xl">
+    <div className="relative w-full  px-4 py-8 h-full flex flex-col justify-center items-center  bg-white rounded-2xl">
       {/* Question Card */}
       <div
         className={cn(
-          'relative w-full ',
+          'relative w-96 flex justify-center items-center  ',
           currentSlide.className,
           fadeInClass(0),
           fadeOutClass
