@@ -13,24 +13,24 @@ import { cn } from '@/lib/utils';
 
 interface Slide {
   question: string;
-
+  promo: string;
   className?: string;
 }
 
 const slides: Slide[] = [
   {
     question: '/auth-slider/new/auth-slider-1.svg',
-
+    promo: '/auth-slider/new/auth-slider-promo-1.svg',
     className: 'h-[100%]',
   },
   {
     question: '/auth-slider/new/auth-slider-2.svg',
-
+    promo: '/auth-slider/new/auth-slider-promo-2.svg',
     className: 'h-[100%]',
   },
   {
     question: '/auth-slider/new/auth-slider-3.svg',
-
+    promo: '/auth-slider/new/auth-slider-promo-3.svg',
     className: 'h-[100%]',
   },
 ];
@@ -73,7 +73,7 @@ export function AuthSlider() {
   const fadeOutClass = !isVisible ? 'animate-fade-out-bottom' : '';
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-4 py-8 h-full flex flex-col justify-center bg-white rounded-2xl">
+    <div className="relative w-full max-w-3xl mx-auto px-16 py-8 h-full flex flex-col justify-center bg-white rounded-2xl">
       {/* Question Card */}
       <div
         className={cn(
@@ -83,6 +83,12 @@ export function AuthSlider() {
           fadeOutClass
         )}
       >
+        <div
+          className={cn(
+            'absolute top-0 -right-12 w-full h-16 bg-contain bg-center bg-no-repeat hidden lg:block'
+          )}
+          style={{ backgroundImage: `url(${currentSlide.promo})` }}
+        />
         <Image
           src={currentSlide.question || '/placeholder.svg'}
           alt="Question"
