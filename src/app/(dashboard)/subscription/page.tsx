@@ -378,48 +378,45 @@ export default function SubscriptionPage() {
   const isLoading = plansLoading || subscriptionsLoading;
 
   // Early-return a full-screen skeleton overlay:
-    if (isLoading) {
-        return (
-            <div className="h-screen bg-white px-6 py-10 animate-pulse">
-                {/* Header skeleton */}
-                <div className="h-8 w-1/4 bg-gray-200 rounded mb-8" />
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-white px-6 py-10 animate-pulse">
+        {/* Header skeleton */}
+        <div className="h-8 w-1/4 bg-gray-200 rounded mb-8" />
 
-                {/* Subscription Cards Skeleton */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                        <div
-                            key={i}
-                            className="bg-gray-100 p-4 rounded-xl h-[620px] flex flex-col justify-between shadow-sm"
-                        >
-                            <div className="space-y-3">
-                                {/* Title */}
-                               
-                                {/* Main Box (simulate card body) */}
-                                <div className="h-62 bg-gray-200 rounded" />
-                                {/* 2–3 description lines */}
-                               
-                            </div>
-                            
-                        </div>
-                    ))}
-                </div>
+        {/* Subscription Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-gray-100 p-4 rounded-xl h-[620px] flex flex-col justify-between shadow-sm"
+            >
+              <div className="space-y-3">
+                {/* Title */}
 
-                {/* Current Subscription Section Skeleton */}
-                <div className="mt-12 max-w-4xl mx-auto border-t border-gray-100 pt-8 space-y-4 animate-pulse">
-                    <div className="h-6 w-2/5 bg-gray-200 rounded" />
-                    <div className="flex justify-between items-center">
-                        <div className="space-y-2">
-                            <div className="h-4 w-24 bg-gray-200 rounded" />
-                            <div className="h-4 w-20 bg-gray-200 rounded" />
-                        </div>
-                        <div className="h-6 w-12 bg-gray-300 rounded-full" />
-                    </div>
-                    <div className="h-4 w-1/2 bg-gray-200 rounded" />
-                </div>
+                {/* Main Box (simulate card body) */}
+                <div className="h-62 bg-gray-200 rounded" />
+                {/* 2–3 description lines */}
+              </div>
             </div>
-        );
-    }
+          ))}
+        </div>
 
+        {/* Current Subscription Section Skeleton */}
+        <div className="mt-12 max-w-4xl mx-auto border-t border-gray-100 pt-8 space-y-4 animate-pulse">
+          <div className="h-6 w-2/5 bg-gray-200 rounded" />
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <div className="h-4 w-24 bg-gray-200 rounded" />
+              <div className="h-4 w-20 bg-gray-200 rounded" />
+            </div>
+            <div className="h-6 w-12 bg-gray-300 rounded-full" />
+          </div>
+          <div className="h-4 w-1/2 bg-gray-200 rounded" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-8">

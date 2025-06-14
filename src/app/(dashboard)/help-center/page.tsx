@@ -7,7 +7,7 @@ import SupportForm from '@/components/dashboard/help-support/help-form-support';
 export default function Page() {
   return (
     <>
-      <div className="p-5 flex flex-col gap-y-10">
+      <div className="p-5 flex flex-col gap-y-5">
         <DashboardHeader title="" subtitle="" />
 
         <div>
