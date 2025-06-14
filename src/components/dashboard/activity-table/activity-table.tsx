@@ -38,11 +38,10 @@ export function ActivityTable({
     refetch();
   }, [dateRange, activeTab, refetch]);
 
- if (isLoading) {
+  if (isLoading) {
     return (
       <Card className="rounded-lg shadow-md border-none animate-pulse">
         <CardHeader className="flex items-center justify-between">
-          
           <div className="h-8 w-48 bg-gray-200 rounded" />
         </CardHeader>
 

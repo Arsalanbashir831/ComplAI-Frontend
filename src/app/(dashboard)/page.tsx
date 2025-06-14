@@ -40,36 +40,33 @@ export default function DashboardPage() {
     retry: 1,
   });
 
-    if (isLoadingTokensSummary) {
-        return (
-            <div className="animate-pulse min-h-screen w-full flex flex-col items-center px-6 py-8">
-                <DashboardHeader title="Dashboard" />
+  if (isLoadingTokensSummary) {
+    return (
+      <div className="animate-pulse min-h-screen w-full flex flex-col items-center px-6 py-8">
+        <DashboardHeader title="Dashboard" />
 
-                <div className="flex flex-col items-center justify-center flex-1 w-full mt-2 gap-8">
-                    {/* Metric cards skeleton */}
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full">
-                        {[...Array(3)].map((_, i) => (
-                            <div
-                                key={i}
-                                className="h-24 bg-gray-200 rounded-lg"
-                            />
-                        ))}
-                    </div>
+        <div className="flex flex-col items-center justify-center flex-1 w-full mt-2 gap-8">
+          {/* Metric cards skeleton */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-24 bg-gray-200 rounded-lg" />
+            ))}
+          </div>
 
-                    {/* Charts skeleton */}
-                    <div className="grid gap-6 md:grid-cols-2 w-full">
-                        <div className="h-80 bg-gray-200 rounded-lg" />
-                        <div className="h-80 bg-gray-200 rounded-lg" />
-                    </div>
+          {/* Charts skeleton */}
+          <div className="grid gap-6 md:grid-cols-2 w-full">
+            <div className="h-80 bg-gray-200 rounded-lg" />
+            <div className="h-80 bg-gray-200 rounded-lg" />
+          </div>
 
-                    {/* Activity table skeleton */}
-                    <div className="w-full overflow-x-auto">
-                        <div className="h-48 bg-gray-200 rounded-lg" />
-                    </div>
-                </div>
-            </div>
-        );
-    }
+          {/* Activity table skeleton */}
+          <div className="w-full overflow-x-auto">
+            <div className="h-48 bg-gray-200 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (tokensSummaryError)
     return (

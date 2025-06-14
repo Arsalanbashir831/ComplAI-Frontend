@@ -37,9 +37,7 @@ export default function DocxViewer({
   }, [filePath]);
 
   return (
-    <div
-      className={`    rounded-lg ${containerClassName}`}
-    >
+    <div className={`    rounded-lg ${containerClassName}`}>
       <h2 className={`text-2xl text-center font-bold mb-4 ${headingClassName}`}>
         {heading}
       </h2>
