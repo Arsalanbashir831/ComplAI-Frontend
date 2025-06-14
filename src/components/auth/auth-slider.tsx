@@ -12,108 +12,120 @@ import { cn } from '@/lib/utils';
 // }
 
 interface Slide {
-  question: string;
-
-  className?: string;
+    question: string;
+    promo: string;
+    className?: string;
 }
 
 const slides: Slide[] = [
-  {
-    question: '/auth-slider/new/auth-slider-1.svg',
-
-    className: 'h-[100%]',
-  },
-  {
-    question: '/auth-slider/new/auth-slider-2.svg',
-
-    className: 'h-[100%]',
-  },
-  {
-    question: '/auth-slider/new/auth-slider-3.svg',
-
-    className: 'h-[100%]',
-  },
+    {
+        question: '/auth-slider/new/auth-slider-1.svg',
+        promo: '/auth-slider/new/auth-slider-promo-1.svg',
+        className: 'h-[100%]',
+    },
+    {
+        question: '/auth-slider/new/auth-slider-2.svg',
+        promo: '/auth-slider/new/auth-slider-promo-2.svg',
+        className: 'h-[100%]',
+    },
+    {
+        question: '/auth-slider/new/auth-slider-3.svg',
+        promo: '/auth-slider/new/auth-slider-promo-3.svg',
+        className: 'h-[100%]',
+    },
 ];
 
 export function AuthSlider() {
-  const [currentSlideNo, setCurrentSlideNo] = React.useState(0);
-  const [isVisible, setIsVisible] = React.useState(true);
-  const [staggerIndex, setStaggerIndex] = React.useState(0);
-  const currentSlide = slides[currentSlideNo];
+    const [currentSlideNo, setCurrentSlideNo] = React.useState(0);
+    const [isVisible, setIsVisible] = React.useState(true);
+    const [staggerIndex, setStaggerIndex] = React.useState(0);
+    const currentSlide = slides[currentSlideNo];
+    const [showPromo, setShowPromo] = React.useState(false);
 
-  React.useEffect(() => {
-    const slideInterval = setInterval(() => {
-      // Start fade-out animation
-      setIsVisible(false);
+    React.useEffect(() => {
+        const slideInterval = setInterval(() => {
+            setIsVisible(false);
+            setShowPromo(false); // hide promo during transition
 
-      // Change slide after fade-out animation
-      setTimeout(() => {
-        setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
-        setStaggerIndex(0);
-        setIsVisible(true);
-      }, 1000); // Wait for fade-out animation to complete
-    }, 10000);
-
-    return () => clearInterval(slideInterval);
-  }, []);
-
-  React.useEffect(() => {
-    if (isVisible && staggerIndex < 3) {
-      const staggerTimeout = setTimeout(() => {
-        setStaggerIndex((prevIndex) => prevIndex + 1);
-      }, 900);
-
-      return () => clearTimeout(staggerTimeout);
-    }
-  }, [isVisible, staggerIndex]);
-
-  const fadeInClass = (index: number) =>
-    isVisible && staggerIndex >= index ? 'animate-fade-in-bottom' : 'opacity-0';
-
-  const fadeOutClass = !isVisible ? 'animate-fade-out-bottom' : '';
-
-  return (
-    <div className="relative w-full  px-4 py-8 h-full flex flex-col justify-center items-center  bg-white rounded-2xl">
-      {/* Question Card */}
-      <div
-        className={cn(
-          'relative w-96 flex justify-center items-center  ',
-          currentSlide.className,
-          fadeInClass(0),
-          fadeOutClass
-        )}
-      >
-        <Image
-          src={currentSlide.question || '/placeholder.svg'}
-          alt="Question"
-          fill
-          className="object-contain"
-        />
-      </div>
-
-      {/* Answer Card */}
-
-      {/* Navigation Dots */}
-      <div className="absolute bottom-5 right-0 left-0 flex justify-center gap-2 mt-8">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            className={cn(
-              'h-4 w-4 rounded-full transition-colors',
-              currentSlideNo === index ? 'bg-blue-dark' : 'bg-gray-300'
-            )}
-            onClick={() => {
-              setIsVisible(false);
-              setTimeout(() => {
-                setCurrentSlideNo(index);
+            setTimeout(() => {
+                setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
                 setStaggerIndex(0);
                 setIsVisible(true);
-              }, 1000);
-            }}
-            aria-label={`Slide ${index + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
+            }, 1000); // fade out duration
+        }, 10000);
+
+        return () => clearInterval(slideInterval);
+    }, []);
+
+
+    React.useEffect(() => {
+        if (isVisible) {
+            const promoTimeout = setTimeout(() => {
+                setShowPromo(true);
+            }, 1500); // 1.5 seconds delay
+
+            return () => clearTimeout(promoTimeout);
+        }
+    }, [isVisible, currentSlideNo]);
+
+
+
+
+    const fadeInClass = (index: number) =>
+        isVisible && staggerIndex >= index ? 'animate-fade-in-bottom' : 'opacity-0';
+
+    const fadeOutClass = !isVisible ? 'animate-fade-out-bottom' : '';
+
+    return (
+        <div className="relative w-full max-w-3xl mx-auto px-16 py-8 h-full flex flex-col justify-center bg-white rounded-2xl">
+            {/* Question Card */}
+            <div
+                className={cn(
+                    'relative w-full ',
+                    currentSlide.className,
+                    fadeInClass(0),
+                    fadeOutClass
+                )}
+            >
+                <div
+                    className={cn(
+                        'absolute top-12 -right-24 w-full h-14 bg-contain bg-center bg-no-repeat hidden lg:block transition-opacity duration-500',
+                        showPromo ? 'opacity-100 animate-fade-in-top' : 'opacity-0'
+                    )}
+                    style={{ backgroundImage: `url(${currentSlide.promo})` }}
+                />
+
+                <Image
+                    src={currentSlide.question || '/placeholder.svg'}
+                    alt="Question"
+                    fill
+                    className="object-contain"
+                />
+            </div>
+
+            {/* Answer Card */}
+
+            {/* Navigation Dots */}
+            <div className="absolute bottom-20 right-0 left-0 flex justify-center gap-2 mt-8">
+                {slides.map((_, index) => (
+                    <button
+                        key={index}
+                        className={cn(
+                            'h-4 w-4 rounded-full transition-colors',
+                            currentSlideNo === index ? 'bg-blue-dark' : 'bg-gray-300'
+                        )}
+                        onClick={() => {
+                            setIsVisible(false);
+                            setTimeout(() => {
+                                setCurrentSlideNo(index);
+                                setStaggerIndex(0);
+                                setIsVisible(true);
+                            }, 1000);
+                        }}
+                        aria-label={`Slide ${index + 1}`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
 }

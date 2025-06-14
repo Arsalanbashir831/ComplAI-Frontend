@@ -45,7 +45,7 @@ export default function DocxViewer({
         <p className="text-red-600">{error}</p>
       ) : (
         <div
-          className="prose prose-lg bg-white max-h-[500px] overflow-y-auto px-4 py-4 border rounded-md"
+          className="prose prose-lg bg-[#F8F8FF] max-h-[500px] overflow-y-auto px-4 py-4 border rounded-md"
           style={{ scrollbarGutter: 'stable' }}
           dangerouslySetInnerHTML={{ __html: content }}
         />

@@ -15,113 +15,96 @@ import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
 
 interface ActivityTableProps {
-  pageSize?: number;
-  showTitle?: boolean;
-  showActions?: boolean;
+    pageSize?: number;
+    showTitle?: boolean;
+    showActions?: boolean;
 }
 
 export function ActivityTable({
-  pageSize,
-  showTitle = true,
-  showActions = true,
+    pageSize,
+    showTitle = true,
+    showActions = true,
 }: ActivityTableProps) {
-  const [activeTab] = useState('all');
-  const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
-  const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
+    const [activeTab] = useState('all');
+    const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
+    const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
 
-  const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(
-    null
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  useEffect(() => {
-    refetch();
-  }, [dateRange, activeTab, refetch]);
-
-  if (isLoading) {
-    return (
-      <Card className="rounded-lg shadow-md border-none animate-pulse">
-        <CardHeader className="flex items-center justify-between">
-          <div className="h-8 w-48 bg-gray-200 rounded" />
-        </CardHeader>
-
-        <CardContent className="p-4 space-y-4">
-          {/* table header skeleton */}
-          <div className="grid grid-cols-5 gap-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-200 rounded" />
-            ))}
-          </div>
-
-          {/* table rows skeleton */}
-          <div className="space-y-2">
-            {[...Array(5)].map((_, row) => (
-              <div key={row} className="grid grid-cols-5 gap-4">
-                {[...Array(5)].map((_, col) => (
-                  <div key={col} className="h-6 w-12 bg-gray-200 rounded" />
-                ))}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+    const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(
+        null
     );
-  }
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (error) return <div>Error loading data</div>;
+    useEffect(() => {
+        refetch();
+    }, [dateRange, activeTab, refetch]);
 
-  // Filter data based on the selected date range
-  const filteredData = Array.isArray(data)
-    ? data.filter((curr) => {
-        const usageDate = new Date(curr.usage_date);
-        const startDate = new Date(dateRange.from ?? new Date());
-        const endDate = new Date(dateRange.to ?? new Date());
-        return usageDate >= startDate && usageDate <= endDate;
-      })
-    : [];
+    if (isLoading) {
+        return (
+            <Card className="rounded-lg shadow-md border-none animate-pulse">
+                <CardHeader className="flex flex-col items-center justify-between items-end">
+                    <div className="h-20 w-72 bg-gray-200 rounded" />
+                    <div className="h-96 w-full bg-gray-200 rounded" />
+                </CardHeader>
 
-  // Filter based on the active tab (query or document)
-  const tabFilteredData = filteredData.filter((curr) => {
-    if (activeTab === 'query') {
-      return curr.activity_type === 'query';
-    } else if (activeTab === 'document') {
-      return curr.activity_type === 'document';
+
+            </Card>
+        );
     }
-    return true; // 'all' tab, show all
-  });
 
-  // Modal state (using previously declared state)
+    if (error) return <div>Error loading data</div>;
 
-  // Handle "View" button
-  const handleView = (activity: ActivityItem) => {
-    setSelectedActivity(activity);
-    setIsModalOpen(true);
-  };
+    // Filter data based on the selected date range
+    const filteredData = Array.isArray(data)
+        ? data.filter((curr) => {
+            const usageDate = new Date(curr.usage_date);
+            const startDate = new Date(dateRange.from ?? new Date());
+            const endDate = new Date(dateRange.to ?? new Date());
+            return usageDate >= startDate && usageDate <= endDate;
+        })
+        : [];
 
-  return (
-    <>
-      <Card className="rounded-lg shadow-md border-none">
-        <CardHeader
-          className={cn(
-            'flex md:flex-row md:items-center gap-4',
-            showTitle ? 'justify-between' : 'justify-end'
-          )}
-        >
-          {showTitle && (
-            <CardTitle className="flex items-center gap-2 text-[#1D1F2C]">
-              Recent Activity
-              <Badge className="bg-[#E9FAF7] text-[#09B975]">
-                {filteredData?.length}
-              </Badge>
-            </CardTitle>
-          )}
+    // Filter based on the active tab (query or document)
+    const tabFilteredData = filteredData.filter((curr) => {
+        if (activeTab === 'query') {
+            return curr.activity_type === 'query';
+        } else if (activeTab === 'document') {
+            return curr.activity_type === 'document';
+        }
+        return true; // 'all' tab, show all
+    });
 
-          <div className="flex flex-col items-start md:flex-row md:items-center gap-4">
-            <DateRangePicker
-              value={dateRange}
-              onChange={(newRange) => newRange && setDateRange(newRange)}
-            />
-            {/* <Tabs
+    // Modal state (using previously declared state)
+
+    // Handle "View" button
+    const handleView = (activity: ActivityItem) => {
+        setSelectedActivity(activity);
+        setIsModalOpen(true);
+    };
+
+    return (
+        <>
+            <Card className="rounded-lg shadow-md border-none">
+                <CardHeader
+                    className={cn(
+                        'flex md:flex-row md:items-center gap-4',
+                        showTitle ? 'justify-between' : 'justify-end'
+                    )}
+                >
+                    {showTitle && (
+                        <CardTitle className="flex items-center gap-2 text-[#1D1F2C]">
+                            Recent Activity
+                            <Badge className="bg-[#E9FAF7] text-[#09B975]">
+                                {filteredData?.length}
+                            </Badge>
+                        </CardTitle>
+                    )}
+
+                    <div className="flex flex-col items-start md:flex-row md:items-center gap-4">
+                        <DateRangePicker
+                            value={dateRange}
+                            onChange={(newRange) => newRange && setDateRange(newRange)}
+                        />
+                        {/* <Tabs
               defaultValue="all"
               onValueChange={(value) => setActiveTab(value)}
             >
@@ -146,25 +129,25 @@ export function ActivityTable({
                 </TabsTrigger>
               </TabsList>
             </Tabs> */}
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <DataTable<ActivityItem, unknown>
-            columns={createColumns(showActions, handleView)}
-            data={tabFilteredData} // Pass filtered and tab-specific data
-            activeFilter={activeTab}
-            pageSize={pageSize}
-            isTabsPresent={true}
-          />
-        </CardContent>
-      </Card>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <DataTable<ActivityItem, unknown>
+                        columns={createColumns(showActions, handleView)}
+                        data={tabFilteredData} // Pass filtered and tab-specific data
+                        activeFilter={activeTab}
+                        pageSize={pageSize}
+                        isTabsPresent={true}
+                    />
+                </CardContent>
+            </Card>
 
-      {/* Modal (appears when user clicks View) */}
-      <UserQueryModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        activity={selectedActivity}
-      />
-    </>
-  );
+            {/* Modal (appears when user clicks View) */}
+            <UserQueryModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                activity={selectedActivity}
+            />
+        </>
+    );
 }

@@ -7,10 +7,11 @@ import type { Invoice } from '@/types/invoice';
 import apiCaller from '@/config/apiCaller';
 import InvoiceTable from '@/components/dashboard/billing/invoice-table';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
+import { Card, CardHeader } from '@/components/ui/card';
 
 export default function BillingPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-
+    const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
@@ -46,11 +47,27 @@ export default function BillingPage() {
         setInvoices(transformed);
       } catch (error) {
         console.error('Failed to fetch invoices:', error);
+        }
+      finally {
+        setIsLoading(false);
       }
     };
 
     fetchInvoices();
   }, []);
+    
+    if (isLoading) {
+        return (
+            <Card className="min-h-screen w-full flex flex-col justify-center items-center px-6 py-8 animate-pulse ">
+                <CardHeader className="flex w-full flex-col items-center justify-between items-end">
+                    <div className="h-20 w-72 bg-gray-200 rounded" />
+                    <div className="h-96 w-full bg-gray-200 rounded" />
+                </CardHeader>
+
+
+            </Card>
+        );
+    }
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-8 bg-[#F9F9FC]">
@@ -62,6 +79,7 @@ export default function BillingPage() {
       <div className="flex flex-col justify-center flex-1 w-full rounded-xl">
         <InvoiceTable invoices={invoices} />
       </div>
+
     </div>
   );
 }
