@@ -75,7 +75,7 @@ export function IdentityVerificationForm() {
   };
 
   const onSubmit = async (value: z.infer<typeof formSchema>) => {
-    if (!email || !type || !password) {
+    if (!email || !type) {
       return setMessage({
         type: 'error',
         text: 'Email and type are required for verification.',

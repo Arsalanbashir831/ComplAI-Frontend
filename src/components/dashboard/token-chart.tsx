@@ -18,7 +18,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
 import { DateRangePicker } from '../common/date-range-picker';
-import LoadingSpinner from '../common/loading-spinner';
 
 type AggregatedData = {
   usage_date: string;
@@ -34,7 +33,7 @@ export function TokenChart() {
   }, [dateRange, refetch]);
 
   // waiting state
-  if (isLoading) return <LoadingSpinner />;
+  // if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Error loading data</div>;
 
   // filter and aggregate

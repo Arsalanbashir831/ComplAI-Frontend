@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
@@ -40,9 +39,7 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
-  const { signIn } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { signIn, loading, error } = useAuth();
   const searchParams = useSearchParams();
   const subscription = searchParams.get('subscription');
   // const {handleSubscription} = useSubscription()
@@ -65,8 +62,6 @@ export function LoginForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true);
-    setErrorMessage(null);
     await signIn({
       email: values.email,
       password: values.password,
@@ -126,9 +121,7 @@ export function LoginForm() {
       </div>
 
       {/* ✅ Display error message */}
-      {errorMessage && (
-        <p className="text-red-500 text-sm text-center">{errorMessage}</p>
-      )}
+      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
