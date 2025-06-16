@@ -72,81 +72,86 @@ export default function SupportForm() {
     <>
       <div className="flex flex-col items-center justify-start  px-4 md:px-0 bg-gray-50">
         <h1 className="text-4xl font-bold pb-10">Help and Support Form</h1>
-              <form
-                  onSubmit={handleSubmit}
-                  className={cn(
-                      'w-full max-w-3xl space-y-6 bg-white p-8  rounded-lg shadow-md'
-                  )}
+        <form
+          onSubmit={handleSubmit}
+          className={cn(
+            'w-full max-w-3xl space-y-6 bg-white p-8  rounded-lg shadow-md'
+          )}
+        >
+          {error && <div className="text-red-600 text-sm">{error}</div>}
+
+          {/* Full Name */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">
+              Full Name
+            </label>
+            <Input
+              placeholder="Your full name"
+              className="py-3"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Email */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Email</label>
+            <Input
+              type="email"
+              placeholder="Your email"
+              className="py-3"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Version */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">
+              Select Version
+            </label>
+            <Select onValueChange={setSelectedVersion} value={selectedVersion}>
+              <SelectTrigger
+                className={cn(
+                  !selectedVersion && 'text-muted-foreground',
+                  'py-3'
+                )}
               >
-                  {error && <div className="text-red-600 text-sm">{error}</div>}
+                <SelectValue placeholder="Version" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="compl-ai-v1">Compl-AI v1</SelectItem>
+                <SelectItem value="compl-ai-v2">Compl-AI v2</SelectItem>
+                <SelectItem value="compl-ai-v3">Compl-AI v3</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-                  {/* Full Name */}
-                  <div className="space-y-1">
-                      <label className="text-sm font-medium text-gray-700">Full Name</label>
-                      <Input
-                          placeholder="Your full name"
-                          className="py-3"
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          required
-                      />
-                  </div>
+          {/* Description */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <Textarea
+              placeholder="Please describe the issue or feedback..."
+              className="h-48 py-3"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+          </div>
 
-                  {/* Email */}
-                  <div className="space-y-1">
-                      <label className="text-sm font-medium text-gray-700">Email</label>
-                      <Input
-                          type="email"
-                          placeholder="Your email"
-                          className="py-3"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                      />
-                  </div>
-
-                  {/* Version */}
-                  <div className="space-y-1">
-                      <label className="text-sm font-medium text-gray-700">Select Version</label>
-                      <Select onValueChange={setSelectedVersion} value={selectedVersion}>
-                          <SelectTrigger
-                              className={cn(
-                                  !selectedVersion && 'text-muted-foreground',
-                                  'py-3'
-                              )}
-                          >
-                              <SelectValue placeholder="Version" />
-                          </SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="compl-ai-v1">Compl-AI v1</SelectItem>
-                              <SelectItem value="compl-ai-v2">Compl-AI v2</SelectItem>
-                              <SelectItem value="compl-ai-v3">Compl-AI v3</SelectItem>
-                          </SelectContent>
-                      </Select>
-                  </div>
-
-                  {/* Description */}
-                  <div className="space-y-1">
-                      <label className="text-sm font-medium text-gray-700">Description</label>
-                      <Textarea
-                          placeholder="Please describe the issue or feedback..."
-                          className="h-48 py-3"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          required
-                      />
-                  </div>
-
-                  {/* Submit Button */}
-                  <Button
-                      type="submit"
-                      className="w-full transition-all duration-300 ease-in-out py-3"
-                      disabled={loading}
-                  >
-                      {loading ? 'Submitting...' : 'Submit Support Request'}
-                  </Button>
-              </form>
-
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            className="w-full transition-all duration-300 ease-in-out py-3"
+            disabled={loading}
+          >
+            {loading ? 'Submitting...' : 'Submit Support Request'}
+          </Button>
+        </form>
       </div>
 
       {/* Success modal */}
