@@ -15,7 +15,7 @@ export interface PromptCardProps extends PromptCard {
 }
 
 export interface ChatMessage {
-  id: number;
+  id: number | string;
   chat: number;
   user: string | null;
   content: string;

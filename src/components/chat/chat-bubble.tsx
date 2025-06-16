@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import type { Components } from 'react-markdown';
@@ -15,7 +16,7 @@ import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
 interface ChatBubbleProps {
-  message: ChatMessage & { isError?: boolean };
+  message: ChatMessage & { isError?: boolean; isAnimating?: boolean };
   user?: User | null;
 }
 
@@ -27,11 +28,47 @@ interface CodeProps {
 }
 
 export function ChatBubble({ message }: ChatBubbleProps) {
+  const [animatedContent, setAnimatedContent] = useState('');
+  const [isAnimationDone, setIsAnimationDone] = useState(false);
+
   const isBot = message.is_system_message;
   const isError = !!message.isError;
   const isLoading = message.content === 'loading';
   const showSkeleton = isLoading && !isError;
   const showAvatar = isBot && !showSkeleton;
+
+  useEffect(() => {
+    // Only run the animation if the message is from the bot,
+    // has the isAnimating flag, and the animation isn't already done.
+    if (isBot && message.isAnimating && !isAnimationDone) {
+      setAnimatedContent(''); // Reset content on new animation
+      let currentLength = 0;
+      const fullText = message.content;
+
+      const animationInterval = setInterval(() => {
+        const charsPerInterval = 8;
+        const targetLength = currentLength + charsPerInterval;
+
+        if (targetLength >= fullText.length) {
+          setAnimatedContent(fullText);
+          setIsAnimationDone(true); // Mark animation as complete
+          clearInterval(animationInterval);
+          return;
+        }
+
+        let sliceEnd = fullText.indexOf(' ', targetLength);
+        if (sliceEnd === -1) {
+          sliceEnd = fullText.length;
+        }
+
+        const textToShow = fullText.slice(0, sliceEnd);
+        setAnimatedContent(textToShow);
+        currentLength = textToShow.length;
+      }, 25); // Animation speed
+
+      return () => clearInterval(animationInterval);
+    }
+  }, [message.content, message.isAnimating, isBot, isAnimationDone]);
 
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
@@ -111,6 +148,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
   return (
     <motion.div
+      id={`message-${message.id}`}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -123,11 +161,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           } md:max-w-[66.666667%]`,
           isBot
             ? 'bg-white'
-            : 'bg-blue-light text-white border-gray-light border-2 '
+            : 'bg-blue-light text-white border-gray-light border-2 ',
+          isLoading && 'min-h-[55vh] justify-start'
         )}
       >
         <div className="flex items-start gap-3">
-          {isBot && showSkeleton && (
+          {isLoading && (
             <div className="flex items-center">
               <BounceDots dotColor="#0a59ec" size={6} duration={1} />
               <span className="text-gray-600 ml-2 text-lg">Thinking...</span>
@@ -145,23 +184,43 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           )}
 
           <div className="flex flex-col gap-2 w-full">
-            <div
-              className={cn(
-                'text-justify',
-                isError ? 'text-red-500 italic' : 'text-black'
-              )}
-            >
-              {message.content !== 'loading' ? (
-                <Markdown
-                  remarkPlugins={[remarkGfm]}
-                  components={markdownComponents}
-                >
-                  {preprocessMarkdown(message.content)}
-                </Markdown>
-              ) : (
-                <></>
-              )}
-            </div>
+            {!isLoading && (
+              <div
+                className={cn(
+                  'text-justify',
+                  isError ? 'text-red-500 italic' : 'text-black'
+                )}
+              >
+                {(() => {
+                  // --- FIX: Live Markdown Animation ---
+                  // For bot messages, we now ALWAYS use the Markdown component.
+                  // We pass it the animating content or the final content.
+                  if (isBot) {
+                    const contentToRender = message.isAnimating
+                      ? animatedContent
+                      : message.content;
+                    return (
+                      <Markdown
+                        remarkPlugins={[remarkGfm]}
+                        components={markdownComponents}
+                      >
+                        {preprocessMarkdown(contentToRender)}
+                      </Markdown>
+                    );
+                  }
+
+                  // For user messages, we also use the Markdown component.
+                  return (
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                      components={markdownComponents}
+                    >
+                      {preprocessMarkdown(message.content)}
+                    </Markdown>
+                  );
+                })()}
+              </div>
+            )}
 
             {/* File attachments */}
             {files.length > 0 && (

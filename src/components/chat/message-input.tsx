@@ -39,7 +39,7 @@ export function MessageInput({
   // const { refetch } = useChatMessages(currentChatId || '');
   const { setTrigger } = useSendMessageTrigger();
   // Import chat messages context.
-  const { setMessages } = useChatContext();
+  const { setMessages, setFocusMessageId } = useChatContext();
 
   // Global mutating state as our "isSending" indicator.
   const isSending = useIsMutating() > 0;
@@ -53,8 +53,6 @@ export function MessageInput({
   const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const maxChars = 10000;
-  console.log('prompt', promptText);
-  console.log('uploadedFiles', uploadedFiles);
 
   // Define available mention options.
   const mentionOptions = [
@@ -179,7 +177,7 @@ export function MessageInput({
 
       // Create a user message and add it to the context.
       const userMessage = {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         chat: Number(localChatId),
         user: user?.username || 'You',
         content: promptText.trim(),
@@ -188,21 +186,27 @@ export function MessageInput({
         is_system_message: false,
         files: documentsToSend.length > 0 ? documentsToSend : null,
       };
-      setMessages((prev) => [...prev, userMessage]);
+      // After setting the message, set the ID to focus on.
+      setFocusMessageId(userMessage.id);
 
       // Create a placeholder AI message.
-      const aiMessageId = Date.now() + 1;
-      const placeholderAIMessage = {
-        id: aiMessageId,
-        chat: Number(localChatId),
-        user: 'AI',
-        content: 'loading',
-        created_at: new Date().toISOString(),
-        tokens_used: 0,
-        is_system_message: true,
-        files: null,
-      };
-      setMessages((prev) => [...prev, placeholderAIMessage]);
+      const aiMessageId = crypto.randomUUID();
+      setMessages((prev) => [
+        ...prev,
+        userMessage,
+        {
+          id: aiMessageId,
+          chat: Number(localChatId),
+          user: 'AI',
+          content: 'loading',
+          created_at: new Date().toISOString(),
+          tokens_used: 0,
+          is_system_message: true,
+          files: null,
+        },
+      ]);
+
+      setFocusMessageId(userMessage.id);
 
       if (!mentionType) {
         // Await sendMessage so that we wait until all chunks are received.
@@ -210,33 +214,39 @@ export function MessageInput({
           chatId: localChatId,
           content: promptText.trim(),
           documents: documentsToSend,
-
           signal,
         });
 
-        // Add typing animation effect after streaming is complete
-        let currentLength = 0;
-        const fullText = completedResponse.content;
+        // --- FINAL, SMARTER TEXT-CLEANING LOGIC ---
+        const rawContent = completedResponse.content;
 
-        const charsPerInterval = 5; // Reveal 5 characters at a time
-        const animationInterval = setInterval(() => {
-          if (currentLength < fullText.length) {
-            // Increase currentLength by the step amount
-            currentLength = Math.min(
-              currentLength + charsPerInterval,
-              fullText.length
-            );
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === aiMessageId
-                  ? { ...msg, content: fullText.slice(0, currentLength) }
-                  : msg
-              )
-            );
-          } else {
-            clearInterval(animationInterval);
-          }
-        }, 15); // You can use a slightly higher interval like 10ms
+        // 1. First, fix any standard escaped newlines (good practice).
+        let processedContent = rawContent.replace(/\\n/g, '\n');
+
+        // This regex looks for a bolded phrase ending in a colon (like **WORD:**)
+        // that is immediately followed by a letter, and inserts two newlines.
+        // e.g., "**WORD:**Something" becomes "**WORD:**\n\nSomething"
+        processedContent = processedContent.replace(
+          /\*\*([A-Z\s]+):\*\*([A-Z])/g,
+          '**$1:**\n\n$2'
+        );
+
+        // 3. This handles cases like "-ListItem" becoming "- ListItem"
+        processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
+
+        // Now, use this heavily processed content to start the animation
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...completedResponse,
+                  content: processedContent, // Use the final cleaned content
+                  id: aiMessageId,
+                  isAnimating: true,
+                }
+              : msg
+          )
+        );
       } else {
         // For non-streaming responses.
         const response = await addMessageNoStream({

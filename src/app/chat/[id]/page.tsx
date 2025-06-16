@@ -1,3 +1,5 @@
+// src/app/chat/[id]/page.tsx
+
 'use client';
 
 import { useEffect } from 'react';
@@ -14,24 +16,40 @@ export default function SpecificChatPage() {
 
   const chatId = id as string;
   const { messages, setMessages } = useChatContext();
-  const { data: chatMessages } = useChatMessages(chatId);
+  const { data: chatMessages, isLoading } = useChatMessages(chatId);
 
-  // Only initialize the context messages if the context is empty.
+  // Initialize context messages only once when the page loads and context is empty.
   useEffect(() => {
     if (chatMessages && messages.length === 0) {
       setMessages(chatMessages);
     }
-  }, [chatMessages, messages, setMessages]);
+    // We only want this to run when the initial chatMessages are loaded.
+    // Removing `messages` from the dependency array prevents it from re-running unnecessarily.
+  }, [chatMessages, messages.length, setMessages]);
 
   return (
-    <>
+    // Use a flex column layout that takes up the full screen height
+    <div className="flex flex-col h-screen">
       <ChatHeader currentChatId={chatId} />
-      <div className="px-6 flex flex-col justify-center h-[90%]">
-        <ChatMessages messages={messages} />
-        <div className="mx-auto md:max-w-[80%] w-full">
-          <MessageInput chatId={chatId} />
+
+      {/* This main area will contain the messages and the input */}
+      <main className="flex flex-col flex-1 overflow-hidden">
+        {/*
+          The ChatMessages component will now be responsible for its own scrolling.
+          flex-1 allows it to take up all available vertical space.
+          overflow-y-auto will create a scrollbar only when needed.
+        */}
+        <div className="flex-1 overflow-y-auto px-6 pt-4">
+          <ChatMessages messages={messages} isLoading={isLoading} />
         </div>
-      </div>
-    </>
+
+        {/* The MessageInput component is pinned to the bottom */}
+        <div className="px-6 pb-4">
+          <div className="mx-auto md:max-w-[80%] w-full">
+            <MessageInput chatId={chatId} />
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
