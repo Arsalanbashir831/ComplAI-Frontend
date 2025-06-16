@@ -26,7 +26,7 @@ type AggregatedData = {
 
 export function TokenChart() {
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
-  const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
+  const { data, error, refetch } = useTokensHistory(dateRange);
 
   useEffect(() => {
     refetch();
