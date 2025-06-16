@@ -35,12 +35,12 @@ export default function UserAgreementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center py-24 px-4">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center  ">
       <div className="w-full  ">
         <DocxViewer
           filePath="/docs/USER LICENCE AGREEMENT.docx"
           heading="User License & Agreement"
-          containerClassName="bg-gray-100 p-6 rounded-lg w-full"
+          containerClassName=" rounded-lg w-full"
           headingClassName="text-3xl font-semibold text-indigo-700 mb-6"
         />
       </div>

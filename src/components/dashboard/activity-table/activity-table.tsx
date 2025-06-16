@@ -9,7 +9,6 @@ import useTokensHistory from '@/hooks/useTokensHistory';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateRangePicker } from '@/components/common/date-range-picker';
-import LoadingSpinner from '@/components/common/loading-spinner';
 import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
 
 import { DataTable } from '../../common/data-table';
@@ -39,7 +38,16 @@ export function ActivityTable({
     refetch();
   }, [dateRange, activeTab, refetch]);
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) {
+    return (
+      <Card className="rounded-lg shadow-md border-none animate-pulse">
+        <CardHeader className="flex flex-col items-center justify-between items-end">
+          <div className="h-20 w-72 bg-gray-200 rounded" />
+          <div className="h-96 w-full bg-gray-200 rounded" />
+        </CardHeader>
+      </Card>
+    );
+  }
 
   if (error) return <div>Error loading data</div>;
 

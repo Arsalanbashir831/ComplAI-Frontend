@@ -40,32 +40,32 @@ export function AuthSlider() {
   const [isVisible, setIsVisible] = React.useState(true);
   const [staggerIndex, setStaggerIndex] = React.useState(0);
   const currentSlide = slides[currentSlideNo];
+  const [showPromo, setShowPromo] = React.useState(false);
 
   React.useEffect(() => {
     const slideInterval = setInterval(() => {
-      // Start fade-out animation
       setIsVisible(false);
+      setShowPromo(false); // hide promo during transition
 
-      // Change slide after fade-out animation
       setTimeout(() => {
         setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
         setStaggerIndex(0);
         setIsVisible(true);
-      }, 1000); // Wait for fade-out animation to complete
+      }, 1000); // fade out duration
     }, 10000);
 
     return () => clearInterval(slideInterval);
   }, []);
 
   React.useEffect(() => {
-    if (isVisible && staggerIndex < 3) {
-      const staggerTimeout = setTimeout(() => {
-        setStaggerIndex((prevIndex) => prevIndex + 1);
-      }, 900);
+    if (isVisible) {
+      const promoTimeout = setTimeout(() => {
+        setShowPromo(true);
+      }, 1500); // 1.5 seconds delay
 
-      return () => clearTimeout(staggerTimeout);
+      return () => clearTimeout(promoTimeout);
     }
-  }, [isVisible, staggerIndex]);
+  }, [isVisible, currentSlideNo]);
 
   const fadeInClass = (index: number) =>
     isVisible && staggerIndex >= index ? 'animate-fade-in-bottom' : 'opacity-0';
@@ -85,10 +85,12 @@ export function AuthSlider() {
       >
         <div
           className={cn(
-            'absolute top-0 -right-12 w-full h-16 bg-contain bg-center bg-no-repeat hidden lg:block'
+            'absolute top-12 -right-24 w-full h-14 bg-contain bg-center bg-no-repeat hidden lg:block transition-opacity duration-500',
+            showPromo ? 'opacity-100 animate-fade-in-top' : 'opacity-0'
           )}
           style={{ backgroundImage: `url(${currentSlide.promo})` }}
         />
+
         <Image
           src={currentSlide.question || '/placeholder.svg'}
           alt="Question"
@@ -100,7 +102,7 @@ export function AuthSlider() {
       {/* Answer Card */}
 
       {/* Navigation Dots */}
-      <div className="absolute bottom-5 right-0 left-0 flex justify-center gap-2 mt-8">
+      <div className="absolute bottom-20 right-0 left-0 flex justify-center gap-2 mt-8">
         {slides.map((_, index) => (
           <button
             key={index}
