@@ -46,7 +46,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       const fullText = message.content;
 
       const animationInterval = setInterval(() => {
-        const charsPerInterval = 8;
+        const charsPerInterval = 4;
         const targetLength = currentLength + charsPerInterval;
 
         if (targetLength >= fullText.length) {
