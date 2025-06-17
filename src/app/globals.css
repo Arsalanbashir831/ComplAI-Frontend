@@ -285,3 +285,78 @@ body {
     }
   }
 }
+
+
+
+/* Fade in from bottom animation */
+@keyframes fade-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade out to bottom animation */
+@keyframes fade-out-bottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* Fade in from top for promo */
+@keyframes fade-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade out to top for promo */
+@keyframes fade-out-top {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Class for question entering animation */
+.animate-question-enter {
+  animation: fade-in-bottom 0.7s ease-out forwards;
+}
+
+/* Class for question exiting animation */
+.animate-question-exit {
+  animation: fade-out-bottom 0.7s ease-in forwards;
+}
+
+/* Class for promo entering animation */
+.animate-promo-enter {
+  animation: fade-in-top 0.7s ease-out forwards;
+}
+
+/* Class for promo exiting animation */
+.animate-promo-exit {
+  animation: fade-out-top 0.7s ease-in forwards;
+}
+
+/* Ensure elements are initially hidden before first animation */
+.initial-hidden {
+  opacity: 0;
+}

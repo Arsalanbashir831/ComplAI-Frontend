@@ -1,20 +1,16 @@
 'use client';
 
-import * as React from 'react';
 import Image from 'next/image';
+import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-
-// interface Answer {
-//   src: string;
-//   alt: string;
-//   className?: string;
-// }
+import { cn } from '@/lib/utils'; // Assuming this utility helps with conditional class names
 
 interface Slide {
   question: string;
   promo: string;
   className?: string;
+  // Add promoClassName to the interface
+  promoClassName?: string;
 }
 
 const slides: Slide[] = [
@@ -22,71 +18,106 @@ const slides: Slide[] = [
     question: '/auth-slider/new/auth-slider-1.svg',
     promo: '/auth-slider/new/auth-slider-promo-1.svg',
     className: 'h-[100%]',
+    promoClassName: 'top-[300px] left-[100px] translate-x-1/2 z-10', // Example: Centered horizontally, fixed top
   },
   {
     question: '/auth-slider/new/auth-slider-2.svg',
-    promo: '/auth-slider/new/auth-slider-promo-2.svg',
+    promo: '/auth-slider/new/auth-slider-promo-2.png',
     className: 'h-[100%]',
+    promoClassName: 'top-[470px] left-0 -translate-y-1/2 z-10', // Example: Centered vertically on the left
   },
   {
     question: '/auth-slider/new/auth-slider-3.svg',
     promo: '/auth-slider/new/auth-slider-promo-3.svg',
     className: 'h-[100%]',
+    promoClassName: 'top-[90px] z-10 left-[150px] ', // Example: Bottom right corner
   },
 ];
 
 export function AuthSlider() {
   const [currentSlideNo, setCurrentSlideNo] = React.useState(0);
-  const [isVisible, setIsVisible] = React.useState(true);
-  const [staggerIndex, setStaggerIndex] = React.useState(0);
-  const currentSlide = slides[currentSlideNo];
-  const [showPromo, setShowPromo] = React.useState(false);
+  const [isAnimating, setIsAnimating] = React.useState(false); // To prevent rapid transitions
+  const [entering, setEntering] = React.useState(true); // Tracks if elements are entering or exiting
+  const [showPromo, setShowPromo] = React.useState(false); // Manages promo visibility
 
+  const currentSlide = slides[currentSlideNo];
+
+  // Auto-slide effect
   React.useEffect(() => {
     const slideInterval = setInterval(() => {
-      setIsVisible(false);
-      setShowPromo(false); // hide promo during transition
+      if (!isAnimating) {
+        setEntering(false); // Start exit animation
+        setIsAnimating(true);
+        setShowPromo(false); // Hide promo immediately on exit
 
-      setTimeout(() => {
-        setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
-        setStaggerIndex(0);
-        setIsVisible(true);
-      }, 1000); // fade out duration
-    }, 10000);
+        setTimeout(() => {
+          // After exit animation finishes, change slide and start enter animation
+          setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
+          setEntering(true); // Start enter animation
+        }, 700); // Duration of the exit animation
+      }
+    }, 3500); // Changed back to 8 seconds for a more dynamic demo.
+    // If you intend for it to be 80 seconds, change it back to 80000.
 
     return () => clearInterval(slideInterval);
-  }, []);
+  }, [isAnimating]);
 
+  // Handle enter animation completion and promo display
   React.useEffect(() => {
-    if (isVisible) {
-      const promoTimeout = setTimeout(() => {
+    if (entering) {
+      // Delay promo appearance after question has started animating in
+      const promoDelay = setTimeout(() => {
         setShowPromo(true);
-      }, 1500); // 1.5 seconds delay
+      }, 500); // Stagger the promo animation by 0.5s after question starts
 
-      return () => clearTimeout(promoTimeout);
+      // After all entering animations complete, reset animating state
+      const animationCompleteTimeout = setTimeout(() => {
+        setIsAnimating(false);
+      }, 700); // Matches the enter animation duration
+
+      return () => {
+        clearTimeout(promoDelay);
+        clearTimeout(animationCompleteTimeout);
+      };
     }
-  }, [isVisible, currentSlideNo]);
+  }, [entering, currentSlideNo]);
 
-  const fadeInClass = (index: number) =>
-    isVisible && staggerIndex >= index ? 'animate-fade-in-bottom' : 'opacity-0';
+  const getQuestionAnimationClass = () => {
+    if (entering) {
+      return 'animate-question-enter';
+    } else {
+      return 'animate-question-exit';
+    }
+  };
 
-  const fadeOutClass = !isVisible ? 'animate-fade-out-bottom' : '';
+  const getPromoAnimationClass = () => {
+    if (entering && showPromo) {
+      return 'animate-promo-enter';
+    } else if (!entering) {
+      return 'animate-promo-exit';
+    }
+    return 'opacity-0'; // Initially hidden or when not showing
+  };
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-16 py-8 h-full flex flex-col justify-center bg-white rounded-2xl">
+    <div className="relative w-full max-w-3xl mx-auto px-16 py-8 h-full flex flex-col justify-center bg-white rounded-2xl overflow-hidden">
       {/* Question Card */}
       <div
+        key={currentSlideNo}
         className={cn(
-          'relative w-full ',
+          'relative w-full transition-all duration-700 ease-in-out',
           currentSlide.className,
-          fadeInClass(0),
-          fadeOutClass
+          getQuestionAnimationClass(),
+          !entering && 'pointer-events-none'
         )}
+        style={{ transitionDelay: entering ? '0s' : '0s' }}
       >
         <div
           className={cn(
-            'absolute top-12 -right-24 w-full h-14 bg-contain bg-center bg-no-repeat hidden lg:block transition-opacity duration-500',
-            showPromo ? 'opacity-100 animate-fade-in-top' : 'opacity-0'
+            'absolute w-full h-14 bg-contain bg-center bg-no-repeat hidden lg:block',
+            // Apply the currentSlide.promoClassName here!
+            currentSlide.promoClassName,
+            getPromoAnimationClass()
           )}
           style={{ backgroundImage: `url(${currentSlide.promo})` }}
         />
@@ -96,27 +127,31 @@ export function AuthSlider() {
           alt="Question"
           fill
           className="object-contain"
+          priority
         />
       </div>
 
-      {/* Answer Card */}
-
       {/* Navigation Dots */}
-      <div className="absolute bottom-20 right-0 left-0 flex justify-center gap-2 mt-8">
+      <div className="absolute bottom-20 right-0 left-0 flex justify-center gap-2 mt-8 z-10">
         {slides.map((_, index) => (
           <button
             key={index}
             className={cn(
-              'h-4 w-4 rounded-full transition-colors',
-              currentSlideNo === index ? 'bg-blue-dark' : 'bg-gray-300'
+              'h-4 w-4 rounded-full transition-colors duration-300',
+              currentSlideNo === index ? 'bg-blue-dark' : 'bg-gray-300',
+              isAnimating && 'pointer-events-none'
             )}
             onClick={() => {
-              setIsVisible(false);
-              setTimeout(() => {
-                setCurrentSlideNo(index);
-                setStaggerIndex(0);
-                setIsVisible(true);
-              }, 1000);
+              if (!isAnimating && index !== currentSlideNo) {
+                setEntering(false);
+                setIsAnimating(true);
+                setShowPromo(false);
+
+                setTimeout(() => {
+                  setCurrentSlideNo(index);
+                  setEntering(true);
+                }, 700);
+              }
             }}
             aria-label={`Slide ${index + 1}`}
           />
