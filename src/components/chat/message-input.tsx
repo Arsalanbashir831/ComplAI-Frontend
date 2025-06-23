@@ -146,7 +146,7 @@ export function MessageInput({
 
   const handleSendMessage = async () => {
     if (isSending) return;
-    if (!promptText.trim() && uploadedFiles.length === 0) return;
+    if (!promptText.trim() || uploadedFiles.length === 0) return;
 
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
@@ -517,6 +517,8 @@ export function MessageInput({
                 size="icon"
                 className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
                 onClick={isSending ? handleStop : handleSendMessage}
+                disabled={!promptText.trim()}
+                aria-label="Send message"
               >
                 {isSending ? (
                   <Image

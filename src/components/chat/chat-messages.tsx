@@ -46,25 +46,6 @@ export function ChatMessages({
     // This effect runs whenever messages or the trigger changes.
   }, [messages, trigger, focusMessageId, setFocusMessageId, showScrollButton]);
 
-  // This useEffect now ONLY handles the IntersectionObserver setup.
-  useEffect(() => {
-    const bottomElement = bottomRef.current;
-    const root = viewportRef.current;
-    if (!bottomElement || !root) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setShowScrollButton(!entry.isIntersecting);
-      },
-      { root: root, threshold: 0.5 }
-    );
-
-    observer.observe(bottomElement);
-
-    return () => observer.disconnect();
-    // No dependency array needed, this is a one-time setup on mount.
-  }, []);
-
   // Auto-scroll logic.
   useEffect(() => {
     const shouldScroll = !showScrollButton || trigger;
@@ -77,9 +58,21 @@ export function ChatMessages({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleScroll = () => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const atBottom =
+      Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 1;
+    setShowScrollButton(!atBottom);
+  };
+
   return (
     // This div is now the main scrolling container, passed from the parent page.
-    <div ref={viewportRef} className="relative h-full">
+    <div
+      ref={viewportRef}
+      className="relative h-full overflow-y-auto"
+      onScroll={handleScroll}
+    >
       <div className="mx-auto md:max-w-[80%] md:p-4 min-h-full flex flex-col justify-end">
         {/* Optional: Show a loading skeleton/spinner during initial fetch */}
         {isLoading && messages.length === 0 && (
