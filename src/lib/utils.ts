@@ -205,22 +205,31 @@ export function preprocessMarkdown(text: string): string {
   // After tables
   processedText = processedText.replace(/(\n\|.*\|\n(?:\|.*\|\n)+)/g, '$1\n\n');
   // After lists
-  processedText = processedText.replace(/((?:^|\n)(?:\s*[-*+] |\d+\. ).*(?:\n(?:\s*[-*+] |\d+\. ).*)*)/gm, '$1\n\n');
+  processedText = processedText.replace(
+    /((?:^|\n)(?:\s*[-*+] |\d+\. ).*(?:\n(?:\s*[-*+] |\d+\. ).*)*)/gm,
+    '$1\n\n'
+  );
 
   // 10. Ensure paragraphs are separated by at least two newlines
   processedText = processedText.replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
 
   // 11. Auto-link URLs (http, https, www)
-  processedText = processedText.replace(/(?<!\]\()((https?:\/\/|www\.)[\w\-._~:/?#[\]@!$&'()*+,;=%]+)(?![\w\-.]*\])/gi, (match) => {
-    // Don't double-link if already inside a markdown link
-    if (/^https?:\/\//.test(match) || /^www\./.test(match)) {
-      return `[${match}](${match.startsWith('http') ? match : 'https://' + match})`;
+  processedText = processedText.replace(
+    /(?<!\]\()((https?:\/\/|www\.)[\w\-._~:/?#[\]@!$&'()*+,;=%]+)(?![\w\-.]*\])/gi,
+    (match) => {
+      // Don't double-link if already inside a markdown link
+      if (/^https?:\/\//.test(match) || /^www\./.test(match)) {
+        return `[${match}](${match.startsWith('http') ? match : 'https://' + match})`;
+      }
+      return match;
     }
-    return match;
-  });
+  );
 
   // 12. Auto-link emails
-  processedText = processedText.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '[$1](mailto:$1)');
+  processedText = processedText.replace(
+    /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+    '[$1](mailto:$1)'
+  );
 
   // 13. Clean up extra spaces before/after code blocks and lists
   processedText = processedText.replace(/\n{3,}/g, '\n\n');
@@ -248,7 +257,8 @@ export function normalizeTables(md: string): string {
     if (pipeCount >= 2) {
       // Start of a table block
       if (!inTable) {
-        if (result.length && result[result.length - 1].trim() !== '') result.push('');
+        if (result.length && result[result.length - 1].trim() !== '')
+          result.push('');
         inTable = true;
       }
       // Ensure line starts and ends with a single pipe
@@ -261,7 +271,8 @@ export function normalizeTables(md: string): string {
     } else {
       if (inTable) {
         // End of table block
-        if (result.length && result[result.length - 1].trim() !== '') result.push('');
+        if (result.length && result[result.length - 1].trim() !== '')
+          result.push('');
         inTable = false;
       }
       result.push(line);
@@ -308,4 +319,3 @@ export function processStreamingMarkdownChunk(
   // If not valid, return the previous valid content
   return previousValid;
 }
-
