@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Streaming Markdown Chat Demo (Validated)</title>
+  <style>
+    #response {
+      border: 1px solid #ccc;
+      padding: 1em;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    #sendBtn {
+      margin-top: 0.5em;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <h1>Streaming Chat with Live Markdown (Validated)</h1>
+  <div id="response">Waiting for response…</div>
+  <button id="sendBtn">Send Prompt</button>
+
+  <script>
+    let accumulated = '';
+
+    document.getElementById('sendBtn').addEventListener('click', () => {
+      accumulated = '';
+      document.getElementById('response').innerHTML = '';
+      postAndStream();
+    });
+
+    async function postAndStream() {
+      const url = 'https://api.compl-ai.co.uk/api/chats/1445/messages/add-stream/';
+      const body = { content: 'What are the key principles of Anti-money laundering?'};
+      const res = await fetch(url, {
+        method: 'POST',
+        
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUwODkyNDU3LCJpYXQiOjE3NTA4NzA4NTcsImp0aSI6ImY3NWVjY2Q2YTAzMTQ1YzRhYzU3YWZjNjJkNjI0NTkyIiwidXNlcl9pZCI6MX0.3bLlziRjgXSlkD_iNroVY5ZnA1mEpq3YXmdaHryj5p4' },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        document.getElementById('response').textContent = 'Error: ' + await res.text();
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        buffer = processBuffer(buffer);
+      }
+    }
+
+    function processBuffer(buf) {
+      let inObj = false, start = 0, depth = 0;
+      for (let i = 0; i < buf.length; i++) {
+        if (buf[i] === '{') {
+          if (!inObj) { inObj = true; start = i; }
+          depth++;
+        }
+        if (buf[i] === '}') {
+          depth--;
+          if (inObj && depth === 0) {
+            const chunk = buf.slice(start, i + 1);
+            handleChunk(chunk);
+            buf = buf.slice(i + 1);
+            i = -1;
+            inObj = false;
+          }
+        }
+      }
+      return buf;
+    }
+
+    function handleChunk(jsonText) {
+      try {
+        const msg = JSON.parse(jsonText);
+        const token = msg.reasoning;
+        if (token) {
+          accumulated += token;
+          // Only re-render if markdown seems balanced
+          if (isValidMarkdown(accumulated)) {
+            renderMarkdown(accumulated);
+          }
+        }
+      } catch (e) {
+        console.warn('Bad JSON chunk:', jsonText, e);
+      }
+    }
+
+    function isValidMarkdown(text) {
+      // Even number of triple-backticks?
+      const codeFenceCount = (text.match(/```/g) || []).length;
+      if (codeFenceCount % 2 !== 0) return false;
+      // Even number of inline backticks?
+      const inlineCodeCount = (text.match(/`/g) || []).length;
+      if (inlineCodeCount % 2 !== 0) return false;
+      // Balanced brackets and parentheses?
+      const openBr = (text.match(/\[/g) || []).length;
+      const closeBr = (text.match(/\]/g) || []).length;
+      if (openBr !== closeBr) return false;
+      const openPar = (text.match(/\(/g) || []).length;
+      const closePar = (text.match(/\)/g) || []).length;
+      if (openPar !== closePar) return false;
+      return true;
+    }
+
+    function renderMarkdown(md) {
+      const out = document.getElementById('response');
+      out.innerHTML = marked.parse(md);
+      out.scrollTop = out.scrollHeight;
+    }
+  </script>
+</body>
+</html>
