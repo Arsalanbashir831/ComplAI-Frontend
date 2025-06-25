@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import type { Components } from 'react-markdown';
+import Image from 'next/image';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn, preprocessMarkdown } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn, preprocessMarkdown } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -16,59 +14,80 @@ import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
 interface ChatBubbleProps {
-  message: ChatMessage & { isError?: boolean; isAnimating?: boolean };
+  message: ChatMessage & { isError?: boolean };
   user?: User | null;
 }
 
-// Define a type for the props of our code component override
-interface CodeProps {
-  inline?: boolean;
-  className?: string;
-  children?: React.ReactNode;
+function normalizeTables(md: string): string {
+  const lines = md.split('\n');
+  let inTable = false;
+  const result: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const pipeCount = (line.match(/\|/g) || []).length;
+    if (pipeCount >= 2) {
+      // Start of a table block
+      if (!inTable) {
+        if (result.length && result[result.length - 1].trim() !== '') result.push('');
+        inTable = true;
+      }
+      // Ensure line starts and ends with a single pipe
+      let normalized = line.trim();
+      if (!normalized.startsWith('|')) normalized = '| ' + normalized;
+      if (!normalized.endsWith('|')) normalized = normalized + ' |';
+      // Remove extra spaces before/after pipes
+      normalized = normalized.replace(/\s*\|\s*/g, ' | ');
+      result.push(normalized);
+    } else {
+      if (inTable) {
+        // End of table block
+        if (result.length && result[result.length - 1].trim() !== '') result.push('');
+        inTable = false;
+      }
+      result.push(line);
+    }
+  }
+  return result.join('\n');
 }
 
-export function ChatBubble({ message }: ChatBubbleProps) {
-  const [animatedContent, setAnimatedContent] = useState('');
-  const [isAnimationDone, setIsAnimationDone] = useState(false);
+const markdownComponents = {
+  h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h1 className="mt-8 mb-4 text-2xl font-extrabold text-gray-900 border-b border-gray-200 pb-2" {...props} />,
+  h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h2 className="mt-6 mb-3 text-xl font-bold text-gray-800 border-b border-gray-100 pb-1" {...props} />,
+  h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h3 className="mt-5 mb-2 text-lg font-semibold text-gray-700" {...props} />,
+  hr: (props: React.HTMLAttributes<HTMLHRElement>) => <hr className="my-6 border-t-2 border-gray-200 rounded-full w-1/2 mx-auto" {...props} />,
+  p: (props: React.HTMLAttributes<HTMLParagraphElement>) => <p className="mt-2 mb-2 text-base leading-relaxed text-gray-900" {...props} />,
+  ul: (props: React.HTMLAttributes<HTMLUListElement>) => <ul className="mt-2 mb-2 ml-6 list-disc text-base leading-relaxed text-gray-900" {...props} />,
+  ol: (props: React.HTMLAttributes<HTMLOListElement>) => <ol className="mt-2 mb-2 ml-6 list-decimal text-base leading-relaxed text-gray-900" {...props} />,
+  li: (props: React.HTMLAttributes<HTMLLIElement>) => <li className="mb-1 text-base leading-relaxed" {...props} />,
+  blockquote: (props: React.HTMLAttributes<HTMLElement>) => <blockquote className="border-l-4 border-blue-400 bg-blue-50 pl-4 italic my-4 text-base text-gray-700 rounded" {...props} />,
+  code: ({ inline, className, children, ...props }: { inline?: boolean; className?: string; children?: React.ReactNode }) => {
+    const match = /language-(\w+)/.exec(className || '');
+    return !inline ? (
+      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono shadow-inner my-4" {...props}>
+        <code className={match ? `language-${match[1]}` : ''}>{children}</code>
+      </pre>
+    ) : (
+      <code className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded font-mono text-sm" {...props}>{children}</code>
+    );
+  },
+  table: (props: React.HTMLAttributes<HTMLTableElement>) => (
+    <div className="overflow-x-auto my-2">
+      <table className="min-w-full border border-blue-300 rounded-xl shadow-lg bg-white text-sm" {...props} />
+    </div>
+  ),
+  thead: (props: React.HTMLAttributes<HTMLTableSectionElement>) => <thead className="bg-blue-100 sticky top-0 z-10" {...props} />,
+  tbody: (props: React.HTMLAttributes<HTMLTableSectionElement>) => <tbody className="bg-white" {...props} />,
+  tr: (props: React.HTMLAttributes<HTMLTableRowElement>) => <tr className="border-b last:border-b-0 even:bg-blue-50 hover:bg-blue-100 transition-colors duration-100" {...props} />,
+  th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => <th className="px-5 py-3 text-left font-bold text-blue-900 border-b border-blue-200 whitespace-nowrap text-base" {...props} />,
+  td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => <td className="px-5 py-3 text-blue-900 border-b border-blue-100 whitespace-nowrap align-top" {...props} />,
+};
 
+export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.is_system_message;
   const isError = !!message.isError;
   const isLoading = message.content === 'loading';
   const showSkeleton = isLoading && !isError;
   const showAvatar = isBot && !showSkeleton;
-
-  useEffect(() => {
-    // Only run the animation if the message is from the bot,
-    // has the isAnimating flag, and the animation isn't already done.
-    if (isBot && message.isAnimating && !isAnimationDone) {
-      setAnimatedContent(''); // Reset content on new animation
-      let currentLength = 0;
-      const fullText = message.content;
-
-      const animationInterval = setInterval(() => {
-        const charsPerInterval = 4;
-        const targetLength = currentLength + charsPerInterval;
-
-        if (targetLength >= fullText.length) {
-          setAnimatedContent(fullText);
-          setIsAnimationDone(true); // Mark animation as complete
-          clearInterval(animationInterval);
-          return;
-        }
-
-        let sliceEnd = fullText.indexOf(' ', targetLength);
-        if (sliceEnd === -1) {
-          sliceEnd = fullText.length;
-        }
-
-        const textToShow = fullText.slice(0, sliceEnd);
-        setAnimatedContent(textToShow);
-        currentLength = textToShow.length;
-      }, 25); // Animation speed
-
-      return () => clearInterval(animationInterval);
-    }
-  }, [message.content, message.isAnimating, isBot, isAnimationDone]);
 
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
@@ -78,73 +97,19 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         ? [{ file: message.files }]
         : [];
 
-  // Customized markdown components
-  const markdownComponents: Components = {
-    h1: ({ ...props }) => (
-      <h1 className="mt-6 mb-4 text-xl font-bold " {...props} />
-    ),
-    h2: ({ ...props }) => (
-      <h2 className="mt-5 mb-3 text-lg font-bold " {...props} />
-    ),
+  // Preprocess and normalize markdown content
+  const preprocessedContent = preprocessMarkdown(message.content);
+  const containsTable =
+    isBot && /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(preprocessedContent);
+  const normalizedContent = containsTable ? normalizeTables(preprocessedContent) : preprocessedContent;
 
-    hr: ({ ...props }) => (
-      <hr className="my-4 border-t border-gray-300" {...props} />
-    ),
-    p: ({ ...props }) => (
-      <p
-        className="mt-2 mb-2 text-lg leading-relaxed tracking-normal"
-        {...props}
-      />
-    ),
-    ul: ({ ...props }) => (
-      <ul
-        className="mt-2 mb-2 ml-6 list-disc text-lg leading-relaxed tracking-normal"
-        {...props}
-      />
-    ),
-    ol: ({ ...props }) => (
-      <ol
-        className="mt-2 mb-2 ml-6 list-decimal text-lg leading-relaxed tracking-normal"
-        {...props}
-      />
-    ),
-    li: ({ ...props }) => (
-      <li className="mb-1 text-lg leading-relaxed tracking-normal" {...props} />
-    ),
-    blockquote: ({ ...props }) => (
-      <blockquote
-        className="border-l-4 border-gray-300 pl-4 italic my-4 text-lg leading-relaxed tracking-normal"
-        {...props}
-      />
-    ),
-    code: ({ inline, className, children, ...props }: CodeProps) => {
-      const match = /language-(\w+)/.exec(className || '');
-      return !inline ? (
-        <pre
-          className="bg-gray-100 p-4 my-4 overflow-auto rounded text-lg leading-relaxed"
-          {...props}
-        >
-          <code className={match ? `language-${match[1]}` : ''}>
-            {children}
-          </code>
-        </pre>
-      ) : (
-        <code className="bg-gray-100 p-1 rounded text-lg" {...props}>
-          {children}
-        </code>
-      );
-    },
-    table: ({ ...props }) => (
-      <table className="min-w-full border-collapse my-4 text-md" {...props} />
-    ),
-    thead: ({ ...props }) => <thead className="bg-blue-800" {...props} />,
-    tbody: ({ ...props }) => <tbody className="bg-white" {...props} />,
-    tr: ({ ...props }) => <tr className="border-b" {...props} />,
-    th: ({ ...props }) => (
-      <th className="px-4 py-2 text-left font-medium text-white" {...props} />
-    ),
-    td: ({ ...props }) => <td className="px-4 py-2 text-black" {...props} />,
-  };
+  // Preserve double (or more) spaces as &nbsp;
+  function preserveSpaces(md: string): string {
+    // Replace 2 or more spaces with equivalent &nbsp;
+    return md.replace(/ {2,}/g, (match) => '&nbsp;'.repeat(match.length));
+  }
+
+  const finalContent = preserveSpaces(normalizedContent);
 
   return (
     <motion.div
@@ -158,7 +123,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         className={cn(
           `flex flex-col gap-2 rounded-2xl py-2 items-center justify-center ${
             isBot ? 'px-0' : 'px-4 md:px-8 '
-          } md:max-w-[66.666667%]`,
+          } md:max-w-[100%]`,
           isBot
             ? 'bg-white'
             : 'bg-blue-light text-white border-gray-light border-2 ',
@@ -191,34 +156,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   isError ? 'text-red-500 italic' : 'text-black'
                 )}
               >
-                {(() => {
-                  // --- FIX: Live Markdown Animation ---
-                  // For bot messages, we now ALWAYS use the Markdown component.
-                  // We pass it the animating content or the final content.
-                  if (isBot) {
-                    const contentToRender = message.isAnimating
-                      ? animatedContent
-                      : message.content;
-                    return (
-                      <Markdown
-                        remarkPlugins={[remarkGfm]}
-                        components={markdownComponents}
-                      >
-                        {preprocessMarkdown(contentToRender)}
-                      </Markdown>
-                    );
-                  }
-
-                  // For user messages, we also use the Markdown component.
-                  return (
-                    <Markdown
-                      remarkPlugins={[remarkGfm]}
-                      components={markdownComponents}
-                    >
-                      {preprocessMarkdown(message.content)}
-                    </Markdown>
-                  );
-                })()}
+                <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {finalContent}
+                </Markdown>
               </div>
             )}
 

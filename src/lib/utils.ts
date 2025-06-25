@@ -144,20 +144,48 @@ export function preprocessMarkdown(text: string): string {
   // 1. Normalize line endings to LF
   processedText = processedText.replace(/\r\n/g, '\n');
 
+  // --- Table formatting patch start ---
+  // Replace all non-breaking spaces with regular spaces
+  processedText = processedText.replace(/\u00A0/g, ' ');
+
+  // Ensure blank line before and after tables
+  processedText = processedText.replace(/([^\n])\n(\|[^\n]*\|)/g, '$1\n\n$2');
+  processedText = processedText.replace(/(\|[^\n]*\|)\n([^\n])/g, '$1\n\n$2');
+  // Remove leading spaces before first pipe in table lines
+  processedText = processedText.replace(/\n\s+\|/g, '\n|');
+  // Remove trailing spaces after last pipe in table lines
+  processedText = processedText.replace(/\|\s+\n/g, '|\n');
+
+  // For every line with at least two pipes, ensure it starts and ends with a pipe
+  processedText = processedText
+    .split('\n')
+    .map((line) => {
+      const pipeCount = (line.match(/\|/g) || []).length;
+      if (pipeCount >= 2) {
+        let trimmed = line.trim();
+        // Remove extra spaces before/after pipes
+        trimmed = trimmed.replace(/\s*\|\s*/g, ' | ');
+        // Ensure starts with pipe
+        if (!trimmed.startsWith('|')) trimmed = '| ' + trimmed;
+        // Ensure ends with pipe
+        if (!trimmed.endsWith('|')) trimmed = trimmed + ' |';
+        return trimmed;
+      }
+      return line;
+    })
+    .join('\n');
+  // --- Table formatting patch end ---
+
   // 2. Clamp headers to a maximum of 6 levels (e.g., "####### Heading" -> "###### Heading")
-  // This also captures the heading text to preserve it.
   processedText = processedText.replace(/^(#{7,})\s*(.*)/gm, '###### $2');
 
   // 3. Remove trailing hashes from headings (e.g., "### Heading ###" -> "### Heading")
-  // This cleans up a common copy-paste error from some editors.
   processedText = processedText.replace(/^(#{1,6})(.*?)\s*#+\s*$/gm, '$1$2');
 
   // 4. Normalize headings with leading numbers (e.g., "## 1. Heading" -> "## Heading")
-  // This correctly preserves the heading level and adds a space.
   processedText = processedText.replace(/^(#{1,6})\s*\d+\.\s*/gm, '$1 ');
 
   // 5. Ensure there is a space after heading hashes (e.g., "###Heading" -> "### Heading")
-  // This is a requirement for many Markdown parsers to recognize a heading.
   processedText = processedText.replace(/^(#{1,6})([^#\s\n].*)/gm, '$1 $2');
 
   // 6. Remove lines that contain multiple, invalid heading markers (e.g., "## ## Something")
@@ -169,7 +197,115 @@ export function preprocessMarkdown(text: string): string {
   // 8. Collapse 3 or more consecutive newlines into just 2
   processedText = processedText.replace(/\n{3,}/g, '\n\n');
 
-  processedText = processedText.replace(/\s*###(?=\d+\.\s*)/g, '\n\n').trim();
-  // 9. Trim leading/trailing whitespace from the entire text
-  return processedText.trim();
+  // 9. Add extra newlines after block elements for ChatGPT-like spacing
+  // After code blocks
+  processedText = processedText.replace(/(```[\s\S]*?```)/g, '$1\n\n');
+  // After blockquotes
+  processedText = processedText.replace(/(\n>.*(?:\n>.*)*)/g, '$1\n\n');
+  // After tables
+  processedText = processedText.replace(/(\n\|.*\|\n(?:\|.*\|\n)+)/g, '$1\n\n');
+  // After lists
+  processedText = processedText.replace(/((?:^|\n)(?:\s*[-*+] |\d+\. ).*(?:\n(?:\s*[-*+] |\d+\. ).*)*)/gm, '$1\n\n');
+
+  // 10. Ensure paragraphs are separated by at least two newlines
+  processedText = processedText.replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
+
+  // 11. Auto-link URLs (http, https, www)
+  processedText = processedText.replace(/(?<!\]\()((https?:\/\/|www\.)[\w\-._~:/?#[\]@!$&'()*+,;=%]+)(?![\w\-.]*\])/gi, (match) => {
+    // Don't double-link if already inside a markdown link
+    if (/^https?:\/\//.test(match) || /^www\./.test(match)) {
+      return `[${match}](${match.startsWith('http') ? match : 'https://' + match})`;
+    }
+    return match;
+  });
+
+  // 12. Auto-link emails
+  processedText = processedText.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '[$1](mailto:$1)');
+
+  // 13. Clean up extra spaces before/after code blocks and lists
+  processedText = processedText.replace(/\n{3,}/g, '\n\n');
+  processedText = processedText.replace(/^\s+|\s+$/g, '');
+
+  // 14. Final trim
+  processedText = processedText.trim();
+
+  // Debug log for inspection
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.log('[preprocessMarkdown] Processed markdown:', processedText);
+  }
+
+  return processedText;
 }
+
+export function normalizeTables(md: string): string {
+  const lines = md.split('\n');
+  let inTable = false;
+  const result: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const pipeCount = (line.match(/\|/g) || []).length;
+    if (pipeCount >= 2) {
+      // Start of a table block
+      if (!inTable) {
+        if (result.length && result[result.length - 1].trim() !== '') result.push('');
+        inTable = true;
+      }
+      // Ensure line starts and ends with a single pipe
+      let normalized = line.trim();
+      if (!normalized.startsWith('|')) normalized = '| ' + normalized;
+      if (!normalized.endsWith('|')) normalized = normalized + ' |';
+      // Remove extra spaces before/after pipes
+      normalized = normalized.replace(/\s*\|\s*/g, ' | ');
+      result.push(normalized);
+    } else {
+      if (inTable) {
+        // End of table block
+        if (result.length && result[result.length - 1].trim() !== '') result.push('');
+        inTable = false;
+      }
+      result.push(line);
+    }
+  }
+  return result.join('\n');
+}
+
+// Test markdown table for debugging (uncomment to use in your chat bubble)
+// const testTable = `
+// | Name | Age | City |
+// |------|-----|------|
+// | Alice | 30 | London |
+// | Bob | 25 | Manchester |
+// `;
+
+export function isValidMarkdown(text: string): boolean {
+  // Even number of triple-backticks?
+  const codeFenceCount = (text.match(/```/g) || []).length;
+  if (codeFenceCount % 2 !== 0) return false;
+  // Even number of inline backticks?
+  const inlineCodeCount = (text.match(/`/g) || []).length;
+  if (inlineCodeCount % 2 !== 0) return false;
+  // Balanced brackets and parentheses?
+  const openBr = (text.match(/\[/g) || []).length;
+  const closeBr = (text.match(/\]/g) || []).length;
+  if (openBr !== closeBr) return false;
+  const openPar = (text.match(/\(/g) || []).length;
+  const closePar = (text.match(/\)/g) || []).length;
+  if (openPar !== closePar) return false;
+  // Optionally: check for table row completeness, etc.
+  return true;
+}
+
+export function processStreamingMarkdownChunk(
+  accumulated: string,
+  newChunk: string,
+  previousValid: string = ''
+): string {
+  const updated = accumulated + newChunk;
+  if (isValidMarkdown(updated)) {
+    return updated;
+  }
+  // If not valid, return the previous valid content
+  return previousValid;
+}
+

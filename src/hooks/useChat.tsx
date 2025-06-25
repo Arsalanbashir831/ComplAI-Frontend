@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -236,7 +236,7 @@ const useChat = () => {
           // Step 2: Read the streaming response in chunks.
           const reader = sendResponse.body.getReader();
           let aiResponse = '';
-          const decoder = new TextDecoder('utf-8'); // Single decoder instance.
+          const decoder = new TextDecoder(); // Single decoder instance.
           let buffer = ''; // Buffer for incomplete JSON chunks
 
           const readStream = async () => {
@@ -252,8 +252,8 @@ const useChat = () => {
                 try {
                   const data = JSON.parse(line.trim());
 
-                  // Append reasoning to the current response.
-                  if (data?.reasoning && data?.reasoning.trim() !== '') {
+                  // Append reasoning to the current response, preserving spaces and empty chunks
+                  if (data?.reasoning !== undefined) {
                     aiResponse += data.reasoning;
                     if (onChunkUpdate) {
                       onChunkUpdate(aiResponse);
@@ -357,3 +357,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

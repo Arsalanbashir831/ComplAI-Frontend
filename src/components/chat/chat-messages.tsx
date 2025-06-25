@@ -1,10 +1,10 @@
 // src/components/chat/chat-messages.tsx
 
-import { useEffect, useRef, useState } from 'react';
 import { useChatContext } from '@/contexts/chat-context';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { ArrowDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
@@ -73,7 +73,7 @@ export function ChatMessages({
       className="relative h-full overflow-y-auto"
       onScroll={handleScroll}
     >
-      <div className="mx-auto md:max-w-[80%] md:p-4 min-h-full flex flex-col justify-end">
+      <div className="mx-auto md:max-w-[80%] md:p-4 min-h-full flex flex-col justify-start">
         {/* Optional: Show a loading skeleton/spinner during initial fetch */}
         {isLoading && messages.length === 0 && (
           <div className="text-center text-gray-500">Loading messages...</div>

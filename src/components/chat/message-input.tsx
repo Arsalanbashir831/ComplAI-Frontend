@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,17 +7,22 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, isValidMarkdown, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
+
+// Add markdown validation helper at the top (after imports)
 
 export function MessageInput({
   chatId: propChatId = undefined,
@@ -36,7 +38,7 @@ export function MessageInput({
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { promptText, setPromptText } = usePrompt();
   const { user } = useUserContext();
-  // const { refetch } = useChatMessages(currentChatId || '');
+  //  const { refetch } = useChatMessages(currentChatId || '');
   const { setTrigger } = useSendMessageTrigger();
   // Import chat messages context.
   const { setMessages, setFocusMessageId } = useChatContext();
@@ -45,7 +47,7 @@ export function MessageInput({
   const isSending = useIsMutating() > 0;
   // AbortController ref to cancel the ongoing request.
   const abortControllerRef = useRef<AbortController | null>(null);
-  // Remove local message state since we’re using promptText from context.
+  // Remove local message state since we're using promptText from context.
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isUplaodModalOpen, setIsUplaodModalOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -146,14 +148,11 @@ export function MessageInput({
 
   const handleSendMessage = async () => {
     if (isSending) return;
-    // if (!promptText.trim() || uploadedFiles.length === 0) return;
-
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
       return;
     }
     setTrigger(true);
-    // Create a new AbortController and get its signal.
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
@@ -164,7 +163,6 @@ export function MessageInput({
       );
 
       if (!localChatId) {
-        // Create a new chat and update currentChatId state.
         const response = await createChat(shortenText(promptText.trim(), 5));
         localChatId = response.id;
         setCurrentChatId(localChatId);
@@ -186,7 +184,6 @@ export function MessageInput({
         is_system_message: false,
         files: documentsToSend.length > 0 ? documentsToSend : null,
       };
-      // After setting the message, set the ID to focus on.
       setFocusMessageId(userMessage.id);
 
       // Create a placeholder AI message.
@@ -198,62 +195,60 @@ export function MessageInput({
           id: aiMessageId,
           chat: Number(localChatId),
           user: 'AI',
-          content: 'loading',
+          content: '',
           created_at: new Date().toISOString(),
           tokens_used: 0,
           is_system_message: true,
           files: null,
         },
       ]);
-
       setFocusMessageId(userMessage.id);
 
       if (!mentionType) {
-        // Await sendMessage so that we wait until all chunks are received.
-        const completedResponse = await sendMessage({
+        // Streaming mode
+        await sendMessage({
           chatId: localChatId,
           content: promptText.trim(),
           documents: documentsToSend,
           signal,
+          onChunkUpdate: (chunk) => {
+            // Only update if markdown is valid
+            if (isValidMarkdown(chunk)) {
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === aiMessageId
+                    ? { ...msg, content:  chunk }
+                    : msg
+                )
+              );
+            }
+          },
+        }).then((completedResponse) => {
+          // Final update with the completed content (guaranteed valid)
+          // let processedContent = completedResponse.content.replace(/\\n/g, '\n');
+          // processedContent = processedContent.replace(
+          //   /\*\*([A-Z\s]+):\*\*([A-Z])/g,
+          //   '**$1:**\n\n$2'
+          // );
+          // processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
+         
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? { ...completedResponse, content: completedResponse.content, id: aiMessageId }
+                : msg
+            )
+          );
+      
         });
-
-        // --- FINAL, SMARTER TEXT-CLEANING LOGIC ---
-        const rawContent = completedResponse.content;
-
-        // 1. First, fix any standard escaped newlines (good practice).
-        let processedContent = rawContent.replace(/\\n/g, '\n');
-
-        // This regex looks for a bolded phrase ending in a colon (like **WORD:**)
-        // that is immediately followed by a letter, and inserts two newlines.
-        // e.g., "**WORD:**Something" becomes "**WORD:**\n\nSomething"
-        processedContent = processedContent.replace(
-          /\*\*([A-Z\s]+):\*\*([A-Z])/g,
-          '**$1:**\n\n$2'
-        );
-
-        // 3. This handles cases like "-ListItem" becoming "- ListItem"
-        processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
-
-        // Now, use this heavily processed content to start the animation
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? {
-                  ...completedResponse,
-                  content: processedContent, // Use the final cleaned content
-                  id: aiMessageId,
-                  isAnimating: true,
-                }
-              : msg
-          )
-        );
       } else {
+        // Non-streaming mode
         const response = await addMessageNoStream({
           chatId: localChatId,
           content: promptText.trim(),
           documents: documentsToSend,
           return_type: mentionType,
-          signal, // Pass the abort signal.
+          signal,
         });
         const rawContent = response.content;
         let processedContent = rawContent.replace(/\\n/g, '\n');
@@ -265,23 +260,12 @@ export function MessageInput({
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === aiMessageId
-              ? {
-                  ...response,
-                  content: processedContent, // Use the final cleaned content
-                  id: aiMessageId,
-                  isAnimating: true,
-                }
+              ? { ...response, content: processedContent, id: aiMessageId }
               : msg
           )
         );
       }
 
-      // const refetchResult = await refetch();
-      // if (refetchResult.data) {
-      //   setMessages(refetchResult.data);
-      // }
-
-      // Clear the prompt text (i.e. message) and reset file uploads/mention.
       setTrigger(false);
       setPromptText('');
       setUploadedFiles([]);
@@ -289,7 +273,6 @@ export function MessageInput({
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
-      // Reset the AbortController.
       abortControllerRef.current = null;
     }
   };
