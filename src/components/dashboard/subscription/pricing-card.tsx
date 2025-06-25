@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 
+import type { Plan } from '@/types/subscription';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import type { Plan } from '@/types/subscription';
 
 interface PricingCardProps {
   plan: Plan;
@@ -79,11 +79,13 @@ export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
         <div className="mt-8">
           <Button
             onClick={plan.buttonAction}
-            variant={isFree || plan.type === 'subscription' ? 'outline' : 'default'}
+            variant={
+              isFree || plan.type === 'subscription' ? 'outline' : 'default'
+            }
             disabled={isActive}
             className={cn(
               'w-full py-4 rounded-lg font-medium transition',
-              (isFree || plan.type === 'subscription')
+              isFree || plan.type === 'subscription'
                 ? 'border-blue-600 text-blue-600 hover:bg-blue-50'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             )}
