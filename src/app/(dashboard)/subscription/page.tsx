@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import apiCaller from '@/config/apiCaller';
+import { formatDateLocal } from '@/lib/utils';
+import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -154,7 +154,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
 //   return response.data;
 // };
 
-const fetchUserSubscriptions = async (): Promise<Subscription[]> => {
+async function fetchUserSubscriptions(): Promise<Subscription[]> {
   const response = await apiCaller(
     API_ROUTES.BILLING.USER_SUBSCRIPTIONS,
     'GET',
@@ -164,7 +164,7 @@ const fetchUserSubscriptions = async (): Promise<Subscription[]> => {
     'json'
   );
   return response.data;
-};
+}
 
 export default function SubscriptionPage() {
   const { user, refresh } = useUserContext();

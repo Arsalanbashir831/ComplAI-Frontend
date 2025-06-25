@@ -1,28 +1,23 @@
 'use client';
 
-import * as React from 'react';
 import Image from 'next/image';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils'; // Assuming this utility helps with conditional class names
 
 interface Slide {
   question: string;
-  promo: string;
-  // Remove className and promoClassName for simpler, responsive layout
 }
 
 const slides: Slide[] = [
   {
     question: '/auth-slider/new/auth-slider-1.svg',
-    promo: '/auth-slider/new/auth-slider-promo-1.svg',
   },
   {
     question: '/auth-slider/new/auth-slider-2.svg',
-    promo: '/auth-slider/new/auth-slider-promo-2.png',
   },
   {
     question: '/auth-slider/new/auth-slider-3.svg',
-    promo: '/auth-slider/new/auth-slider-promo-3.svg',
   },
 ];
 
@@ -30,7 +25,6 @@ export function AuthSlider() {
   const [currentSlideNo, setCurrentSlideNo] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [entering, setEntering] = React.useState(true);
-  const [showPromo, setShowPromo] = React.useState(false);
 
   const currentSlide = slides[currentSlideNo];
 
@@ -38,73 +32,46 @@ export function AuthSlider() {
   React.useEffect(() => {
     const slideInterval = setInterval(() => {
       if (!isAnimating) {
-        setEntering(false); // Start exit animation
+        setEntering(false);
         setIsAnimating(true);
-        setShowPromo(false); // Hide promo immediately on exit
 
         setTimeout(() => {
-          // After exit animation finishes, change slide and start enter animation
           setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
-          setEntering(true); // Start enter animation
+          setEntering(true);
         }, 700);
       }
-    }, 3500); // Changed back to 8 seconds for a more dynamic demo.
-    // If you intend for it to be 80 seconds, change it back to 80000.
+    }, 3500);
 
     return () => clearInterval(slideInterval);
   }, [isAnimating]);
 
-  // Handle enter animation completion and promo display
+  // Handle enter animation completion
   React.useEffect(() => {
     if (entering) {
-      // Delay promo appearance after question has started animating in
-      const promoDelay = setTimeout(() => {
-        setShowPromo(true);
-      }, 500); // Stagger the promo animation by 0.5s after question starts
-
-      // After all entering animations complete, reset animating state
       const animationCompleteTimeout = setTimeout(() => {
         setIsAnimating(false);
-      }, 700); // Matches the enter animation duration
+      }, 700);
 
       return () => {
-        clearTimeout(promoDelay);
         clearTimeout(animationCompleteTimeout);
       };
     }
   }, [entering, currentSlideNo]);
 
-  const getQuestionAnimationClass = () => {
-    if (entering) {
-      return 'animate-question-enter';
-    } else {
-      return 'animate-question-exit';
-    }
-  };
-
-  const getPromoAnimationClass = () => {
-    if (entering && showPromo) {
-      return 'animate-promo-enter';
-    } else if (!entering) {
-      return 'animate-promo-exit';
-    }
-    return 'opacity-0'; // Initially hidden or when not showing
-  };
-
   return (
     <div className="relative w-full max-w-3xl mx-auto px-4 sm:px-8 md:px-16 py-6 md:py-8 h-full flex flex-col justify-center bg-white rounded-2xl overflow-hidden shadow-lg min-h-[400px] md:min-h-[500px] lg:min-h-[600px]">
-      {/* Slide Content */}
+      {/* Main Slide Container */}
       <div
         key={currentSlideNo}
         className={cn(
-          'flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 w-full h-full transition-all duration-700 ease-in-out',
-          getQuestionAnimationClass(),
+          'relative w-full h-full flex flex-col items-center justify-center transition-all duration-700 ease-in-out',
+          entering ? 'animate-question-enter' : 'animate-question-exit',
           !entering && 'pointer-events-none'
         )}
         style={{ transitionDelay: entering ? '0s' : '0s' }}
       >
-        {/* Question Image */}
-        <div className="relative w-full md:w-1/2 aspect-[4/3] flex items-center justify-center">
+        {/* Question Image - Main Content */}
+        <div className="relative w-full max-w-lg aspect-[4/3] flex items-center justify-center mt-2">
           <Image
             src={currentSlide.question || '/placeholder.svg'}
             alt="Question"
@@ -112,23 +79,6 @@ export function AuthSlider() {
             className="object-contain"
             priority
           />
-        </div>
-        {/* Promo Image */}
-        <div
-          className={cn(
-            'relative w-full md:w-1/2 flex items-center justify-center mt-4 md:mt-0',
-            getPromoAnimationClass()
-          )}
-        >
-          <div className="w-3/4 sm:w-2/3 md:w-full max-w-xs md:max-w-sm aspect-[4/3]">
-            <Image
-              src={currentSlide.promo}
-              alt="Promo"
-              fill
-              className="object-contain"
-              priority
-            />
-          </div>
         </div>
       </div>
 
@@ -148,7 +98,6 @@ export function AuthSlider() {
               if (!isAnimating && index !== currentSlideNo) {
                 setEntering(false);
                 setIsAnimating(true);
-                setShowPromo(false);
 
                 setTimeout(() => {
                   setCurrentSlideNo(index);
@@ -163,3 +112,13 @@ export function AuthSlider() {
     </div>
   );
 }
+
+// Animations (add to global CSS or module)
+// .animate-bubble-in { animation: bubbleIn 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+// .animate-arrow-bounce { animation: arrowBounce 1.2s infinite alternate cubic-bezier(0.22, 1, 0.36, 1); }
+// @keyframes bubbleIn { 0% { opacity: 0; transform: scale(0.8) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+// @keyframes arrowBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+// .animate-step-btt-in { animation: stepBttIn 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+// .animate-step-btt-out { animation: stepBttOut 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+// @keyframes stepBttIn { 0% { opacity: 0; transform: translateY(40px);} 100% { opacity: 1; transform: translateY(0);} }
+// @keyframes stepBttOut { 0% { opacity: 1; transform: translateY(0);} 100% { opacity: 0; transform: translateY(40px);} }
