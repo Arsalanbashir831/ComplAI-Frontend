@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -7,15 +10,12 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { Button } from '@/components/ui/button';
-import { useChat } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
 import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -248,7 +248,6 @@ export function MessageInput({
           )
         );
       } else {
-    
         const response = await addMessageNoStream({
           chatId: localChatId,
           content: promptText.trim(),
@@ -277,7 +276,6 @@ export function MessageInput({
         );
       }
 
-    
       // const refetchResult = await refetch();
       // if (refetchResult.data) {
       //   setMessages(refetchResult.data);
@@ -356,7 +354,7 @@ export function MessageInput({
   // // When the user types, check for a mention trigger.
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = event.target.value;
-   // const mentionMatch = input.match(/@(\w*)$/);
+    // const mentionMatch = input.match(/@(\w*)$/);
     // if (mentionMatch) {
     //   setShowMentionMenu(true);
     //   const query = mentionMatch[1].toLowerCase();

@@ -1,10 +1,10 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import apiCaller from '@/config/apiCaller';
@@ -62,7 +62,7 @@ export function OAuthButtons() {
   };
 
   return (
-    <div className='flex justify-center items-center'>
+    <div className="flex justify-center items-center">
       <GoogleLogin
         onSuccess={handleGoogleSignIn}
         onError={() => toast.error('An error occurred during Google sign-in')}

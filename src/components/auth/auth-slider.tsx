@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import * as React from 'react';
+import Image from 'next/image';
 
 import { cn } from '@/lib/utils'; // Assuming this utility helps with conditional class names
 
@@ -139,7 +139,9 @@ export function AuthSlider() {
             key={index}
             className={cn(
               'h-3 w-3 md:h-4 md:w-4 rounded-full border-2 border-blue-200 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400',
-              currentSlideNo === index ? 'bg-blue-dark scale-110' : 'bg-gray-300',
+              currentSlideNo === index
+                ? 'bg-blue-dark scale-110'
+                : 'bg-gray-300',
               isAnimating && 'pointer-events-none'
             )}
             onClick={() => {
