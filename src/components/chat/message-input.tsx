@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,12 +7,15 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -51,14 +51,14 @@ export function MessageInput({
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [showMentionMenu, setShowMentionMenu] = useState(false);
   const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
-  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
+  // const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const maxChars = 10000;
 
   // Define available mention options.
-  const mentionOptions = [
-    { value: 'pdf', label: 'PDF DOCUMENT', icon: '/icons/pdf-document.svg' },
-    { value: 'docx', label: 'DOCX DOCUMENT', icon: '/icons/word-document.svg' },
-  ];
+  // const mentionOptions = [
+  //   { value: 'pdf', label: 'PDF DOCUMENT', icon: '/icons/pdf-document.svg' },
+  //   { value: 'docx', label: 'DOCX DOCUMENT', icon: '/icons/word-document.svg' },
+  // ];
 
   // Ref for the mention menu container.
   const mentionMenuRef = useRef<HTMLDivElement>(null);
@@ -146,7 +146,7 @@ export function MessageInput({
 
   const handleSendMessage = async () => {
     if (isSending) return;
-    if (!promptText.trim() || uploadedFiles.length === 0) return;
+    // if (!promptText.trim() || uploadedFiles.length === 0) return;
 
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
@@ -248,7 +248,7 @@ export function MessageInput({
           )
         );
       } else {
-        // For non-streaming responses.
+    
         const response = await addMessageNoStream({
           chatId: localChatId,
           content: promptText.trim(),
@@ -256,12 +256,28 @@ export function MessageInput({
           return_type: mentionType,
           signal, // Pass the abort signal.
         });
+        const rawContent = response.content;
+        let processedContent = rawContent.replace(/\\n/g, '\n');
+        processedContent = processedContent.replace(
+          /\*\*([A-Z\s]+):\*\*([A-Z])/g,
+          '**$1:**\n\n$2'
+        );
+        processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
         setMessages((prev) =>
-          prev.map((msg) => (msg.id === aiMessageId ? response : msg))
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...response,
+                  content: processedContent, // Use the final cleaned content
+                  id: aiMessageId,
+                  isAnimating: true,
+                }
+              : msg
+          )
         );
       }
 
-      // Once chunking/response is complete, refetch messages using the currentChatId.
+    
       // const refetchResult = await refetch();
       // if (refetchResult.data) {
       //   setMessages(refetchResult.data);
@@ -289,26 +305,26 @@ export function MessageInput({
     // If the user presses Escape and the mention menu is open, close it.
     if (event.key === 'Escape' && showMentionMenu) {
       event.preventDefault();
-      setShowMentionMenu(false);
+      // setShowMentionMenu(false);
       return;
     }
 
     // If the mention menu is open, handle up/down navigation.
-    if (showMentionMenu) {
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
-        return;
-      }
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        setSelectedMentionIndex(
-          (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
-        );
-        return;
-      }
-      // You can remove or disable any Ctrl+Enter logic here if you don't want it to conflict.
-    }
+    // if (showMentionMenu) {
+    //   if (event.key === 'ArrowDown') {
+    //     event.preventDefault();
+    //     setSelectedMentionIndex((prev) => (prev + 1) % mentionOptions.length);
+    //     return;
+    //   }
+    //   if (event.key === 'ArrowUp') {
+    //     event.preventDefault();
+    //     setSelectedMentionIndex(
+    //       (prev) => (prev - 1 + mentionOptions.length) % mentionOptions.length
+    //     );
+    //     return;
+    //   }
+    //   // You can remove or disable any Ctrl+Enter logic here if you don't want it to conflict.
+    // }
 
     // If Ctrl+Enter is pressed, insert a newline at the cursor position.
     if (event.ctrlKey && event.key === 'Enter') {
@@ -340,17 +356,17 @@ export function MessageInput({
   // // When the user types, check for a mention trigger.
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = event.target.value;
-    const mentionMatch = input.match(/@(\w*)$/);
-    if (mentionMatch) {
-      setShowMentionMenu(true);
-      const query = mentionMatch[1].toLowerCase();
-      const foundIndex = mentionOptions.findIndex((option) =>
-        option.value.startsWith(query)
-      );
-      setSelectedMentionIndex(foundIndex !== -1 ? foundIndex : 0);
-    } else {
-      setShowMentionMenu(false);
-    }
+   // const mentionMatch = input.match(/@(\w*)$/);
+    // if (mentionMatch) {
+    //   setShowMentionMenu(true);
+    //   const query = mentionMatch[1].toLowerCase();
+    //   const foundIndex = mentionOptions.findIndex((option) =>
+    //     option.value.startsWith(query)
+    //   );
+    //   setSelectedMentionIndex(foundIndex !== -1 ? foundIndex : 0);
+    // } else {
+    //   setShowMentionMenu(false);
+    // }
     if (input.length <= maxChars) {
       setPromptText(input);
     }
@@ -403,16 +419,16 @@ export function MessageInput({
   //   }
   // };
 
-  const handleSelectMention = (type: 'pdf' | 'docx') => {
-    setMentionType(type);
-    setPromptText((prev) => prev.replace(/@(\w+)$/i, '').trim());
-    setShowMentionMenu(false);
-  };
+  // const handleSelectMention = (type: 'pdf' | 'docx') => {
+  //   setMentionType(type);
+  //   setPromptText((prev) => prev.replace(/@(\w+)$/i, '').trim());
+  //   setShowMentionMenu(false);
+  // };
 
   return (
     <div>
       <div className="relative py-4">
-        {showMentionMenu && (
+        {/* {showMentionMenu && (
           <div
             ref={mentionMenuRef}
             className="absolute -top-20 left-0 z-10 w-[200px] rounded-md border border-gray-300 bg-white shadow-md"
@@ -440,7 +456,7 @@ export function MessageInput({
               </div>
             ))}
           </div>
-        )}
+        )} */}
 
         <div className="bg-gray-light rounded-xl p-4">
           <div className="flex items-start space-x-2">

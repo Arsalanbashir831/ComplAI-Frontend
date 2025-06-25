@@ -1,44 +1,36 @@
 'use client';
 
-import * as React from 'react';
 import Image from 'next/image';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils'; // Assuming this utility helps with conditional class names
 
 interface Slide {
   question: string;
   promo: string;
-  className?: string;
-  // Add promoClassName to the interface
-  promoClassName?: string;
+  // Remove className and promoClassName for simpler, responsive layout
 }
 
 const slides: Slide[] = [
   {
     question: '/auth-slider/new/auth-slider-1.svg',
     promo: '/auth-slider/new/auth-slider-promo-1.svg',
-    className: 'h-[100%]',
-    promoClassName: 'top-[300px] left-[100px] translate-x-1/2 z-10', // Example: Centered horizontally, fixed top
   },
   {
     question: '/auth-slider/new/auth-slider-2.svg',
     promo: '/auth-slider/new/auth-slider-promo-2.png',
-    className: 'h-[100%]',
-    promoClassName: 'top-[470px] left-0 -translate-y-1/2 z-10', // Example: Centered vertically on the left
   },
   {
     question: '/auth-slider/new/auth-slider-3.svg',
     promo: '/auth-slider/new/auth-slider-promo-3.svg',
-    className: 'h-[100%]',
-    promoClassName: 'top-[90px] z-10 left-[150px] ', // Example: Bottom right corner
   },
 ];
 
 export function AuthSlider() {
   const [currentSlideNo, setCurrentSlideNo] = React.useState(0);
-  const [isAnimating, setIsAnimating] = React.useState(false); // To prevent rapid transitions
-  const [entering, setEntering] = React.useState(true); // Tracks if elements are entering or exiting
-  const [showPromo, setShowPromo] = React.useState(false); // Manages promo visibility
+  const [isAnimating, setIsAnimating] = React.useState(false);
+  const [entering, setEntering] = React.useState(true);
+  const [showPromo, setShowPromo] = React.useState(false);
 
   const currentSlide = slides[currentSlideNo];
 
@@ -54,7 +46,7 @@ export function AuthSlider() {
           // After exit animation finishes, change slide and start enter animation
           setCurrentSlideNo((prevSlide) => (prevSlide + 1) % slides.length);
           setEntering(true); // Start enter animation
-        }, 700); // Duration of the exit animation
+        }, 700);
       }
     }, 3500); // Changed back to 8 seconds for a more dynamic demo.
     // If you intend for it to be 80 seconds, change it back to 80000.
@@ -100,45 +92,54 @@ export function AuthSlider() {
   };
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-16 py-8 h-full flex flex-col justify-center bg-white rounded-2xl overflow-hidden">
-      {/* Question Card */}
+    <div className="relative w-full max-w-3xl mx-auto px-4 sm:px-8 md:px-16 py-6 md:py-8 h-full flex flex-col justify-center bg-white rounded-2xl overflow-hidden shadow-lg min-h-[400px] md:min-h-[500px] lg:min-h-[600px]">
+      {/* Slide Content */}
       <div
         key={currentSlideNo}
         className={cn(
-          'relative w-full transition-all duration-700 ease-in-out',
-          currentSlide.className,
+          'flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 w-full h-full transition-all duration-700 ease-in-out',
           getQuestionAnimationClass(),
           !entering && 'pointer-events-none'
         )}
         style={{ transitionDelay: entering ? '0s' : '0s' }}
       >
+        {/* Question Image */}
+        <div className="relative w-full md:w-1/2 aspect-[4/3] flex items-center justify-center">
+          <Image
+            src={currentSlide.question || '/placeholder.svg'}
+            alt="Question"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+        {/* Promo Image */}
         <div
           className={cn(
-            'absolute w-full h-14 bg-contain bg-center bg-no-repeat hidden lg:block',
-            // Apply the currentSlide.promoClassName here!
-            currentSlide.promoClassName,
+            'relative w-full md:w-1/2 flex items-center justify-center mt-4 md:mt-0',
             getPromoAnimationClass()
           )}
-          style={{ backgroundImage: `url(${currentSlide.promo})` }}
-        />
-
-        <Image
-          src={currentSlide.question || '/placeholder.svg'}
-          alt="Question"
-          fill
-          className="object-contain"
-          priority
-        />
+        >
+          <div className="w-3/4 sm:w-2/3 md:w-full max-w-xs md:max-w-sm aspect-[4/3]">
+            <Image
+              src={currentSlide.promo}
+              alt="Promo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
       </div>
 
       {/* Navigation Dots */}
-      <div className="absolute bottom-20 right-0 left-0 flex justify-center gap-2 mt-8 z-10">
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
         {slides.map((_, index) => (
           <button
             key={index}
             className={cn(
-              'h-4 w-4 rounded-full transition-colors duration-300',
-              currentSlideNo === index ? 'bg-blue-dark' : 'bg-gray-300',
+              'h-3 w-3 md:h-4 md:w-4 rounded-full border-2 border-blue-200 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400',
+              currentSlideNo === index ? 'bg-blue-dark scale-110' : 'bg-gray-300',
               isAnimating && 'pointer-events-none'
             )}
             onClick={() => {
