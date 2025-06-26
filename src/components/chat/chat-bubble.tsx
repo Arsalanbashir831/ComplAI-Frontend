@@ -1,13 +1,13 @@
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { useChat } from '@/hooks/useChat';
+import { cn, preprocessMarkdown } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn, preprocessMarkdown } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -326,7 +326,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           isBot
             ? 'bg-white'
             : 'bg-blue-light text-white border-gray-light border-2 ',
-          isLoading && 'min-h-[55vh] justify-start'
+          isLoading && 'min-h-[50vh] justify-start'
         )}
       >
         <div className="flex items-start gap-3">
