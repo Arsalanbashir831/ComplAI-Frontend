@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 

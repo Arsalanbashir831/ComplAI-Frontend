@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 
-import type { Plan } from '@/types/subscription';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type { Plan } from '@/types/subscription';
 
 interface PricingCardProps {
   plan: Plan;
@@ -12,18 +12,16 @@ interface PricingCardProps {
 }
 
 export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
-  const isFree = plan.type === 'free';
-
   console.log(plan.type + '' + isDisabled);
   return (
     <Card
       className={cn(
         'w-full h-full flex flex-col relative border rounded-2xl shadow-md transition-transform transform hover:scale-[1.02]',
-        isActive ? 'border-blue-600' : 'border-gray-200',
+        (plan.type === 'subscription' || plan.type === 'enterprise') && isActive ? 'border-blue-600' : 'border-gray-200',
         'bg-white'
       )}
     >
-      {isActive && (
+      {(plan.type === 'subscription' || plan.type === 'enterprise') && isActive && (
         <div className="absolute -top-4 -right-4 bg-gradient-to-r from-blue-500 to-blue-700 p-3 rounded-full shadow-xl">
           <Check className="text-white w-5 h-5" />
         </div>
@@ -80,17 +78,19 @@ export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
           <Button
             onClick={plan.buttonAction}
             variant={
-              isFree || plan.type === 'subscription' ? 'outline' : 'default'
+              plan.type === 'free' || plan.type === 'subscription' ? 'outline' : 'default'
             }
-            disabled={isActive}
+            disabled={
+              (plan.type === 'subscription' && isActive) || (plan.type === 'enterprise' && isActive)
+            }
             className={cn(
               'w-full py-4 rounded-lg font-medium transition',
-              isFree || plan.type === 'subscription'
+              plan.type === 'free' || plan.type === 'subscription'
                 ? 'border-blue-600 text-blue-600 hover:bg-blue-50'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             )}
           >
-            {plan.special || isDisabled ? 'Subscribed' : plan.buttonText}
+            {(plan.type === 'subscription' || plan.type === 'enterprise') && isActive ? 'Subscribed' : plan.buttonText}
           </Button>
         </div>
       </CardContent>
