@@ -9,7 +9,7 @@ import { usePrompt } from '@/contexts/prompt-context';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
-import { Plus, PlusCircle, Send } from 'lucide-react';
+import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
 import TextareaAutosize from 'react-textarea-autosize';
 
 import { UploadedFile } from '@/types/upload';
@@ -27,9 +27,13 @@ import { UploadModal } from './upload-modal';
 export function MessageInput({
   chatId: propChatId = undefined,
   isNewChat = false,
+  showScrollButton,
+  onScrollToBottom,
 }: {
   chatId?: string;
   isNewChat?: boolean;
+  showScrollButton: boolean;
+  onScrollToBottom: () => void;
 }) {
   const router = useRouter();
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(
@@ -477,7 +481,19 @@ export function MessageInput({
   // };
 
   return (
-    <div>
+    <div className="relative">
+      {showScrollButton && (
+        <Button
+          onClick={onScrollToBottom}
+          className="absolute -top-5 left-1/2 transform -translate-x-1/2 
+                     bg-primary text-white p-2 rounded-full shadow-lg z-10 animate-bounce ani"
+          size="icon"
+          aria-label="Scroll to bottom"
+        >
+          <ArrowDown size={20} />
+        </Button>
+      )}
+
       <div className="relative py-4">
         {/* {showMentionMenu && (
           <div
@@ -604,7 +620,7 @@ export function MessageInput({
           </div>
         </div>
 
-        <p className="mt-2 text-center text-gray-500 italic">
+        <p className="mt-2 text-sm md:text-base text-center text-gray-500 italic">
           Companion is intended for informational purposes only. It may contain
           errors and does not constitute legal advice
         </p>
