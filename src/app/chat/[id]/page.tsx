@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useChatContext } from '@/contexts/chat-context';
 
@@ -13,8 +13,11 @@ import { MessageInput } from '@/components/chat/message-input';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
-
   const chatId = id as string;
+
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
   const { messages, setMessages } = useChatContext();
   const { data: chatMessages, isLoading } = useChatMessages(chatId);
 
@@ -26,6 +29,13 @@ export default function SpecificChatPage() {
     // We only want this to run when the initial chatMessages are loaded.
     // Removing `messages` from the dependency array prevents it from re-running unnecessarily.
   }, [chatMessages, messages.length, setMessages]);
+
+  const scrollToBottom = () => {
+    messagesContainerRef.current?.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
+  };
 
   return (
     // Use a flex column layout that takes up the full screen height
@@ -44,13 +54,19 @@ export default function SpecificChatPage() {
             messages={messages}
             isLoading={isLoading}
             chatId={chatId}
+            containerRef={messagesContainerRef}
+            onScrollButtonVisible={setShowScrollButton}
           />
         </div>
 
         {/* The MessageInput component is pinned to the bottom */}
         <div className="px-6 pb-4">
           <div className="mx-auto md:max-w-[80%] w-full">
-            <MessageInput chatId={chatId} />
+            <MessageInput
+              chatId={chatId}
+              showScrollButton={showScrollButton}
+              onScrollToBottom={scrollToBottom}
+            />
           </div>
         </div>
       </main>
