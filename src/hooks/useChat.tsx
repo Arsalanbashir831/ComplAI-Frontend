@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import type { Chat, ChatMessage } from '@/types/chat';
+import apiCaller from '@/config/apiCaller';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -238,7 +238,8 @@ const useChat = () => {
           let aiResponse = '';
           const decoder = new TextDecoder(); // Single decoder instance.
           let buffer = ''; // Buffer for incomplete JSON chunks
-          const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+          const sleep = (ms: number) =>
+            new Promise((resolve) => setTimeout(resolve, ms));
           const readStream = async () => {
             while (true) {
               const { done, value } = await reader.read();
@@ -280,7 +281,6 @@ const useChat = () => {
                 }
               }
             }
-          
           };
 
           await readStream();
@@ -350,4 +350,3 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
-
