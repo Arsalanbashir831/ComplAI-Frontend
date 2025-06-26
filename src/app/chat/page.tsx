@@ -1,11 +1,12 @@
-'use client'
+'use client';
+
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
 
+import { PromptCard as PromptCardType } from '@/types/chat';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageInput } from '@/components/chat/message-input';
 import { PromptCard } from '@/components/chat/prompt-card';
 import DisplayUsername from '@/components/common/display-username';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { PromptCard as PromptCardType } from '@/types/chat';
 
 const promptCards: PromptCardType[] = [
   {
@@ -55,7 +56,7 @@ export default function ChatPage() {
       </ScrollArea>
 
       <div className="absolute bottom-0 left-0 right-0 px-4 md:px-0 md:static">
-        <MessageInput 
+        <MessageInput
           isNewChat={true}
           showScrollButton={false}
           onScrollToBottom={() => {}}
