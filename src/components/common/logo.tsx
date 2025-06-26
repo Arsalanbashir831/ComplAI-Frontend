@@ -1,6 +1,6 @@
-import { ROUTES } from '@/constants/routes';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 
 import { siteConfig } from '@/config/site';
 
@@ -9,7 +9,10 @@ interface LogoProps {
   outsideDomain?: boolean;
 }
 
-export function Logo({ href = ROUTES.LANDINGPAGE, outsideDomain = false }: LogoProps) {
+export function Logo({
+  href = ROUTES.LANDINGPAGE,
+  outsideDomain = false,
+}: LogoProps) {
   const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL;
   if (outsideDomain && landingUrl) {
     return (

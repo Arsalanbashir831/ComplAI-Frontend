@@ -1,5 +1,10 @@
 'use client';
 
+import type React from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -10,11 +15,6 @@ import {
   LayoutDashboard,
   User2,
 } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import type React from 'react';
-import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -101,7 +101,10 @@ export function DashboardSidebar() {
         <MenuToggleButton isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
         <div className="p-6 pb-4">
-          <Logo outsideDomain={true} href={process.env.NEXT_PUBLIC_LANDING_URL} />
+          <Logo
+            outsideDomain={true}
+            href={process.env.NEXT_PUBLIC_LANDING_URL}
+          />
         </div>
 
         <div className="px-2 pb-4 flex flex-col justify-between flex-1 overflow-y-auto">
