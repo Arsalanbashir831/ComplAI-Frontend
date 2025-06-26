@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,12 +7,15 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, isValidMarkdown, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, isValidMarkdown, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -41,7 +41,7 @@ export function MessageInput({
   //  const { refetch } = useChatMessages(currentChatId || '');
   const { setTrigger } = useSendMessageTrigger();
   // Import chat messages context.
-  const { setMessages, setFocusMessageId } = useChatContext();
+  const { setMessages } = useChatContext();
 
   // Global mutating state as our "isSending" indicator.
   const isSending = useIsMutating() > 0;
@@ -152,7 +152,6 @@ export function MessageInput({
       setIsUpgradeModalOpen(true);
       return;
     }
-    setTrigger(true);
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
@@ -184,7 +183,6 @@ export function MessageInput({
         is_system_message: false,
         files: documentsToSend.length > 0 ? documentsToSend : null,
       };
-      setFocusMessageId(userMessage.id);
 
       // Create a placeholder AI message.
       const aiMessageId = crypto.randomUUID();
@@ -202,7 +200,11 @@ export function MessageInput({
           files: null,
         },
       ]);
-      setFocusMessageId(userMessage.id);
+
+      // Trigger scroll to bottom after messages are added
+      setTimeout(() => {
+        setTrigger(true);
+      }, 50);
 
       if (!mentionType) {
         // Streaming mode

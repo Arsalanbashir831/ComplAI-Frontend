@@ -1,10 +1,9 @@
 // src/components/chat/chat-messages.tsx
 
-import { useEffect, useRef, useState } from 'react';
-import { useChatContext } from '@/contexts/chat-context';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { ArrowDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
@@ -19,7 +18,6 @@ export function ChatMessages({
   messages: ChatMessage[];
   isLoading: boolean;
 }) {
-  const { focusMessageId, setFocusMessageId } = useChatContext();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const { user } = useUserContext();
@@ -27,32 +25,12 @@ export function ChatMessages({
   const { trigger } = useSendMessageTrigger();
 
   useEffect(() => {
-    // Priority #1: A new message has been sent and needs to be scrolled to the top.
-    if (focusMessageId) {
-      setTimeout(() => {
-        const element = document.getElementById(`message-${focusMessageId}`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        setFocusMessageId(null); // Reset after scrolling
-      }, 0); // Defer to ensure DOM is updated
-    } else {
-      // Priority #2: Otherwise, handle auto-scrolling to the bottom for incoming AI messages.
-      const shouldScrollDown = !showScrollButton || trigger;
-      if (shouldScrollDown) {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }
+    // Only scroll when a new message is sent (trigger is true)
+    if (trigger) {
+      bottomRef.current?.scrollIntoView({ behavior: 'auto' });
     }
-    // This effect runs whenever messages or the trigger changes.
-  }, [messages, trigger, focusMessageId, setFocusMessageId, showScrollButton]);
-
-  // Auto-scroll logic.
-  useEffect(() => {
-    const shouldScroll = !showScrollButton || trigger;
-    if (shouldScroll) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, showScrollButton, trigger]);
+    // This effect runs whenever trigger changes.
+  }, [trigger]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

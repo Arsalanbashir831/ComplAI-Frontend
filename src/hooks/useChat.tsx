@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -238,7 +238,7 @@ const useChat = () => {
           let aiResponse = '';
           const decoder = new TextDecoder(); // Single decoder instance.
           let buffer = ''; // Buffer for incomplete JSON chunks
-
+          const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
           const readStream = async () => {
             while (true) {
               const { done, value } = await reader.read();
@@ -256,6 +256,7 @@ const useChat = () => {
                   if (data?.reasoning !== undefined) {
                     aiResponse += data.reasoning;
                     if (onChunkUpdate) {
+                      await sleep(0);
                       onChunkUpdate(aiResponse);
                     }
                   }
@@ -279,15 +280,7 @@ const useChat = () => {
                 }
               }
             }
-            // Optionally, try to process any remaining buffer.
-            // if (buffer.trim()) {
-            //   try {
-            //     const data = JSON.parse(buffer.trim());
-            //     // Process any final data if needed.
-            //   } catch (error) {
-            //     console.error('Error parsing final buffer:', error);
-            //   }
-            // }
+          
           };
 
           await readStream();
@@ -357,3 +350,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+
