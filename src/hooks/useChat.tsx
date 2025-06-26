@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -241,45 +241,80 @@ const useChat = () => {
           const sleep = (ms: number) =>
             new Promise((resolve) => setTimeout(resolve, ms));
           const readStream = async () => {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split('\n');
-              buffer = lines.pop() || '';
-
-              for (const line of lines) {
-                if (!line.trim()) continue;
+            try {
+              while (true) {
+                if (signal && signal.aborted) {
+                  reject(new DOMException('Aborted', 'AbortError'));
+                  break;
+                }
+                let result;
                 try {
-                  const data = JSON.parse(line.trim());
+                  result = await reader.read();
+                } catch (err) {
+                  if (signal && signal.aborted) {
+                    reject(new DOMException('Aborted', 'AbortError'));
+                    break;
+                  }
+                  throw err;
+                }
+                if (signal && signal.aborted) {
+                  reject(new DOMException('Aborted', 'AbortError'));
+                  break;
+                }
+                const { done, value } = result;
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
 
-                  // Append reasoning to the current response, preserving spaces and empty chunks
-                  if (data?.reasoning !== undefined) {
-                    aiResponse += data.reasoning;
-                    if (onChunkUpdate) {
-                      await sleep(0);
-                      onChunkUpdate(aiResponse);
+                for (const line of lines) {
+                  if (!line.trim()) continue;
+                  try {
+                    const data = JSON.parse(line.trim());
+
+                    // Append reasoning to the current response, preserving spaces and empty chunks
+                    if (data?.reasoning !== undefined) {
+                      aiResponse += data.reasoning;
+                      if (onChunkUpdate) {
+                        await sleep(0);
+                        onChunkUpdate(aiResponse);
+                      }
                     }
-                  }
 
-                  // If a summary is received, resolve the promise.
-                  if (data?.summary) {
-                    const finalMessage: ChatMessage = {
-                      id: data.summary.id,
-                      chat: data.summary.chat,
-                      user: data.summary.user,
-                      content: aiResponse.trim(),
-                      created_at: data.summary.created_at,
-                      tokens_used: data.summary.tokens_used,
-                      is_system_message: true,
-                      files: null,
-                    };
-                    resolve(finalMessage);
+                    // If an error chunk is received, update the message with the error
+                    if (data?.error) {
+                      if (onChunkUpdate) {
+                        onChunkUpdate(''); // Clear any partial content
+                      }
+                      // Instead of resolving, reject with a special error object
+                      reject({
+                        isStreamError: true,
+                        errorChunk: data.error,
+                      });
+                      return;
+                    }
+
+                    // If a summary is received, resolve the promise.
+                    if (data?.summary) {
+                      const finalMessage: ChatMessage = {
+                        id: data.summary.id,
+                        chat: data.summary.chat,
+                        user: data.summary.user,
+                        content: aiResponse.trim(),
+                        created_at: data.summary.created_at,
+                        tokens_used: data.summary.tokens_used,
+                        is_system_message: true,
+                        files: null,
+                      };
+                      resolve(finalMessage);
+                    }
+                  } catch (error) {
+                    console.error('Error parsing JSON chunk:', error);
                   }
-                } catch (error) {
-                  console.error('Error parsing JSON chunk:', error);
                 }
               }
+            } finally {
+              try { reader.cancel(); } catch {}
             }
           };
 
@@ -350,3 +385,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

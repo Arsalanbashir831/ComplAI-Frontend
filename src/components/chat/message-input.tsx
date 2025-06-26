@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,12 +7,15 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, isValidMarkdown, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, isValidMarkdown, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -155,6 +155,9 @@ export function MessageInput({
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
+    // Ensure aiMessageId is always defined for error handling
+    const aiMessageId: string = crypto.randomUUID();
+
     try {
       let localChatId = currentChatId;
       const documentsToSend: File[] = uploadedFiles.map(
@@ -165,6 +168,11 @@ export function MessageInput({
         const response = await createChat(shortenText(promptText.trim(), 5));
         localChatId = response.id;
         setCurrentChatId(localChatId);
+      }
+
+      // If the user aborted during chat creation, do not proceed
+      if (signal.aborted) {
+        throw new DOMException('Aborted', 'AbortError');
       }
 
       if (isNewChat && localChatId) {
@@ -184,8 +192,6 @@ export function MessageInput({
         files: documentsToSend.length > 0 ? documentsToSend : null,
       };
 
-      // Create a placeholder AI message.
-      const aiMessageId = crypto.randomUUID();
       setMessages((prev) => [
         ...prev,
         userMessage,
@@ -276,19 +282,63 @@ export function MessageInput({
     } catch (error) {
       console.error('Error sending message:', error);
       // Show error as AI response in chat
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMessageId
-            ? {
-                ...msg,
-                content:
-                  'Unable to generate response, please check your credit limit',
-                isError: true,
-                is_system_message: true,
-              }
-            : msg
-        )
-      );
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        // Aborted by user (stop button)
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  content: 'You have stopped the response. Want to try again?',
+                  isError: true,
+                  is_system_message: true,
+                  retryData: {
+                    chatId: currentChatId,
+                    promptText,
+                    uploadedFiles,
+                    mentionType,
+                  },
+                }
+              : msg
+          )
+        );
+      } else if (
+        error &&
+        typeof error === 'object' &&
+        'isStreamError' in error &&
+        (error as { isStreamError: boolean }).isStreamError &&
+        'errorChunk' in error
+      ) {
+        // Error chunk received from stream
+        const streamError = error as { isStreamError: boolean; errorChunk: string };
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  content: streamError.errorChunk,
+                  isError: true,
+                  is_system_message: true,
+                  errorChunk: streamError.errorChunk,
+                }
+              : msg
+          )
+        );
+      } else {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  content:
+                    'Unable to generate response, please check your credit limit',
+                  isError: true,
+                  is_system_message: true,
+                }
+              : msg
+          )
+        );
+      }
     } finally {
       abortControllerRef.current = null;
     }

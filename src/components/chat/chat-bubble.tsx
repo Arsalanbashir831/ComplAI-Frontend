@@ -1,12 +1,14 @@
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn, preprocessMarkdown } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn, preprocessMarkdown } from '@/lib/utils';
 
+import { useChatContext } from '@/contexts/chat-context';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import BounceDots from './BounceDotAnimation';
@@ -14,7 +16,16 @@ import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
 interface ChatBubbleProps {
-  message: ChatMessage & { isError?: boolean };
+  message: ChatMessage & {
+    isError?: boolean;
+    retryData?: {
+      chatId: string;
+      promptText: string;
+      uploadedFiles?: File[];
+      mentionType?: string;
+    };
+    errorChunk?: string;
+  };
   user?: User | null;
 }
 
@@ -169,6 +180,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const showSkeleton = isLoading && !isError;
   const showAvatar = isBot && !showSkeleton;
 
+  const { setMessages } = useChatContext();
+  const { sendMessage, addMessageNoStream } = useChat();
+
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
     Array.isArray(message.files) && message.files.length > 0
@@ -192,6 +206,93 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   }
 
   const finalContent = preserveSpaces(normalizedContent);
+
+  // Retry handler for stopped responses
+  const handleRetry = async () => {
+    if (!message.retryData) return;
+    const { chatId, promptText, uploadedFiles, mentionType } = message.retryData;
+    // Remove the error message
+    setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
+    // Re-send the message
+    // This logic mimics handleSendMessage in message-input
+    const aiMessageId = crypto.randomUUID();
+    const userMessage = {
+      id: crypto.randomUUID(),
+      chat: Number(chatId),
+      user: 'You',
+      content: promptText,
+      created_at: new Date().toISOString(),
+      tokens_used: 0,
+      is_system_message: false,
+      files: uploadedFiles && Array.isArray(uploadedFiles) && uploadedFiles.length > 0 ? (uploadedFiles as File[]) : null,
+    };
+    setMessages((prev) => [
+      ...prev,
+      userMessage,
+      {
+        id: aiMessageId,
+        chat: Number(chatId),
+        user: 'AI',
+        content: '',
+        created_at: new Date().toISOString(),
+        tokens_used: 0,
+        is_system_message: true,
+        files: null,
+      },
+    ]);
+    // Create a new AbortController for this retry
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+    if (!mentionType) {
+      await sendMessage({
+        chatId,
+        content: promptText,
+        documents: uploadedFiles && Array.isArray(uploadedFiles) && uploadedFiles.length > 0 ? (uploadedFiles as File[]) : undefined,
+        onChunkUpdate: (chunk: string) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId ? { ...msg, content: chunk } : msg
+            )
+          );
+        },
+        signal,
+      }).then((completedResponse: import('@/types/chat').ChatMessage) => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...completedResponse,
+                  content: completedResponse.content,
+                  id: aiMessageId,
+                }
+              : msg
+          )
+        );
+      });
+    } else {
+      const response = await addMessageNoStream({
+        chatId,
+        content: promptText,
+        documents: uploadedFiles && Array.isArray(uploadedFiles) && uploadedFiles.length > 0 ? (uploadedFiles as File[]) : undefined,
+        return_type: mentionType,
+        signal,
+      });
+      const rawContent = response.content;
+      let processedContent = rawContent.replace(/\\n/g, '\n');
+      processedContent = processedContent.replace(
+        /\*\*([A-Z\s]+):\*\*([A-Z])/g,
+        '**$1:**\n\n$2'
+      );
+      processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? { ...response, content: processedContent, id: aiMessageId }
+            : msg
+        )
+      );
+    }
+  };
 
   return (
     <motion.div
@@ -256,15 +357,17 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       remarkPlugins={[remarkGfm]}
                       components={markdownComponents}
                     >
-                      {finalContent}
+                      {message.errorChunk ? message.errorChunk : finalContent}
                     </Markdown>
                   </div>
-                  <Button
-                    onClick={() => window.location.reload()}
-                    className="mt-2 text-xs px-4 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white"
-                  >
-                    Refresh Page
-                  </Button>
+                  {message.retryData && (
+                    <Button
+                      onClick={handleRetry}
+                      className="mt-2 text-xs px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                      Retry Response
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div
@@ -312,14 +415,14 @@ export function ChatBubble({ message }: ChatBubbleProps) {
               )}
 
               {/* Refresh button for network errors */}
-              {isError && (
+              {/* {isError && (
                 <Button
                   onClick={() => window.location.reload()}
                   className="text-xs px-3 h-fit py-1 rounded-full text-white"
                 >
                   Refresh Page
                 </Button>
-              )}
+              )} */}
             </div>
           </div>
         </div>
