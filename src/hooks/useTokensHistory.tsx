@@ -51,7 +51,7 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
   console.log(response);
   return response.data.map((item: ActivityItem) => ({
     ...item,
-    tokens_used: (item.tokens_used / 1000).toFixed(1),
+    tokens_used: parseFloat((item.tokens_used / 1000).toFixed(1)),
     activity_type: item?.user_message?.file ? 'Uploaded Document' : 'query',
   }));
 };

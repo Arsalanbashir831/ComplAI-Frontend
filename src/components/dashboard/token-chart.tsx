@@ -28,6 +28,8 @@ export function TokenChart() {
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
   const { data, error, refetch } = useTokensHistory(dateRange);
 
+  console.log({ data });
+
   useEffect(() => {
     refetch();
   }, [dateRange, refetch]);
@@ -36,15 +38,22 @@ export function TokenChart() {
   // if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Error loading data</div>;
 
+  const fromDate = new Date(dateRange.from!);
+  fromDate.setHours(0, 0, 0, 0);
+
+  const toDateExclusive = new Date(dateRange.to!);
+  toDateExclusive.setDate(toDateExclusive.getDate() + 1);
+  toDateExclusive.setHours(0, 0, 0, 0);
+
   // filter and aggregate
   const filtered = Array.isArray(data)
     ? data.filter((d) => {
         const usage = new Date(d.usage_date);
-        return (
-          usage >= new Date(dateRange.from!) && usage <= new Date(dateRange.to!)
-        );
+        return usage >= fromDate && usage < toDateExclusive;
       })
     : [];
+
+  console.log({ filtered });
 
   const aggregated: AggregatedData[] = filtered
     .reduce((acc, curr) => {
@@ -111,6 +120,10 @@ export function TokenChart() {
                   axisLine={false}
                   tickMargin={10}
                   fontSize={12}
+                  tickFormatter={(val: number) =>
+                    // you can choose zero decimal places, one decimal place, etc.
+                    Number.isInteger(val) ? val.toString() : val.toFixed(0)
+                  }
                 />
                 <Bar
                   dataKey="tokens"
