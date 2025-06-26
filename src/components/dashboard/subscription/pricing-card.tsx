@@ -17,15 +17,18 @@ export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
     <Card
       className={cn(
         'w-full h-full flex flex-col relative border rounded-2xl shadow-md transition-transform transform hover:scale-[1.02]',
-        (plan.type === 'subscription' || plan.type === 'enterprise') && isActive ? 'border-blue-600' : 'border-gray-200',
+        (plan.type === 'subscription' || plan.type === 'enterprise') && isActive
+          ? 'border-blue-600'
+          : 'border-gray-200',
         'bg-white'
       )}
     >
-      {(plan.type === 'subscription' || plan.type === 'enterprise') && isActive && (
-        <div className="absolute -top-4 -right-4 bg-gradient-to-r from-blue-500 to-blue-700 p-3 rounded-full shadow-xl">
-          <Check className="text-white w-5 h-5" />
-        </div>
-      )}
+      {(plan.type === 'subscription' || plan.type === 'enterprise') &&
+        isActive && (
+          <div className="absolute -top-4 -right-4 bg-gradient-to-r from-blue-500 to-blue-700 p-3 rounded-full shadow-xl">
+            <Check className="text-white w-5 h-5" />
+          </div>
+        )}
 
       {plan.special && (
         <div className="absolute -left-5 -top-5 bg-gradient-to-r from-blue-600 to-blue-400 text-white text-sm font-semibold px-5 py-2 rounded-br-xl rounded-tl-xl shadow-xl">
@@ -78,10 +81,13 @@ export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
           <Button
             onClick={plan.buttonAction}
             variant={
-              plan.type === 'free' || plan.type === 'subscription' ? 'outline' : 'default'
+              plan.type === 'free' || plan.type === 'subscription'
+                ? 'outline'
+                : 'default'
             }
             disabled={
-              (plan.type === 'subscription' && isActive) || (plan.type === 'enterprise' && isActive)
+              (plan.type === 'subscription' && isActive) ||
+              (plan.type === 'enterprise' && isActive)
             }
             className={cn(
               'w-full py-4 rounded-lg font-medium transition',
@@ -90,7 +96,10 @@ export function PricingCard({ plan, isActive, isDisabled }: PricingCardProps) {
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             )}
           >
-            {(plan.type === 'subscription' || plan.type === 'enterprise') && isActive ? 'Subscribed' : plan.buttonText}
+            {(plan.type === 'subscription' || plan.type === 'enterprise') &&
+            isActive
+              ? 'Subscribed'
+              : plan.buttonText}
           </Button>
         </div>
       </CardContent>
