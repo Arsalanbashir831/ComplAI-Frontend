@@ -1,14 +1,14 @@
-import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useChatContext } from '@/contexts/chat-context';
+import { motion } from 'framer-motion';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { cn, preprocessMarkdown } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-
-import { useChatContext } from '@/contexts/chat-context';
+import { cn, preprocessMarkdown } from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
+
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import BounceDots from './BounceDotAnimation';
@@ -210,7 +210,8 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   // Retry handler for stopped responses
   const handleRetry = async () => {
     if (!message.retryData) return;
-    const { chatId, promptText, uploadedFiles, mentionType } = message.retryData;
+    const { chatId, promptText, uploadedFiles, mentionType } =
+      message.retryData;
     // Remove the error message
     setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
     // Re-send the message
@@ -224,7 +225,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       created_at: new Date().toISOString(),
       tokens_used: 0,
       is_system_message: false,
-      files: uploadedFiles && Array.isArray(uploadedFiles) && uploadedFiles.length > 0 ? (uploadedFiles as File[]) : null,
+      files:
+        uploadedFiles &&
+        Array.isArray(uploadedFiles) &&
+        uploadedFiles.length > 0
+          ? (uploadedFiles as File[])
+          : null,
     };
     setMessages((prev) => [
       ...prev,
@@ -247,7 +253,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       await sendMessage({
         chatId,
         content: promptText,
-        documents: uploadedFiles && Array.isArray(uploadedFiles) && uploadedFiles.length > 0 ? (uploadedFiles as File[]) : undefined,
+        documents:
+          uploadedFiles &&
+          Array.isArray(uploadedFiles) &&
+          uploadedFiles.length > 0
+            ? (uploadedFiles as File[])
+            : undefined,
         onChunkUpdate: (chunk: string) => {
           setMessages((prev) =>
             prev.map((msg) =>
@@ -273,7 +284,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       const response = await addMessageNoStream({
         chatId,
         content: promptText,
-        documents: uploadedFiles && Array.isArray(uploadedFiles) && uploadedFiles.length > 0 ? (uploadedFiles as File[]) : undefined,
+        documents:
+          uploadedFiles &&
+          Array.isArray(uploadedFiles) &&
+          uploadedFiles.length > 0
+            ? (uploadedFiles as File[])
+            : undefined,
         return_type: mentionType,
         signal,
       });
