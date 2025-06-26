@@ -1,23 +1,23 @@
 'use client';
 
-import type React from 'react';
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
-  Bot,
+  Book,
   CircleDollarSign,
   HelpCircle,
   History,
   LayoutDashboard,
-  User2,
-  Video,
+  User2
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import type React from 'react';
+import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
+import Image from 'next/image';
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
 import MenuToggleButton from '../common/menu-toggle-button';
@@ -25,13 +25,14 @@ import { Separator } from '../ui/separator';
 
 // Updated sidebar links with sections
 const COMPLIANCE_TOOLS = [
-  { href: ROUTES.COMPLIANCE_GPT, icon: Bot, label: 'Companion' },
+  { href: ROUTES.COMPLIANCE_GPT, image: '/companion-icon.svg', label: 'Companion' },
   // { href: ROUTES.DOC_COMPLIANCE, icon: FileText, label: 'Review' },
 ];
 
 const APP_NAVIGATION = [
   { href: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
-  { href: ROUTES.TUTORIALS, icon: Video, label: 'Tutorials' },
+  // Example: Use your own image if no icon is provided
+  { href: ROUTES.TUTORIALS, icon: Book, label: 'Tutorials' },
   { href: ROUTES.HISTORY, icon: History, label: 'History' },
 ];
 
@@ -50,11 +51,12 @@ export function DashboardSidebar() {
   const renderLinks = (
     links: {
       href: string;
-      icon: React.ComponentType<{ className?: string }>;
+      icon?: React.ComponentType<{ className?: string }>;
+      image?: string;
       label: string;
     }[]
   ) =>
-    links.map(({ href, icon: Icon, label }) => (
+    links.map(({ href, icon: Icon, image, label }) => (
       <Link
         key={label}
         href={href}
@@ -63,7 +65,11 @@ export function DashboardSidebar() {
           { 'text-primary font-medium': pathname === href }
         )}
       >
-        <Icon className="mr-2 h-5 w-5" />
+        {Icon ? (
+          <Icon className="mr-2 h-5 w-5" />
+        ) : image ? (
+          <Image src={image} alt={label} width={28} height={28} className="mr-2 h-7 w-7 rounded" />
+        ) : null}
         {label}
       </Link>
     ));
