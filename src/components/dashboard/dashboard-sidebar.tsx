@@ -1,5 +1,10 @@
 'use client';
 
+import type React from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   Banknote,
@@ -8,16 +13,11 @@ import {
   HelpCircle,
   History,
   LayoutDashboard,
-  User2
+  User2,
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import type React from 'react';
-import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
-import Image from 'next/image';
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
 import MenuToggleButton from '../common/menu-toggle-button';
@@ -25,7 +25,11 @@ import { Separator } from '../ui/separator';
 
 // Updated sidebar links with sections
 const COMPLIANCE_TOOLS = [
-  { href: ROUTES.COMPLIANCE_GPT, image: '/companion-icon.svg', label: 'Companion' },
+  {
+    href: ROUTES.COMPLIANCE_GPT,
+    image: '/companion-icon.svg',
+    label: 'Companion',
+  },
   // { href: ROUTES.DOC_COMPLIANCE, icon: FileText, label: 'Review' },
 ];
 
@@ -68,7 +72,13 @@ export function DashboardSidebar() {
         {Icon ? (
           <Icon className="mr-2 h-5 w-5" />
         ) : image ? (
-          <Image src={image} alt={label} width={28} height={28} className="mr-2 h-7 w-7 rounded" />
+          <Image
+            src={image}
+            alt={label}
+            width={28}
+            height={28}
+            className="mr-2 h-7 w-7 rounded"
+          />
         ) : null}
         {label}
       </Link>
