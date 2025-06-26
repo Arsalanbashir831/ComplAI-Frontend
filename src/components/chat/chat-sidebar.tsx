@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useState } from 'react';
 
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -83,7 +83,7 @@ export function ChatSidebar() {
 
         <div className="p-6">
           <div className="mb-8 border-b border-gray-dark pb-6">
-            <Logo href={ROUTES.CHAT} />
+            <Logo href={ROUTES.LANDINGPAGE} />
           </div>
           <div className="relative">
             {/* 2. Update searchTerm as the user types. */}
