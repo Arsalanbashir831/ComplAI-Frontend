@@ -2,14 +2,14 @@
 
 'use client';
 
-import { useEffect } from 'react';
-import { useParams } from 'next/navigation';
 import { useChatContext } from '@/contexts/chat-context';
+import { useParams } from 'next/navigation';
+import { useEffect } from 'react';
 
-import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
+import { useChatMessages } from '@/hooks/useChat';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
@@ -40,7 +40,7 @@ export default function SpecificChatPage() {
           overflow-y-auto will create a scrollbar only when needed.
         */}
         <div className="flex-1 overflow-y-auto px-6 pt-4">
-          <ChatMessages messages={messages} isLoading={isLoading} />
+          <ChatMessages messages={messages} isLoading={isLoading} chatId={chatId} />
         </div>
 
         {/* The MessageInput component is pinned to the bottom */}

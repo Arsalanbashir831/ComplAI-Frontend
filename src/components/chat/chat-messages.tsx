@@ -1,9 +1,9 @@
 // src/components/chat/chat-messages.tsx
 
-import { useEffect, useRef, useState } from 'react';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { ArrowDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
@@ -14,9 +14,11 @@ import { ChatBubble } from './chat-bubble';
 export function ChatMessages({
   messages,
   isLoading,
+  chatId,
 }: {
   messages: ChatMessage[];
   isLoading: boolean;
+  chatId: string;
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -31,6 +33,13 @@ export function ChatMessages({
     }
     // This effect runs whenever trigger changes.
   }, [trigger]);
+
+  useEffect(() => {
+    // Scroll to bottom when chatId changes and messages are loaded
+    if (chatId && messages.length > 0) {
+      bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+    }
+  }, [chatId, messages.length]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
