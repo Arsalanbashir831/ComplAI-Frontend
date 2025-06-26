@@ -1,11 +1,11 @@
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { cn, preprocessMarkdown } from '@/lib/utils';
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
-import { cn, preprocessMarkdown } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -232,19 +232,39 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
           <div className="flex flex-col gap-2 w-full">
             {!isLoading && (
-              <div
-                className={cn(
-                  'text-justify',
-                  isError ? 'text-red-500 italic' : 'text-black'
-                )}
-              >
-                <Markdown
-                  remarkPlugins={[remarkGfm]}
-                  components={markdownComponents}
+              isBot && isError ? (
+                <div className="bg-red-50 border border-red-300 text-red-700 rounded-lg p-4 flex flex-col items-start gap-2">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+                    <span className="font-semibold">AI Error</span>
+                  </div>
+                  <div className="text-sm italic">
+                    <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                      {finalContent}
+                    </Markdown>
+                  </div>
+                  <Button
+                    onClick={() => window.location.reload()}
+                    className="mt-2 text-xs px-4 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white"
+                  >
+                    Refresh Page
+                  </Button>
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    'text-justify',
+                    isError ? 'text-red-500 italic' : 'text-black'
+                  )}
                 >
-                  {finalContent}
-                </Markdown>
-              </div>
+                  <Markdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                  >
+                    {finalContent}
+                  </Markdown>
+                </div>
+              )
             )}
 
             {/* File attachments */}
