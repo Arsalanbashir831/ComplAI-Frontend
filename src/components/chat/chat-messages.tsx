@@ -1,8 +1,8 @@
 // src/components/chat/chat-messages.tsx
 
+import { useEffect, useRef } from 'react';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
-import { useEffect, useRef } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
