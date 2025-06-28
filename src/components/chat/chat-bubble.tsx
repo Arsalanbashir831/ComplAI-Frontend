@@ -172,7 +172,46 @@ const markdownComponents = {
       {...props}
     />
   ),
+  a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a
+      className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    />
+  ),
 };
+
+// Function to extract URLs from citations text
+function extractUrls(text: string): Array<{ url: string; domain: string; displayName: string }> {
+  const urlRegex = /https?:\/\/([^\s\)]+)/g;
+  const urls: Array<{ url: string; domain: string; displayName: string }> = [];
+  let match;
+
+  while ((match = urlRegex.exec(text)) !== null) {
+    const fullUrl = match[0];
+    const domain = match[1].split('/')[0];
+    
+    // Clean up domain for display
+    let displayName = domain;
+    if (displayName.startsWith('www.')) {
+      displayName = displayName.substring(4);
+    }
+    
+    // Capitalize first letter and remove common TLDs for cleaner display
+    displayName = displayName.split('.')[0];
+    displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+    
+    urls.push({ url: fullUrl, domain, displayName });
+  }
+
+  return urls;
+}
+
+// Function to get favicon URL
+function getFaviconUrl(domain: string): string {
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+}
 
 export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.is_system_message;
@@ -433,44 +472,137 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
             {/* Citations section */}
             {isBot && message.citations && message.content !== 'loading' && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-blue-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  <span className="text-sm font-semibold text-blue-800">
-                    Sources & Citations
+              <div className="mt-6 border-t border-gray-200 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center justify-center w-6 h-6 bg-gray-100 rounded-full">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3 text-gray-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Sources
                   </span>
                 </div>
-                <div className="text-sm text-blue-700 leading-relaxed">
-                  <Markdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      ...markdownComponents,
-                      p: (
-                        props: React.HTMLAttributes<HTMLParagraphElement>
-                      ) => (
-                        <p
-                          className="mb-2 text-sm leading-relaxed"
-                          {...props}
-                        />
-                      ),
-                    }}
-                  >
-                    {message.citations}
-                  </Markdown>
-                </div>
+                
+                {/* Extract and display URLs as redirect buttons */}
+                {(() => {
+                  const urls = extractUrls(message.citations);
+                  if (urls.length > 0) {
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+                        {urls.map((urlInfo, index) => (
+                          <a
+                            key={index}
+                            href={urlInfo.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-3 py-1 bg-gray-50 border border-gray-200 rounded-full shadow-sm min-w-0 max-w-xs transition-colors duration-200 hover:bg-blue-50 focus:ring-2 focus:ring-blue-200 outline-none cursor-pointer"
+                          >
+                            <img
+                              src={getFaviconUrl(urlInfo.domain)}
+                              alt={`${urlInfo.displayName} favicon`}
+                              className="w-5 h-5 rounded"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs font-medium text-gray-900 truncate">
+                                {urlInfo.displayName}
+                              </span>
+                              <span className="text-[10px] text-gray-500 truncate">
+                                {urlInfo.domain}
+                              </span>
+                            </div>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3 w-3 text-blue-500 ml-1 flex-shrink-0"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              />
+                            </svg>
+                          </a>
+                        ))}
+                      </div>
+                    );
+                  }
+                  
+                  // Fallback to markdown if no URLs found
+                  return (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <div className="text-sm text-gray-700 leading-relaxed space-y-2">
+                        <Markdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            ...markdownComponents,
+                            p: (
+                              props: React.HTMLAttributes<HTMLParagraphElement>
+                            ) => (
+                              <p
+                                className="mb-2 text-sm leading-relaxed text-gray-700"
+                                {...props}
+                              />
+                            ),
+                            a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+                              <a
+                                className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200 inline-flex items-center gap-1"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                {...props}
+                              >
+                                {props.children}
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-3 w-3"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  />
+                                </svg>
+                              </a>
+                            ),
+                            ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
+                              <ul
+                                className="mt-2 mb-2 ml-4 list-disc text-sm leading-relaxed text-gray-700 space-y-1"
+                                {...props}
+                              />
+                            ),
+                            li: (props: React.HTMLAttributes<HTMLLIElement>) => (
+                              <li className="text-sm leading-relaxed text-gray-700" {...props} />
+                            ),
+                          }}
+                        >
+                          {message.citations}
+                        </Markdown>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
