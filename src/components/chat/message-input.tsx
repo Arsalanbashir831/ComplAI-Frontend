@@ -274,7 +274,12 @@ export function MessageInput({
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === aiMessageId
-              ? { ...response, content: processedContent, id: aiMessageId, citations: response.citations }
+              ? {
+                  ...response,
+                  content: processedContent,
+                  id: aiMessageId,
+                  citations: response.citations,
+                }
               : msg
           )
         );

@@ -305,7 +305,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMessageId
-            ? { ...response, content: processedContent, id: aiMessageId, citations: response.citations }
+            ? {
+                ...response,
+                content: processedContent,
+                id: aiMessageId,
+                citations: response.citations,
+              }
             : msg
         )
       );
@@ -444,15 +449,22 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  <span className="text-sm font-semibold text-blue-800">Sources & Citations</span>
+                  <span className="text-sm font-semibold text-blue-800">
+                    Sources & Citations
+                  </span>
                 </div>
                 <div className="text-sm text-blue-700 leading-relaxed">
                   <Markdown
                     remarkPlugins={[remarkGfm]}
                     components={{
                       ...markdownComponents,
-                      p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-                        <p className="mb-2 text-sm leading-relaxed" {...props} />
+                      p: (
+                        props: React.HTMLAttributes<HTMLParagraphElement>
+                      ) => (
+                        <p
+                          className="mb-2 text-sm leading-relaxed"
+                          {...props}
+                        />
                       ),
                     }}
                   >
