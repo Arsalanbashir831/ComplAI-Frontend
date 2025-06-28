@@ -1,8 +1,6 @@
 // Citation helpers for chat rendering
 // These are used in CitationBadges and elsewhere
-export function extractCitations(
-  text: string
-): Array<{
+export function extractCitations(text: string): Array<{
   type: 'url' | 'text';
   value: string;
   domain?: string;
