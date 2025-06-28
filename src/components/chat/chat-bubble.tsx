@@ -183,7 +183,9 @@ const markdownComponents = {
 };
 
 // Function to extract URLs from citations text
-function extractUrls(text: string): Array<{ url: string; domain: string; displayName: string }> {
+function extractUrls(
+  text: string
+): Array<{ url: string; domain: string; displayName: string }> {
   const urlRegex = /https?:\/\/([^\s\)]+)/g;
   const urls: Array<{ url: string; domain: string; displayName: string }> = [];
   let match;
@@ -191,17 +193,17 @@ function extractUrls(text: string): Array<{ url: string; domain: string; display
   while ((match = urlRegex.exec(text)) !== null) {
     const fullUrl = match[0];
     const domain = match[1].split('/')[0];
-    
+
     // Clean up domain for display
     let displayName = domain;
     if (displayName.startsWith('www.')) {
       displayName = displayName.substring(4);
     }
-    
+
     // Capitalize first letter and remove common TLDs for cleaner display
     displayName = displayName.split('.')[0];
     displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
-    
+
     urls.push({ url: fullUrl, domain, displayName });
   }
 
@@ -494,7 +496,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                     Sources
                   </span>
                 </div>
-                
+
                 {/* Extract and display URLs as redirect buttons */}
                 {(() => {
                   const urls = extractUrls(message.citations);
@@ -545,7 +547,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       </div>
                     );
                   }
-                  
+
                   // Fallback to markdown if no URLs found
                   return (
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -562,7 +564,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                                 {...props}
                               />
                             ),
-                            a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+                            a: (
+                              props: React.AnchorHTMLAttributes<HTMLAnchorElement>
+                            ) => (
                               <a
                                 className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200 inline-flex items-center gap-1"
                                 target="_blank"
@@ -586,14 +590,21 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                                 </svg>
                               </a>
                             ),
-                            ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
+                            ul: (
+                              props: React.HTMLAttributes<HTMLUListElement>
+                            ) => (
                               <ul
                                 className="mt-2 mb-2 ml-4 list-disc text-sm leading-relaxed text-gray-700 space-y-1"
                                 {...props}
                               />
                             ),
-                            li: (props: React.HTMLAttributes<HTMLLIElement>) => (
-                              <li className="text-sm leading-relaxed text-gray-700" {...props} />
+                            li: (
+                              props: React.HTMLAttributes<HTMLLIElement>
+                            ) => (
+                              <li
+                                className="text-sm leading-relaxed text-gray-700"
+                                {...props}
+                              />
                             ),
                           }}
                         >
