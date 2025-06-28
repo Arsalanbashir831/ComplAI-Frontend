@@ -1,17 +1,34 @@
 // Citation helpers for chat rendering
 // These are used in CitationBadges and elsewhere
-export function extractCitations(text: string): Array<{ type: 'url' | 'text'; value: string; domain?: string; displayName?: string }> {
+export function extractCitations(
+  text: string
+): Array<{
+  type: 'url' | 'text';
+  value: string;
+  domain?: string;
+  displayName?: string;
+}> {
   const urlRegex = /https?:\/\/([^\s\)]+)/g;
-  const citations: Array<{ type: 'url' | 'text'; value: string; domain?: string; displayName?: string }> = [];
+  const citations: Array<{
+    type: 'url' | 'text';
+    value: string;
+    domain?: string;
+    displayName?: string;
+  }> = [];
   let lastIndex = 0;
   let match;
 
   function splitReferences(plainText: string) {
     // Split on numbered points (e.g., 1. "..."), or semicolons, or newlines
-    const points = plainText.match(/\d+\.\s*"[^"]+"|\d+\.\s*[^\d]+(?=\d+\.|$)|[^;\n]+/g);
+    const points = plainText.match(
+      /\d+\.\s*"[^"]+"|\d+\.\s*[^\d]+(?=\d+\.|$)|[^;\n]+/g
+    );
     if (points) {
-      points.forEach(pt => {
-        const cleaned = pt.trim().replace(/^\d+\.\s*/, '').replace(/^"|"$/g, '');
+      points.forEach((pt) => {
+        const cleaned = pt
+          .trim()
+          .replace(/^\d+\.\s*/, '')
+          .replace(/^"|"$/g, '');
         if (cleaned) citations.push({ type: 'text', value: cleaned });
       });
     } else {
@@ -45,4 +62,4 @@ export function extractCitations(text: string): Array<{ type: 'url' | 'text'; va
 export function getFaviconUrl(domain: string): string {
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
 }
-// Used in CitationBadges, suppress unused warning 
+// Used in CitationBadges, suppress unused warning

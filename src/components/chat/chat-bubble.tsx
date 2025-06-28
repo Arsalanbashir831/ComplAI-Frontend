@@ -1,19 +1,19 @@
 import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
-import { MarkdownRenderer } from '@/lib/markdown';
 
 import type { ChatMessage } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import BounceDots from './BounceDotAnimation';
+import { CitationBadges } from './CitationBadges';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
-import { CitationBadges } from './CitationBadges';
 
 interface ChatBubbleProps {
   message: ChatMessage & {
@@ -214,7 +214,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                     <span className="font-semibold">AI Error</span>
                   </div>
                   <div className="text-sm italic">
-                    <MarkdownRenderer content={message.errorChunk ? message.errorChunk : message.content} />
+                    <MarkdownRenderer
+                      content={
+                        message.errorChunk
+                          ? message.errorChunk
+                          : message.content
+                      }
+                    />
                   </div>
                   {message.retryData && (
                     <Button
@@ -233,11 +239,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   )}
                 >
                   <MarkdownRenderer content={message.content} />
-                  {isBot && /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(message.content) && message.citations && (
-                    <div className="mt-2">
-                      <CitationBadges citations={message.citations} />
-                    </div>
-                  )}
+                  {isBot &&
+                    /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(message.content) &&
+                    message.citations && (
+                      <div className="mt-2">
+                        <CitationBadges citations={message.citations} />
+                      </div>
+                    )}
                 </div>
               ))}
 
@@ -265,12 +273,14 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             )}
 
             {/* Citations section (for non-table content) */}
-            {isBot && message.citations && message.content !== 'loading' && !/\n?\s*\|[^\n]*\|[^\n]*\|/m.test(message.content) && (
-              <div className="mt-6 border-t border-gray-200 pt-4">
-              
-                <CitationBadges citations={message.citations} />
-              </div>
-            )}
+            {isBot &&
+              message.citations &&
+              message.content !== 'loading' &&
+              !/\n?\s*\|[^\n]*\|[^\n]*\|/m.test(message.content) && (
+                <div className="mt-6 border-t border-gray-200 pt-4">
+                  <CitationBadges citations={message.citations} />
+                </div>
+              )}
 
             <div className="flex gap-2">
               {/* Copy button for bot messages */}

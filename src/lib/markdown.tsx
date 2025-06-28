@@ -55,25 +55,42 @@ export const markdownComponents = {
     <p className="my-3 text-base leading-relaxed text-gray-900" {...props} />
   ),
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul className="my-3 ml-6 list-disc text-base leading-relaxed text-gray-900 space-y-1" {...props} />
+    <ul
+      className="my-3 ml-6 list-disc text-base leading-relaxed text-gray-900 space-y-1"
+      {...props}
+    />
   ),
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol className="my-3 ml-6 list-decimal text-base leading-relaxed text-gray-900 space-y-1" {...props} />
+    <ol
+      className="my-3 ml-6 list-decimal text-base leading-relaxed text-gray-900 space-y-1"
+      {...props}
+    />
   ),
   li: (props: React.HTMLAttributes<HTMLLIElement>) => (
     <li className="text-base leading-relaxed" {...props} />
   ),
   blockquote: (props: React.HTMLAttributes<HTMLElement>) => (
-    <blockquote className="border-l-4 border-blue-400 bg-blue-50 pl-4 italic my-4 text-base text-gray-700 rounded" {...props} />
+    <blockquote
+      className="border-l-4 border-blue-400 bg-blue-50 pl-4 italic my-4 text-base text-gray-700 rounded"
+      {...props}
+    />
   ),
   code: ({ inline, className, children, ...props }: CodeProps) => {
     const match = /language-(\w+)/.exec(className || '');
     return !inline ? (
-      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono shadow-inner my-4" {...props}>
+      <pre
+        className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono shadow-inner my-4"
+        {...props}
+      >
         <code className={match ? `language-${match[1]}` : ''}>{children}</code>
       </pre>
     ) : (
-      <code className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded font-mono text-sm" {...props}>{children}</code>
+      <code
+        className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded font-mono text-sm"
+        {...props}
+      >
+        {children}
+      </code>
     );
   },
   table: (props: React.HTMLAttributes<HTMLTableElement>) => (
@@ -89,7 +106,10 @@ export const markdownComponents = {
     <thead className="bg-blue-100 sticky top-0 z-10" {...props} />
   ),
   tr: (props: React.HTMLAttributes<HTMLTableRowElement>) => (
-    <tr className="even:bg-blue-50 hover:bg-blue-100 transition-colors duration-100" {...props} />
+    <tr
+      className="even:bg-blue-50 hover:bg-blue-100 transition-colors duration-100"
+      {...props}
+    />
   ),
   th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => (
     <th
@@ -106,10 +126,15 @@ export const markdownComponents = {
     />
   ),
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200" target="_blank" rel="noopener noreferrer" {...props} />
+    <a
+      className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    />
   ),
   hr: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <hr style={{margin:'30px'}} {...props} />
+    <hr style={{ margin: '30px' }} {...props} />
   ),
 };
 
@@ -122,13 +147,10 @@ export function MarkdownRenderer({ content }: { content: string }) {
   }
   const finalContent = preserveSpaces(processed);
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={markdownComponents}
-    >
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
       {finalContent}
     </ReactMarkdown>
   );
 }
 
-export { remarkGfm }; 
+export { remarkGfm };
