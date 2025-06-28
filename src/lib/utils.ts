@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { DateRange } from 'react-day-picker';
 import { twMerge } from 'tailwind-merge';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -240,7 +241,6 @@ export function preprocessMarkdown(text: string): string {
 
   // Debug log for inspection
   if (process.env.NODE_ENV !== 'production') {
-    // eslint-disable-next-line no-console
     console.log('[preprocessMarkdown] Processed markdown:', processedText);
   }
 

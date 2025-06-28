@@ -80,7 +80,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     verifyAndRefreshToken();
-  }, [pathname, subscription, router]);
+  }, [pathname, subscription, router, logoutUser]);
 
   return <>{children}</>;
 };

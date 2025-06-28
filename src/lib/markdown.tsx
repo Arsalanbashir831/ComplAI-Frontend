@@ -1,0 +1,134 @@
+// Markdown helpers and components for chat rendering
+import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+export function normalizeTables(md: string): string {
+  const lines = md.split('\n');
+  let inTable = false;
+  const result: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    const pipeCount = (line.match(/\|/g) || []).length;
+    if (pipeCount >= 2) {
+      line = line.trim();
+      if (!line.startsWith('|')) line = '|' + line;
+      if (!line.endsWith('|')) line = line + '|';
+      result.push(line);
+      inTable = true;
+    } else {
+      if (inTable && line.trim() === '') {
+        inTable = false;
+      }
+      result.push(line);
+    }
+  }
+  return result.join('\n');
+}
+
+export function preserveSpaces(md: string): string {
+  return md.replace(/ {2,}/g, (match) => '&nbsp;'.repeat(match.length));
+}
+
+export function preprocessMarkdown(md: string): string {
+  // Add any additional preprocessing here if needed
+  return md;
+}
+
+type CodeProps = {
+  inline?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+};
+
+export const markdownComponents = {
+  h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <h1 className="mt-6 mb-3 text-2xl font-bold text-gray-900" {...props} />
+  ),
+  h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <h2 className="mt-5 mb-2 text-xl font-semibold text-gray-800" {...props} />
+  ),
+  h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <h3 className="mt-4 mb-2 text-lg font-semibold text-gray-700" {...props} />
+  ),
+  p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
+    <p className="my-3 text-base leading-relaxed text-gray-900" {...props} />
+  ),
+  ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
+    <ul className="my-3 ml-6 list-disc text-base leading-relaxed text-gray-900 space-y-1" {...props} />
+  ),
+  ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
+    <ol className="my-3 ml-6 list-decimal text-base leading-relaxed text-gray-900 space-y-1" {...props} />
+  ),
+  li: (props: React.HTMLAttributes<HTMLLIElement>) => (
+    <li className="text-base leading-relaxed" {...props} />
+  ),
+  blockquote: (props: React.HTMLAttributes<HTMLElement>) => (
+    <blockquote className="border-l-4 border-blue-400 bg-blue-50 pl-4 italic my-4 text-base text-gray-700 rounded" {...props} />
+  ),
+  code: ({ inline, className, children, ...props }: CodeProps) => {
+    const match = /language-(\w+)/.exec(className || '');
+    return !inline ? (
+      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono shadow-inner my-4" {...props}>
+        <code className={match ? `language-${match[1]}` : ''}>{children}</code>
+      </pre>
+    ) : (
+      <code className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded font-mono text-sm" {...props}>{children}</code>
+    );
+  },
+  table: (props: React.HTMLAttributes<HTMLTableElement>) => (
+    <div className="overflow-x-auto w-full max-w-[800px] mx-auto my-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+      <table
+        className="w-full text-base text-left border-collapse rounded-lg"
+        style={{ minWidth: 800, maxWidth: '100%', tableLayout: 'auto' }}
+        {...props}
+      />
+    </div>
+  ),
+  thead: (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <thead className="bg-blue-100 sticky top-0 z-10" {...props} />
+  ),
+  tr: (props: React.HTMLAttributes<HTMLTableRowElement>) => (
+    <tr className="even:bg-blue-50 hover:bg-blue-100 transition-colors duration-100" {...props} />
+  ),
+  th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => (
+    <th
+      className="px-4 py-3 text-left font-bold text-blue-900 border-b border-blue-200 whitespace-normal text-base align-top"
+      style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
+      {...props}
+    />
+  ),
+  td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => (
+    <td
+      className="px-4 py-3 text-blue-900 border-b border-blue-100 whitespace-normal align-top"
+      style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
+      {...props}
+    />
+  ),
+  a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200" target="_blank" rel="noopener noreferrer" {...props} />
+  ),
+  hr: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <hr style={{margin:'30px'}} {...props} />
+  ),
+};
+
+export function MarkdownRenderer({ content }: { content: string }) {
+  // Detect if content contains a table
+  const containsTable = /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(content);
+  let processed = preprocessMarkdown(content);
+  if (containsTable) {
+    processed = normalizeTables(processed);
+  }
+  const finalContent = preserveSpaces(processed);
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={markdownComponents}
+    >
+      {finalContent}
+    </ReactMarkdown>
+  );
+}
+
+export { remarkGfm }; 

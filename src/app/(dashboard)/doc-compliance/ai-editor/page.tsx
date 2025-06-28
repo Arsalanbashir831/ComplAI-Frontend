@@ -45,24 +45,12 @@ export default function DocumentIdPage() {
     hasProcessedData: !!processedData,
   });
 
+  // Extract the stringified results for dependency comparison
+  const originalResultsString = JSON.stringify(originalResults);
+
   // --- Fetch processed data ---
   useEffect(() => {
-    // Use originalResults for deciding whether to fetch
-    if (!content || !originalResults || originalResults.length === 0) {
-      console.log('Skipping fetch: No content or original results.');
-      if (content) {
-        // If content exists but no results, show original content, no processed issues
-        setProcessedData({
-          fullHighlightedHtml: content,
-          processedResults: [],
-        });
-      } else {
-        setProcessedData(null); // Clear data if no content
-      }
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
+    if (!content) return;
 
     const fetchProcessedData = async () => {
       console.log('Starting fetch to /api/process-compliance-open-ai...');
@@ -111,7 +99,7 @@ export default function DocumentIdPage() {
     fetchProcessedData();
 
     // Depend on content and the original results to trigger fetch
-  }, [content, JSON.stringify(originalResults)]); // Stringify ensures deep comparison
+  }, [content, originalResultsString]); // Use the extracted variable
 
   // --- Redirect if no content after loading attempt ---
   useEffect(() => {
@@ -301,7 +289,7 @@ export default function DocumentIdPage() {
           </ScrollArea>
         </div>
 
-        {/* Right: issues + “Resolve all” */}
+        {/* Right: issues + "Resolve all" */}
         <div className="w-full max-w-[300px] flex-shrink-0">
           {
             isLoading && (
