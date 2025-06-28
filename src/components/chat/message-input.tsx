@@ -249,6 +249,7 @@ export function MessageInput({
                     ...completedResponse,
                     content: completedResponse.content,
                     id: aiMessageId,
+                    citations: completedResponse.citations,
                   }
                 : msg
             )
@@ -273,7 +274,7 @@ export function MessageInput({
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === aiMessageId
-              ? { ...response, content: processedContent, id: aiMessageId }
+              ? { ...response, content: processedContent, id: aiMessageId, citations: response.citations }
               : msg
           )
         );

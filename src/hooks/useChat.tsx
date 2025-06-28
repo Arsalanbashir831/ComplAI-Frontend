@@ -157,6 +157,7 @@ const useChat = () => {
             tokens_used: 0,
             is_system_message: true,
             files: fileObject,
+            citations: undefined,
           } as ChatMessage;
         }
       } catch (error) {
@@ -305,6 +306,7 @@ const useChat = () => {
                         tokens_used: data.summary.tokens_used,
                         is_system_message: true,
                         files: null,
+                        citations: data.summary.citations || undefined,
                       };
                       resolve(finalMessage);
                     }

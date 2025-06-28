@@ -25,6 +25,7 @@ interface ChatBubbleProps {
       mentionType?: string;
     };
     errorChunk?: string;
+    citations?: string;
   };
   user?: User | null;
 }
@@ -275,6 +276,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   ...completedResponse,
                   content: completedResponse.content,
                   id: aiMessageId,
+                  citations: completedResponse.citations,
                 }
               : msg
           )
@@ -303,7 +305,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMessageId
-            ? { ...response, content: processedContent, id: aiMessageId }
+            ? { ...response, content: processedContent, id: aiMessageId, citations: response.citations }
             : msg
         )
       );
@@ -422,6 +424,42 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 </div>
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
+            )}
+
+            {/* Citations section */}
+            {isBot && message.citations && message.content !== 'loading' && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-blue-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <span className="text-sm font-semibold text-blue-800">Sources & Citations</span>
+                </div>
+                <div className="text-sm text-blue-700 leading-relaxed">
+                  <Markdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      ...markdownComponents,
+                      p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
+                        <p className="mb-2 text-sm leading-relaxed" {...props} />
+                      ),
+                    }}
+                  >
+                    {message.citations}
+                  </Markdown>
+                </div>
+              </div>
             )}
 
             <div className="flex gap-2">
