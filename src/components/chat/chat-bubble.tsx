@@ -1,12 +1,12 @@
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
-import type { ChatMessage } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -80,7 +80,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         id: aiMessageId,
         chat: Number(chatId),
         user: 'AI',
-        content: '',
+        content: 'loading',
         created_at: new Date().toISOString(),
         tokens_used: 0,
         is_system_message: true,
@@ -91,7 +91,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     const abortController = new AbortController();
     const signal = abortController.signal;
     if (!mentionType) {
-      await sendMessage({
+      const completedResponse = await sendMessage({
         chatId,
         content: promptText,
         documents:
@@ -100,28 +100,20 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           uploadedFiles.length > 0
             ? (uploadedFiles as File[])
             : undefined,
-        onChunkUpdate: (chunk: string) => {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === aiMessageId ? { ...msg, content: chunk } : msg
-            )
-          );
-        },
         signal,
-      }).then((completedResponse: import('@/types/chat').ChatMessage) => {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? {
-                  ...completedResponse,
-                  content: completedResponse.content,
-                  id: aiMessageId,
-                  citations: completedResponse.citations,
-                }
-              : msg
-          )
-        );
       });
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? {
+                ...completedResponse,
+                content: completedResponse.content,
+                id: aiMessageId,
+                citations: completedResponse.citations,
+              }
+            : msg
+        )
+      );
     } else {
       const response = await addMessageNoStream({
         chatId,

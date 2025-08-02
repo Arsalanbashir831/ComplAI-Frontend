@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,12 +7,15 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, isValidMarkdown, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -217,44 +217,26 @@ export function MessageInput({
       }, 50);
 
       if (!mentionType) {
-        // Streaming mode
-        await sendMessage({
+        // Non-streaming mode (now the default)
+        const completedResponse = await sendMessage({
           chatId: localChatId,
           content: promptText.trim(),
           documents: documentsToSend,
           signal,
-          onChunkUpdate: (chunk) => {
-            // Only update if markdown is valid
-            if (isValidMarkdown(chunk)) {
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === aiMessageId ? { ...msg, content: chunk } : msg
-                )
-              );
-            }
-          },
-        }).then((completedResponse) => {
-          // Final update with the completed content (guaranteed valid)
-          // let processedContent = completedResponse.content.replace(/\\n/g, '\n');
-          // processedContent = processedContent.replace(
-          //   /\*\*([A-Z\s]+):\*\*([A-Z])/g,
-          //   '**$1:**\n\n$2'
-          // );
-          // processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
-
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === aiMessageId
-                ? {
-                    ...completedResponse,
-                    content: completedResponse.content,
-                    id: aiMessageId,
-                    citations: completedResponse.citations,
-                  }
-                : msg
-            )
-          );
         });
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...completedResponse,
+                  content: completedResponse.content,
+                  id: aiMessageId,
+                  citations: completedResponse.citations,
+                }
+              : msg
+          )
+        );
       } else {
         // Non-streaming mode
         const response = await addMessageNoStream({
@@ -308,31 +290,6 @@ export function MessageInput({
                     uploadedFiles,
                     mentionType,
                   },
-                }
-              : msg
-          )
-        );
-      } else if (
-        error &&
-        typeof error === 'object' &&
-        'isStreamError' in error &&
-        (error as { isStreamError: boolean }).isStreamError &&
-        'errorChunk' in error
-      ) {
-        // Error chunk received from stream
-        const streamError = error as {
-          isStreamError: boolean;
-          errorChunk: string;
-        };
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? {
-                  ...msg,
-                  content: streamError.errorChunk,
-                  isError: true,
-                  is_system_message: true,
-                  errorChunk: streamError.errorChunk,
                 }
               : msg
           )

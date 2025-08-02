@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -182,13 +182,11 @@ const useChat = () => {
       chatId,
       content,
       documents,
-      onChunkUpdate,
       signal,
     }: {
       chatId: string;
       content: string;
       documents?: File[] | Blob;
-      onChunkUpdate?: (chunk: string) => void;
       signal?: AbortSignal;
     }): Promise<ChatMessage> => {
       const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
@@ -213,7 +211,7 @@ const useChat = () => {
 
       return new Promise<ChatMessage>(async (resolve, reject) => {
         try {
-          // Step 1: Send message and initiate streaming.
+          // Send message and get response
           const sendResponse = await fetch(streamUrl, {
             method: 'POST',
             body: formData,
@@ -229,100 +227,31 @@ const useChat = () => {
             throw new Error('Network error');
           }
 
-          if (!sendResponse.ok || !sendResponse.body) {
+          if (!sendResponse.ok) {
             const errorData = await sendResponse.json();
             throw new Error(errorData.error || 'Failed to send message');
           }
 
-          // Step 2: Read the streaming response in chunks.
-          const reader = sendResponse.body.getReader();
-          let aiResponse = '';
-          const decoder = new TextDecoder(); // Single decoder instance.
-          let buffer = ''; // Buffer for incomplete JSON chunks
-          const sleep = (ms: number) =>
-            new Promise((resolve) => setTimeout(resolve, ms));
-          const readStream = async () => {
-            try {
-              while (true) {
-                if (signal && signal.aborted) {
-                  reject(new DOMException('Aborted', 'AbortError'));
-                  break;
-                }
-                let result;
-                try {
-                  result = await reader.read();
-                } catch (err) {
-                  if (signal && signal.aborted) {
-                    reject(new DOMException('Aborted', 'AbortError'));
-                    break;
-                  }
-                  throw err;
-                }
-                if (signal && signal.aborted) {
-                  reject(new DOMException('Aborted', 'AbortError'));
-                  break;
-                }
-                const { done, value } = result;
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-
-                for (const line of lines) {
-                  if (!line.trim()) continue;
-                  try {
-                    const data = JSON.parse(line.trim());
-
-                    // Append reasoning to the current response, preserving spaces and empty chunks
-                    if (data?.reasoning !== undefined) {
-                      aiResponse += data.reasoning;
-                      if (onChunkUpdate) {
-                        await sleep(0);
-                        onChunkUpdate(aiResponse);
-                      }
-                    }
-
-                    // If an error chunk is received, update the message with the error
-                    if (data?.error) {
-                      if (onChunkUpdate) {
-                        onChunkUpdate(''); // Clear any partial content
-                      }
-                      // Instead of resolving, reject with a special error object
-                      reject({
-                        isStreamError: true,
-                        errorChunk: data.error,
-                      });
-                      return;
-                    }
-
-                    // If a summary is received, resolve the promise.
-                    if (data?.summary) {
-                      const finalMessage: ChatMessage = {
-                        id: data.summary.id,
-                        chat: data.summary.chat,
-                        user: data.summary.user,
-                        content: aiResponse.trim(),
-                        created_at: data.summary.created_at,
-                        tokens_used: data.summary.tokens_used,
-                        is_system_message: true,
-                        files: null,
-                        citations: data.summary.citations || undefined,
-                      };
-                      resolve(finalMessage);
-                    }
-                  } catch (error) {
-                    console.error('Error parsing JSON chunk:', error);
-                  }
-                }
-              }
-            } finally {
-              try {
-                reader.cancel();
-              } catch {}
-            }
-          };
-
-          await readStream();
+          // Parse the complete response
+          const responseData = await sendResponse.json();
+          
+          // Handle the new response format with ai_response
+          if (responseData?.summary) {
+            const finalMessage: ChatMessage = {
+              id: responseData.summary.id,
+              chat: responseData.summary.chat,
+              user: responseData.summary.user,
+              content: responseData.summary.ai_response || responseData.summary.content,
+              created_at: responseData.summary.created_at,
+              tokens_used: responseData.summary.tokens_used || 0,
+              is_system_message: true,
+              files: null,
+              citations: responseData.summary.citations || undefined,
+            };
+            resolve(finalMessage);
+          } else {
+            throw new Error('Invalid response format from server');
+          }
         } catch (error) {
           console.error('Error sending message:', error);
           reject(error);
@@ -389,3 +318,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+
