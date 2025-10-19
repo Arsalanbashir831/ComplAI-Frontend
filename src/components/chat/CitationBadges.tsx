@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { extractCitations, getFaviconUrl } from '@/lib/citations';
 import type { Citation } from '@/types/chat';
+import { extractCitations, getFaviconUrl } from '@/lib/citations';
 
 // Helper function to safely extract domain from URL
 const extractDomain = (url: string): string => {
@@ -20,7 +20,7 @@ export const CitationBadges: React.FC<{ citations: string | Citation }> = ({
   // Handle new structured format
   if (typeof citations === 'object' && citations !== null) {
     const sources = citations.sources || [];
-    
+
     if (sources.length === 0) return null;
 
     return (
