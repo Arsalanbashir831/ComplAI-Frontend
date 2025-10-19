@@ -14,6 +14,20 @@ export interface PromptCardProps extends PromptCard {
   className?: string;
 }
 
+export interface Citation {
+  sources?: Array<{
+    id: string;
+    title: string;
+    publisher: string;
+    url_hint: string;
+  }>;
+  claims?: Array<{
+    id: string;
+    text: string;
+    supports: string[];
+  }>;
+}
+
 export interface ChatMessage {
   id: number | string;
   chat: number;
@@ -24,7 +38,7 @@ export interface ChatMessage {
   files: UploadedFile | File | null | File[] | [];
   userName?: string;
   avatarUrl?: string;
-  citations?: string;
+  citations?: string | Citation;
   tokens_used: number;
 }
 

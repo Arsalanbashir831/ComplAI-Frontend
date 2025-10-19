@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -129,6 +129,92 @@ const useChat = () => {
         if (contentType && contentType.includes('application/json')) {
           // If JSON, parse and return it as ChatMessage.
           const responseData = await response.json();
+          
+          // Parse citations if present
+          if (responseData.citations) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const parseCitations = (citationsData: any) => {
+              if (!citationsData) return undefined;
+
+              try {
+                // Handle nested array format from Google Gemini
+                if (Array.isArray(citationsData) && citationsData.length > 0) {
+                  const candidateData = citationsData[0];
+                  if (!Array.isArray(candidateData)) return undefined;
+
+                  const groundingMetadataEntry = candidateData.find(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (item: any) => Array.isArray(item) && item[0] === 'grounding_metadata'
+                  );
+                  
+                  if (!groundingMetadataEntry || !Array.isArray(groundingMetadataEntry[1])) return undefined;
+                  
+                  const groundingMetadata = groundingMetadataEntry[1];
+
+                  const groundingChunksEntry = groundingMetadata.find(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (item: any) => Array.isArray(item) && item[0] === 'grounding_chunks'
+                  );
+                  
+                  if (!groundingChunksEntry || !Array.isArray(groundingChunksEntry[1])) return undefined;
+                  
+                  const groundingChunks = groundingChunksEntry[1];
+
+                  const sources = groundingChunks
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .map((chunk: any, index: number) => {
+                      if (!Array.isArray(chunk) || !Array.isArray(chunk[0])) return null;
+                      
+                      const webEntry = chunk[0].find(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (item: any) => Array.isArray(item) && item[0] === 'web'
+                      );
+                      
+                      if (!webEntry || !Array.isArray(webEntry[1])) return null;
+                      
+                      const webData = webEntry[1];
+                      
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const titleEntry = webData.find((item: any) => Array.isArray(item) && item[0] === 'title');
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const uriEntry = webData.find((item: any) => Array.isArray(item) && item[0] === 'uri');
+                      
+                      const title = titleEntry?.[1] || 'Unknown Source';
+                      const uri = uriEntry?.[1] || '';
+                      
+                      if (!uri) return null;
+                      
+                      return {
+                        id: `source_${index}`,
+                        title: title,
+                        publisher: title,
+                        url_hint: uri,
+                      };
+                    })
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .filter((source: any) => source !== null);
+
+                  return sources.length > 0 ? { sources } : undefined;
+                }
+
+                if (typeof citationsData === 'object' && citationsData.sources) {
+                  return citationsData;
+                }
+
+                if (typeof citationsData === 'string') {
+                  return citationsData;
+                }
+
+                return undefined;
+              } catch (error) {
+                console.error('Error parsing citations:', error);
+                return undefined;
+              }
+            };
+            
+            responseData.citations = parseCitations(responseData.citations);
+          }
+          
           return responseData as ChatMessage;
         } else {
           // Assume binary response.
@@ -235,6 +321,95 @@ const useChat = () => {
           // Parse the complete response
           const responseData = await sendResponse.json();
 
+          // Helper function to parse nested array citations from Google Gemini format
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const parseCitations = (citationsData: any) => {
+            if (!citationsData) return undefined;
+
+            try {
+              // Handle nested array format from Google Gemini
+              if (Array.isArray(citationsData) && citationsData.length > 0) {
+                // Navigate to grounding_metadata: citations[0][6][1]
+                const candidateData = citationsData[0];
+                if (!Array.isArray(candidateData)) return undefined;
+
+                // Find the grounding_metadata array (index 6 in the structure)
+                const groundingMetadataEntry = candidateData.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => Array.isArray(item) && item[0] === 'grounding_metadata'
+                );
+                
+                if (!groundingMetadataEntry || !Array.isArray(groundingMetadataEntry[1])) return undefined;
+                
+                const groundingMetadata = groundingMetadataEntry[1];
+
+                // Find grounding_chunks within grounding_metadata
+                const groundingChunksEntry = groundingMetadata.find(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: any) => Array.isArray(item) && item[0] === 'grounding_chunks'
+                );
+                
+                if (!groundingChunksEntry || !Array.isArray(groundingChunksEntry[1])) return undefined;
+                
+                const groundingChunks = groundingChunksEntry[1];
+
+                // Extract web sources from each chunk
+                const sources = groundingChunks
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  .map((chunk: any, index: number) => {
+                    if (!Array.isArray(chunk) || !Array.isArray(chunk[0])) return null;
+                    
+                    // Find the 'web' entry in the chunk
+                    const webEntry = chunk[0].find(
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (item: any) => Array.isArray(item) && item[0] === 'web'
+                    );
+                    
+                    if (!webEntry || !Array.isArray(webEntry[1])) return null;
+                    
+                    const webData = webEntry[1];
+                    
+                    // Extract title and uri from webData
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const titleEntry = webData.find((item: any) => Array.isArray(item) && item[0] === 'title');
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const uriEntry = webData.find((item: any) => Array.isArray(item) && item[0] === 'uri');
+                    
+                    const title = titleEntry?.[1] || 'Unknown Source';
+                    const uri = uriEntry?.[1] || '';
+                    
+                    if (!uri) return null;
+                    
+                    return {
+                      id: `source_${index}`,
+                      title: title,
+                      publisher: title,
+                      url_hint: uri,
+                    };
+                  })
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  .filter((source: any) => source !== null);
+
+                return sources.length > 0 ? { sources } : undefined;
+              }
+
+              // Handle structured object format
+              if (typeof citationsData === 'object' && citationsData.sources) {
+                return citationsData;
+              }
+
+              // Handle string format
+              if (typeof citationsData === 'string') {
+                return citationsData;
+              }
+
+              return undefined;
+            } catch (error) {
+              console.error('Error parsing citations:', error);
+              return undefined;
+            }
+          };
+
           // Handle the new response format with ai_response
           if (responseData?.summary) {
             const finalMessage: ChatMessage = {
@@ -248,7 +423,7 @@ const useChat = () => {
               tokens_used: responseData.summary.tokens_used || 0,
               is_system_message: true,
               files: null,
-              citations: responseData.summary.citations || undefined,
+              citations: parseCitations(responseData.citations),
             };
             resolve(finalMessage);
           } else {
@@ -320,3 +495,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

@@ -6,6 +6,11 @@ export function extractCitations(text: string): Array<{
   domain?: string;
   displayName?: string;
 }> {
+  // Guard against invalid input
+  if (!text || typeof text !== 'string') {
+    return [];
+  }
+
   const urlRegex = /https?:\/\/([^\s\)]+)/g;
   const citations: Array<{
     type: 'url' | 'text';
