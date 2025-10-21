@@ -1,12 +1,12 @@
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
-import type { ChatMessage } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -25,7 +25,7 @@ interface ChatBubbleProps {
       mentionType?: string;
     };
     errorChunk?: string;
-    citations?: string;
+    citations?: string | Citation;
   };
   user?: User | null;
 }
