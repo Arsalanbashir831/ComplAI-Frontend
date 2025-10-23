@@ -37,13 +37,18 @@ export default function DocumentIdPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('DocumentIdPage Render:', {
-    hasOriginalResults: !!originalResults?.length,
-    hasContent: !!content,
-    hasEditor: !!editor,
-    isLoading,
-    hasProcessedData: !!processedData,
-  });
+  // Only log on client side to prevent hydration issues
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('DocumentIdPage Render:', {
+        hasOriginalResults: !!originalResults?.length,
+        hasContent: !!content,
+        hasEditor: !!editor,
+        isLoading,
+        hasProcessedData: !!processedData,
+      });
+    }
+  }, [originalResults, content, editor, isLoading, processedData]);
 
   // Extract the stringified results for dependency comparison
   const originalResultsString = JSON.stringify(originalResults);

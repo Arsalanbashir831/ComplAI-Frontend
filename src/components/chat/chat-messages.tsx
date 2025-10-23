@@ -1,9 +1,10 @@
 // src/components/chat/chat-messages.tsx
 
-import { useEffect, useRef, useState } from 'react';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
+import { useEffect, useRef, useState } from 'react';
 
+import { useClientOnly } from '@/lib/client-only';
 import type { ChatMessage } from '@/types/chat';
 
 import { ChatBubble } from './chat-bubble';
@@ -33,24 +34,25 @@ export function ChatMessages({
   const { trigger } = useSendMessageTrigger();
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const previousScrollHeight = useRef<number>(0);
+  const isClient = useClientOnly();
 
   useEffect(() => {
-    // Only scroll when a new message is sent (trigger is true)
-    if (trigger) {
+    // Only scroll when a new message is sent (trigger is true) and on client side
+    if (trigger && isClient) {
       bottomRef.current?.scrollIntoView({ behavior: 'auto' });
     }
     // This effect runs whenever trigger changes.
-  }, [trigger]);
+  }, [trigger, isClient]);
 
   // Ensure messages is an array
   const messagesArray = Array.isArray(messages) ? messages : [];
 
   useEffect(() => {
-    // Scroll to bottom when chatId changes and messages are loaded
-    if (chatId && messagesArray.length > 0 && !isLoadingMore) {
+    // Scroll to bottom when chatId changes and messages are loaded (only on client)
+    if (chatId && messagesArray.length > 0 && !isLoadingMore && isClient) {
       bottomRef.current?.scrollIntoView({ behavior: 'auto' });
     }
-  }, [chatId, messagesArray.length, isLoadingMore]);
+  }, [chatId, messagesArray.length, isLoadingMore, isClient]);
 
   const handleScroll = () => {
     const el = viewportRef.current;

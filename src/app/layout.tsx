@@ -1,15 +1,15 @@
-import { Suspense } from 'react';
-import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
 import { ChatProvider } from '@/contexts/chat-context';
 import { LoaderProvider } from '@/contexts/loader-context';
 import { PromptProvider } from '@/contexts/prompt-context';
 import { UserProvider } from '@/contexts/user-context';
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
+import { Suspense } from 'react';
 
-import { Toaster } from '@/components/ui/sonner';
 import LoadingSpinner from '@/components/common/loading-spinner';
+import { Toaster } from '@/components/ui/sonner';
 
 import './globals.css';
 
@@ -28,7 +28,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log(process.env.NEXT_PUBLIC_BACKEND_URL);
   return (
     <html lang="en">
       <body className={`font-sans bg-background text-foreground ${poppins}`}>

@@ -23,7 +23,7 @@ const apiCaller = async (
     signal,
   };
   config.headers = {};
-  if (useAuth) {
+  if (useAuth && typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -54,7 +54,7 @@ const apiCaller = async (
     return response;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      if (onErrorRefresh) {
+      if (onErrorRefresh && typeof window !== 'undefined') {
         window.location.reload();
       }
       throw error;

@@ -1,11 +1,11 @@
 // hooks/useAuth.ts
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 
@@ -49,8 +49,10 @@ export function useAuth() {
       }
 
       const { access, refresh } = response.data;
-      localStorage.setItem('accessToken', access);
-      localStorage.setItem('refreshToken', refresh);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', access);
+        localStorage.setItem('refreshToken', refresh);
+      }
 
       // 2️⃣ Otherwise, route based on new vs. old user
       if (type === 'new') {

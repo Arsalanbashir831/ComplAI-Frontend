@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 
 import apiCaller from '@/config/apiCaller';
+import { useClientOnly } from '@/lib/client-only';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -15,10 +16,13 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const subscription = searchParams.get('subscription');
+  const isClient = useClientOnly();
 
   const logoutUser = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
 
     const redirectTo = subscription
       ? `/auth?subscription=${encodeURIComponent(subscription)}`
@@ -28,6 +32,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    // Only run on client side to prevent hydration issues
+    if (!isClient) return;
+
     // **Skip** on /auth and /auth/sign-up
     // skip on /auth *and* any sub-route under /auth
     if (pathname.startsWith('/auth')) {
@@ -80,7 +87,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     verifyAndRefreshToken();
-  }, [pathname, subscription, router, logoutUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, subscription, router, isClient]);
 
   return <>{children}</>;
 };

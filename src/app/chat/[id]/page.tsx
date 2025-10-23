@@ -2,14 +2,15 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useChatContext } from '@/contexts/chat-context';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
+import { useChatMessages } from '@/hooks/useChat';
+import { useClientOnly } from '@/lib/client-only';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
@@ -18,18 +19,19 @@ export default function SpecificChatPage() {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isClient = useClientOnly();
 
   const { messages, setMessages } = useChatContext();
   const { data: chatMessagesData, isLoading } = useChatMessages(chatId);
 
   // Initialize context messages only once when the page loads and context is empty.
   useEffect(() => {
-    if (chatMessagesData?.results && messages.length === 0) {
+    if (chatMessagesData?.results && messages.length === 0 && isClient) {
       setMessages(chatMessagesData.results);
     }
     // We only want this to run when the initial chatMessages are loaded.
     // Removing `messages` from the dependency array prevents it from re-running unnecessarily.
-  }, [chatMessagesData, messages.length, setMessages]);
+  }, [chatMessagesData, messages.length, setMessages, isClient]);
 
   const scrollToBottom = () => {
     messagesContainerRef.current?.scrollTo({
