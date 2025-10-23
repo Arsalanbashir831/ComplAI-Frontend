@@ -2,14 +2,14 @@
 
 'use client';
 
-import { useChatContext } from '@/contexts/chat-context';
-import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useChatContext } from '@/contexts/chat-context';
 
+import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
-import { useChatMessages } from '@/hooks/useChat';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
@@ -42,7 +42,7 @@ export default function SpecificChatPage() {
     // TODO: Implement pagination API call with page parameter
     // For now, this is a placeholder for when pagination endpoint is available
     console.log('Loading more messages for page:', currentPage + 1);
-    setCurrentPage(prev => prev + 1);
+    setCurrentPage((prev) => prev + 1);
   };
 
   return (

@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import type { Chat, ChatMessage } from '@/types/chat';
+import apiCaller from '@/config/apiCaller';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -25,12 +25,12 @@ const fetchUserChats = async (): Promise<Chat[]> => {
     true,
     'json'
   );
-  
+
   // Handle both paginated and non-paginated responses
   if (response.data && 'results' in response.data) {
     return (response.data as PaginatedChatsResponse).results;
   }
-  
+
   // Fallback for non-paginated response
   return Array.isArray(response.data) ? response.data : [];
 };
@@ -574,4 +574,3 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
-

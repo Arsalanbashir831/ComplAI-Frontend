@@ -1,8 +1,8 @@
 // src/components/chat/chat-messages.tsx
 
+import { useEffect, useRef, useState } from 'react';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
-import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
@@ -55,7 +55,7 @@ export function ChatMessages({
   const handleScroll = () => {
     const el = viewportRef.current;
     if (!el) return;
-    
+
     // Check if at bottom
     const atBottom =
       Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 1;
@@ -75,7 +75,7 @@ export function ChatMessages({
       const el = viewportRef.current;
       const newScrollHeight = el.scrollHeight;
       const heightDifference = newScrollHeight - previousScrollHeight.current;
-      
+
       if (heightDifference > 0) {
         el.scrollTop = heightDifference;
         setIsLoadingMore(false);
@@ -106,11 +106,11 @@ export function ChatMessages({
         {isLoading && messagesArray.length === 0 && (
           <div className="text-center text-gray-500">Loading messages...</div>
         )}
-        
+
         {messagesArray.map((msg) => (
           <ChatBubble key={msg.id} message={msg} user={user} />
         ))}
-        
+
         {/* This empty div marks the end of the chat list for scrolling */}
         <div ref={bottomRef} className="h-1" />
       </div>

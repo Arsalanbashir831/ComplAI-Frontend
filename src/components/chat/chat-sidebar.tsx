@@ -1,15 +1,15 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
 import type { Chat } from '@/types/chat';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -31,18 +31,32 @@ export function ChatSidebar() {
   };
 
   // Ensure chats is an array and filter with validation
-  const chatsArray: Chat[] = Array.isArray(chats) ? chats : (chats ? Object.values(chats) : []);
-  
+  const chatsArray: Chat[] = Array.isArray(chats)
+    ? chats
+    : chats
+      ? Object.values(chats)
+      : [];
+
   const filteredChats = chatsArray
-    .filter((chat): chat is Chat => chat && typeof chat === 'object' && 'name' in chat && typeof chat.name === 'string') // Ensure valid chat objects
-    .filter(chat => chat.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  
+    .filter(
+      (chat): chat is Chat =>
+        chat &&
+        typeof chat === 'object' &&
+        'name' in chat &&
+        typeof chat.name === 'string'
+    ) // Ensure valid chat objects
+    .filter((chat) =>
+      chat.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
   // Sort the filtered chats with validation
   const sortedChats = filteredChats
-    .filter(chat => 'updated_at' in chat && chat.updated_at) // Ensure updated_at exists
+    .filter((chat) => 'updated_at' in chat && chat.updated_at) // Ensure updated_at exists
     .sort((a, b) => {
       try {
-        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        return (
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        );
       } catch {
         return 0; // Return 0 if date comparison fails
       }
@@ -112,7 +126,8 @@ export function ChatSidebar() {
                     variant="ghost"
                     className={cn(
                       'w-full justify-start text-left font-normal text-gray-dark',
-                      currentChatId === String(chat.id) && 'bg-accent text-black'
+                      currentChatId === String(chat.id) &&
+                        'bg-accent text-black'
                     )}
                   >
                     <MessageSquareText />
