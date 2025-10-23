@@ -104,7 +104,7 @@ export default function DocumentIdPage() {
     fetchProcessedData();
 
     // Depend on content and the original results to trigger fetch
-  }, [content, originalResultsString]); // Use the extracted variable
+  }, [content, originalResultsString, originalResults]); // Include originalResults
 
   // --- Redirect if no content after loading attempt ---
   useEffect(() => {
