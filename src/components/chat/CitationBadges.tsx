@@ -1,8 +1,8 @@
-import Image from 'next/image';
 import React from 'react';
+import Image from 'next/image';
 
-import { extractCitations, getFaviconUrl } from '@/lib/citations';
 import type { Citation } from '@/types/chat';
+import { extractCitations, getFaviconUrl } from '@/lib/citations';
 
 // Helper function to safely extract domain from URL
 const extractDomain = (url: string): string => {
