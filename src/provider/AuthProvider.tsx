@@ -1,8 +1,8 @@
 'use client';
 
-import { API_ROUTES } from '@/constants/apiRoutes';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { API_ROUTES } from '@/constants/apiRoutes';
 
 import apiCaller from '@/config/apiCaller';
 import { useClientOnly } from '@/lib/client-only';

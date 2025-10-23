@@ -1,11 +1,11 @@
 // src/components/chat/chat-messages.tsx
 
+import { useEffect, useRef, useState } from 'react';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
-import { useEffect, useRef, useState } from 'react';
 
-import { useClientOnly } from '@/lib/client-only';
 import type { ChatMessage } from '@/types/chat';
+import { useClientOnly } from '@/lib/client-only';
 
 import { ChatBubble } from './chat-bubble';
 
