@@ -170,7 +170,7 @@ export function MessageInput({
 
       if (!localChatId) {
         const response = await createChat(shortenText(promptText.trim(), 5));
-        localChatId = response.id;
+        localChatId = String(response.id);
         setCurrentChatId(localChatId);
       }
 

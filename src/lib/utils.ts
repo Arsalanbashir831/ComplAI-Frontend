@@ -2,7 +2,6 @@ import { clsx, type ClassValue } from 'clsx';
 import { DateRange } from 'react-day-picker';
 import { twMerge } from 'tailwind-merge';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
