@@ -1,8 +1,8 @@
-import Image from 'next/image';
 import React from 'react';
+import Image from 'next/image';
 
-import { extractCitations, getFaviconUrl } from '@/lib/citations';
 import type { Citation } from '@/types/chat';
+import { extractCitations, getFaviconUrl } from '@/lib/citations';
 
 // Helper function to safely extract domain from URL
 const extractDomain = (url: string): string => {
@@ -55,7 +55,8 @@ export const CitationBadges: React.FC<{ citations: string | Citation }> = ({
                   className="flex items-center gap-2 px-2.5 py-1 bg-gray-50 border border-blue-200 rounded-full shadow-sm min-w-0 max-w-[220px] transition-colors duration-200 hover:bg-blue-50 focus:ring-2 focus:ring-blue-200 outline-none cursor-pointer"
                   style={{ fontSize: '0.82rem', lineHeight: '1.1rem' }}
                 >
-                  <Image unoptimized
+                  <Image
+                    unoptimized
                     src={getFaviconUrl(domain)}
                     alt={`${source.title} favicon`}
                     width={16}
