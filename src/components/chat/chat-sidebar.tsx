@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useState } from 'react';
 
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import type { Chat } from '@/types/chat';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -16,7 +17,7 @@ import MenuToggleButton from '../common/menu-toggle-button';
 import { Input } from '../ui/input';
 
 export function ChatSidebar() {
-  const { chats } = useChat();
+  const { chats, isLoading, error } = useChat();
   const [isOpen, setIsOpen] = useState(false);
 
   // For client-side filtering
@@ -25,51 +26,27 @@ export function ChatSidebar() {
   const pathname = usePathname();
   const currentChatId = pathname.split('/').pop();
 
-  // type TokensSummary = {
-  //   remaining_tokens: number;
-  //   used_tokens: number;
-  //   total_tokens: number;
-  // };
-
-  // const fetchTokensSummary = async (): Promise<TokensSummary> => {
-  //   const response = await apiCaller(
-  //     API_ROUTES.USER.GET_TOKENS_SUMMARY,
-  //     'GET',
-  //     {},
-  //     {},
-  //     true,
-  //     'json'
-  //   );
-  //   return response.data;
-  // };
-
-  // const { data: tokensSummary } = useQuery({
-  //   queryKey: ['tokensSummary'],
-  //   queryFn: fetchTokensSummary,
-  //   staleTime: 1000 * 60 * 5,
-  //   retry: 1,
-  // });
-
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
-  // Ensure non-negative token values
-  // const totalTokens = Math.max(tokensSummary?.total_tokens || 0, 0);
-  // const remainingTokens = Math.max(tokensSummary?.remaining_tokens || 0, 0);
-
-  // Calculate progress percentage safely
-  // const progressValue =
-  //   totalTokens > 0 ? ((totalTokens - remainingTokens) / totalTokens) * 100 : 0;
-
-  // 1. Create a filtered array from the local `chats` state using client-side search
-  const filteredChats = chats?.filter((chat) =>
-    chat.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const sortedChats = filteredChats?.sort(
-    (a, b) =>
-      new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-  );
+  // Ensure chats is an array and filter with validation
+  const chatsArray: Chat[] = Array.isArray(chats) ? chats : (chats ? Object.values(chats) : []);
+  
+  const filteredChats = chatsArray
+    .filter((chat): chat is Chat => chat && typeof chat === 'object' && 'name' in chat && typeof chat.name === 'string') // Ensure valid chat objects
+    .filter(chat => chat.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+  // Sort the filtered chats with validation
+  const sortedChats = filteredChats
+    .filter(chat => 'updated_at' in chat && chat.updated_at) // Ensure updated_at exists
+    .sort((a, b) => {
+      try {
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      } catch {
+        return 0; // Return 0 if date comparison fails
+      }
+    });
   return (
     <div>
       <div
@@ -109,26 +86,48 @@ export function ChatSidebar() {
             {searchTerm ? 'Search Results' : 'Recent'}
           </h2>
           <div className="space-y-2">
-            {/* 4. Map over `filteredChats` instead of `chats`. */}
-            {sortedChats?.map((chat) => (
-              <React.Fragment key={chat.id}>
-                <Button
-                  onClick={() =>
-                    (window.location.href = ROUTES.CHAT_ID(chat.id))
-                  }
-                  variant="ghost"
-                  className={cn(
-                    'w-full justify-start text-left font-normal text-gray-dark',
-                    currentChatId === String(chat.id) && 'bg-accent text-black'
-                  )}
-                >
-                  <MessageSquareText />
-                  <span className="text-ellipsis overflow-hidden">
-                    {chat.name}
-                  </span>
-                </Button>
-              </React.Fragment>
-            ))}
+            {isLoading ? (
+              // Loading skeleton
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-10 bg-gray-100 rounded-lg animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : error ? (
+              // Error message
+              <div className="text-center text-red-500 py-4">
+                Failed to load chats: {error.message}
+              </div>
+            ) : sortedChats && sortedChats.length > 0 ? (
+              // Chat list
+              sortedChats.map((chat) => (
+                <React.Fragment key={chat.id}>
+                  <Button
+                    onClick={() =>
+                      (window.location.href = ROUTES.CHAT_ID(String(chat.id)))
+                    }
+                    variant="ghost"
+                    className={cn(
+                      'w-full justify-start text-left font-normal text-gray-dark',
+                      currentChatId === String(chat.id) && 'bg-accent text-black'
+                    )}
+                  >
+                    <MessageSquareText />
+                    <span className="text-ellipsis overflow-hidden">
+                      {chat.name}
+                    </span>
+                  </Button>
+                </React.Fragment>
+              ))
+            ) : (
+              // No chats message
+              <div className="text-center text-gray-500 py-4">
+                No chats found
+              </div>
+            )}
           </div>
         </div>
 

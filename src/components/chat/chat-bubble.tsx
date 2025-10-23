@@ -1,17 +1,16 @@
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import BounceDots from './BounceDotAnimation';
-import { CitationBadges } from './CitationBadges';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
 
@@ -231,13 +230,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   )}
                 >
                   <MarkdownRenderer content={message.content} />
-                  {isBot &&
+                  {/* {isBot &&
                     /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(message.content) &&
                     message.citations && (
                       <div className="mt-2">
                         <CitationBadges citations={message.citations} />
                       </div>
-                    )}
+                    )} */}
                 </div>
               ))}
 
@@ -265,14 +264,14 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             )}
 
             {/* Citations section (for non-table content) */}
-            {isBot &&
+            {/* {isBot &&
               message.citations &&
               message.content !== 'loading' &&
               !/\n?\s*\|[^\n]*\|[^\n]*\|/m.test(message.content) && (
                 <div className="mt-6 border-t border-gray-200 pt-4">
                   <CitationBadges citations={message.citations} />
                 </div>
-              )}
+              )} */}
 
             <div className="flex gap-2">
               {/* Copy button for bot messages */}

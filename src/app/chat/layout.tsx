@@ -1,3 +1,5 @@
+'use client';
+
 import { SendMessageTriggerProvider } from '@/contexts/send-message-trigger-context';
 
 import { ChatSidebar } from '@/components/chat/chat-sidebar';

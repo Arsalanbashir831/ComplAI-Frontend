@@ -2,39 +2,47 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useChatContext } from '@/contexts/chat-context';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
+import { useChatMessages } from '@/hooks/useChat';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
   const chatId = id as string;
 
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const { messages, setMessages } = useChatContext();
-  const { data: chatMessages, isLoading } = useChatMessages(chatId);
+  const { data: chatMessagesData, isLoading } = useChatMessages(chatId);
 
   // Initialize context messages only once when the page loads and context is empty.
   useEffect(() => {
-    if (chatMessages && messages.length === 0) {
-      setMessages(chatMessages);
+    if (chatMessagesData?.results && messages.length === 0) {
+      setMessages(chatMessagesData.results);
     }
     // We only want this to run when the initial chatMessages are loaded.
     // Removing `messages` from the dependency array prevents it from re-running unnecessarily.
-  }, [chatMessages, messages.length, setMessages]);
+  }, [chatMessagesData, messages.length, setMessages]);
 
   const scrollToBottom = () => {
     messagesContainerRef.current?.scrollTo({
       top: messagesContainerRef.current.scrollHeight,
       behavior: 'smooth',
     });
+  };
+
+  const handleLoadMore = () => {
+    // TODO: Implement pagination API call with page parameter
+    // For now, this is a placeholder for when pagination endpoint is available
+    console.log('Loading more messages for page:', currentPage + 1);
+    setCurrentPage(prev => prev + 1);
   };
 
   return (
@@ -58,6 +66,8 @@ export default function SpecificChatPage() {
               messagesContainerRef as React.RefObject<HTMLDivElement>
             }
             onScrollButtonVisible={setShowScrollButton}
+            hasMore={chatMessagesData?.pagination?.has_next ?? false}
+            onLoadMore={handleLoadMore}
           />
         </div>
 

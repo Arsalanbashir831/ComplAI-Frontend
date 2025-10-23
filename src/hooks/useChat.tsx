@@ -1,8 +1,19 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
+
+// Types for paginated chats response
+interface PaginatedChatsResponse {
+  results: Chat[];
+  pagination: {
+    page_size: number;
+    direction: 'asc' | 'desc';
+    has_next: boolean;
+    count: number;
+  };
+}
 
 // Fetch all user chats
 const fetchUserChats = async (): Promise<Chat[]> => {
@@ -14,7 +25,14 @@ const fetchUserChats = async (): Promise<Chat[]> => {
     true,
     'json'
   );
-  return response.data;
+  
+  // Handle both paginated and non-paginated responses
+  if (response.data && 'results' in response.data) {
+    return (response.data as PaginatedChatsResponse).results;
+  }
+  
+  // Fallback for non-paginated response
+  return Array.isArray(response.data) ? response.data : [];
 };
 
 const searchUserChats = async (searchTerm: string): Promise<Chat[]> => {
@@ -58,10 +76,11 @@ const useChat = () => {
       return response.data;
     },
     onSuccess: (newChat) => {
-      queryClient.setQueryData<Chat[]>(['chats'], (oldChats = []) => [
-        newChat,
-        ...oldChats,
-      ]);
+      queryClient.setQueryData<Chat[]>(['chats'], (oldChats = []) => {
+        // Ensure oldChats is an array
+        const chatsArray = Array.isArray(oldChats) ? oldChats : [];
+        return [newChat, ...chatsArray];
+      });
     },
   });
 
@@ -507,11 +526,24 @@ const useChat = () => {
   };
 };
 
-// Hook to fetch messages for a specific chat
+// Types for paginated response
+interface PaginationMetadata {
+  page_size: number;
+  direction: 'asc' | 'desc';
+  has_next: boolean;
+  count: number;
+}
+
+interface PaginatedMessagesResponse {
+  results: ChatMessage[];
+  pagination: PaginationMetadata;
+}
+
+// Hook to fetch messages for a specific chat with pagination
 const useChatMessages = (chatId: string) => {
-  return useQuery<ChatMessage[], Error>({
+  return useQuery<PaginatedMessagesResponse, Error>({
     queryKey: ['chatMessages', chatId],
-    queryFn: async (): Promise<ChatMessage[]> => {
+    queryFn: async (): Promise<PaginatedMessagesResponse> => {
       const response = await apiCaller(
         API_ROUTES.CHAT.GET_MESSAGES(chatId),
         'GET',
@@ -520,7 +552,20 @@ const useChatMessages = (chatId: string) => {
         true,
         'json'
       );
-      return response.data;
+      // Handle both paginated and non-paginated responses
+      if (response.data && 'results' in response.data) {
+        return response.data as PaginatedMessagesResponse;
+      }
+      // Fallback for non-paginated response
+      return {
+        results: Array.isArray(response.data) ? response.data : [],
+        pagination: {
+          page_size: 50,
+          direction: 'asc',
+          has_next: false,
+          count: Array.isArray(response.data) ? response.data.length : 0,
+        },
+      };
     },
     enabled: !!chatId,
     staleTime: 1000 * 60 * 5,
@@ -529,3 +574,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

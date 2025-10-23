@@ -1,8 +1,8 @@
 // src/components/chat/chat-messages.tsx
 
-import { useEffect, useRef } from 'react';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
+import { useEffect, useRef, useState } from 'react';
 
 import type { ChatMessage } from '@/types/chat';
 
@@ -15,17 +15,24 @@ export function ChatMessages({
   chatId,
   containerRef,
   onScrollButtonVisible,
+  hasMore = false,
+  onLoadMore,
 }: {
   messages: ChatMessage[];
   isLoading: boolean;
   chatId: string;
   containerRef: React.RefObject<HTMLDivElement>;
   onScrollButtonVisible: (show: boolean) => void;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
 }) {
   const viewportRef = containerRef;
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const topRef = useRef<HTMLDivElement | null>(null);
   const { user } = useUserContext();
   const { trigger } = useSendMessageTrigger();
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const previousScrollHeight = useRef<number>(0);
 
   useEffect(() => {
     // Only scroll when a new message is sent (trigger is true)
@@ -35,20 +42,47 @@ export function ChatMessages({
     // This effect runs whenever trigger changes.
   }, [trigger]);
 
+  // Ensure messages is an array
+  const messagesArray = Array.isArray(messages) ? messages : [];
+
   useEffect(() => {
     // Scroll to bottom when chatId changes and messages are loaded
-    if (chatId && messages.length > 0) {
+    if (chatId && messagesArray.length > 0 && !isLoadingMore) {
       bottomRef.current?.scrollIntoView({ behavior: 'auto' });
     }
-  }, [chatId, messages.length]);
+  }, [chatId, messagesArray.length, isLoadingMore]);
 
   const handleScroll = () => {
     const el = viewportRef.current;
     if (!el) return;
+    
+    // Check if at bottom
     const atBottom =
       Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 1;
     onScrollButtonVisible(!atBottom);
+
+    // Check if scrolled to top to load more messages (WhatsApp style)
+    if (el.scrollTop === 0 && hasMore && !isLoadingMore && onLoadMore) {
+      setIsLoadingMore(true);
+      previousScrollHeight.current = el.scrollHeight;
+      onLoadMore();
+    }
   };
+
+  // Maintain scroll position after loading more messages
+  useEffect(() => {
+    if (isLoadingMore && viewportRef.current) {
+      const el = viewportRef.current;
+      const newScrollHeight = el.scrollHeight;
+      const heightDifference = newScrollHeight - previousScrollHeight.current;
+      
+      if (heightDifference > 0) {
+        el.scrollTop = heightDifference;
+        setIsLoadingMore(false);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messagesArray.length, isLoadingMore]);
 
   return (
     // This div is now the main scrolling container, passed from the parent page.
@@ -58,13 +92,25 @@ export function ChatMessages({
       onScroll={handleScroll}
     >
       <div className="mx-auto md:max-w-[85%] md:p-4 min-h-full flex flex-col justify-start">
+        {/* Loading indicator at top when loading more messages */}
+        <div ref={topRef} className="h-1">
+          {isLoadingMore && (
+            <div className="text-center text-gray-500 py-2">
+              <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+              <span className="ml-2">Loading older messages...</span>
+            </div>
+          )}
+        </div>
+
         {/* Optional: Show a loading skeleton/spinner during initial fetch */}
-        {isLoading && messages.length === 0 && (
+        {isLoading && messagesArray.length === 0 && (
           <div className="text-center text-gray-500">Loading messages...</div>
         )}
-        {messages.map((msg) => (
+        
+        {messagesArray.map((msg) => (
           <ChatBubble key={msg.id} message={msg} user={user} />
         ))}
+        
         {/* This empty div marks the end of the chat list for scrolling */}
         <div ref={bottomRef} className="h-1" />
       </div>

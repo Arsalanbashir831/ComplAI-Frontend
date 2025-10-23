@@ -43,12 +43,11 @@ export interface ChatMessage {
 }
 
 export interface Chat {
-  updated_at: string | number | Date;
-  id: string;
+  id: string | number;
   name: string;
   user: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ChatState {
