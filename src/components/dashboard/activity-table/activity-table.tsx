@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
-import { DateRangePicker } from '@/components/common/date-range-picker';
-import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
+import type { ActivityItem } from '@/types/dashboard';
+import { cn, getDefaultDateRange } from '@/lib/utils';
+import useTokensHistory from '@/hooks/useTokensHistory';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import useTokensHistory from '@/hooks/useTokensHistory';
-import { cn, getDefaultDateRange } from '@/lib/utils';
-import type { ActivityItem } from '@/types/dashboard';
+import { DateRangePicker } from '@/components/common/date-range-picker';
+import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
