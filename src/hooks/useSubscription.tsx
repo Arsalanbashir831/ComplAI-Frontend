@@ -21,43 +21,44 @@ export const useSubscription = (): UseSubscriptionReturn => {
     setError(null);
   }, []);
 
-  const handleSubscription = useCallback(async (
-    subscription: SubscriptionType
-  ): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
+  const handleSubscription = useCallback(
+    async (subscription: SubscriptionType): Promise<void> => {
+      setIsLoading(true);
+      setError(null);
 
-    const isMonthly = subscription === 'monthly';
-    const endpoint = isMonthly
-      ? API_ROUTES.BILLING.MONTHLY_BILLING_PROCESS
-      : API_ROUTES.BILLING.ONE_TIME_PAYMENT_BILLING_PROCESS;
+      const isMonthly = subscription === 'monthly';
+      const endpoint = isMonthly
+        ? API_ROUTES.BILLING.MONTHLY_BILLING_PROCESS
+        : API_ROUTES.BILLING.ONE_TIME_PAYMENT_BILLING_PROCESS;
 
-    const payload: Record<string, number> = isMonthly
-      ? { subscription_plan_id: 2 }
-      : { product_id: 2 };
+      const payload: Record<string, number> = isMonthly
+        ? { subscription_plan_id: 2 }
+        : { product_id: 2 };
 
-    try {
-      const { data } = await apiCaller(
-        endpoint,
-        'POST',
-        payload,
-        {}, // extra headers
-        true, // useAuth
-        'json'
-      );
+      try {
+        const { data } = await apiCaller(
+          endpoint,
+          'POST',
+          payload,
+          {}, // extra headers
+          true, // useAuth
+          'json'
+        );
 
-      if (data?.checkout_url) {
-        window.location.href = data.checkout_url;
+        if (data?.checkout_url) {
+          window.location.href = data.checkout_url;
+        }
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error('Subscription process failed');
+        setError(error);
+        console.error('Subscription API error:', err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error('Subscription process failed');
-      setError(error);
-      console.error('Subscription API error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   return {
     isLoading,
