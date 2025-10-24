@@ -1,15 +1,15 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
 import type { Chat } from '@/types/chat';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -248,7 +248,6 @@ export function ChatSidebar() {
                     <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
                   </div>
                 )}
-
               </>
             ) : (
               // No chats message
