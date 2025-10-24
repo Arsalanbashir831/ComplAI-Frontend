@@ -1,13 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { Plus, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useChat } from '@/hooks/useChat';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 
@@ -19,6 +26,7 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
   const { deleteChat } = useChat();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [selectedAuthority, setSelectedAuthority] = useState('SRA');
 
   const handleDelete = async () => {
     if (!currentChatId) return;
@@ -32,11 +40,20 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
   };
 
   return (
-    <header className="flex justify-end md:justify-between items-center py-4 md:px-4 border-b-gray-100 border-b-2">
+    <header className="flex justify-between md:justify-between items-center py-4 md:px-4 border-b-gray-100 border-b-2">
       {/* Logo Section */}
-      <div className="items-center space-x-2 hidden md:flex">
-        <Image src="/robot_icon.png" alt="Compl-AI-v1" width={40} height={40} />
-        <h1 className="text-xl font-semibold text-gray-800">Companion-v1</h1>
+      <div className="items-center space-x-2 flex">
+        <Image src="/robot_icon.png" alt="Compl-AI-v1" width={40} height={40}/>
+        <Select value={selectedAuthority} onValueChange={setSelectedAuthority}>
+          <SelectTrigger className="md:w-[310px] md:text-base font-semibold text-gray-800 border-none shadow-none bg-transparent focus:ring-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="SRA"><span className='hidden md:inline'>Solicitors Regulation Authority </span>(SRA)</SelectItem>
+            <SelectItem value="LAA"><span className='hidden md:inline'>Legal Aid Agency </span>(LAA)</SelectItem>
+            <SelectItem value="AML"><span className='hidden md:inline'>Anti-Money Laundering </span>(AML)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Action Buttons */}
