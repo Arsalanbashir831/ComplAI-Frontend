@@ -1,11 +1,11 @@
 // src/components/chat/chat-messages.tsx
 
-import { useEffect, useRef, useState } from 'react';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage } from '@/types/chat';
 import { useClientOnly } from '@/lib/client-only';
+import type { ChatMessage } from '@/types/chat';
 
 import { ChatBubble } from './chat-bubble';
 
@@ -16,7 +16,7 @@ export function ChatMessages({
   chatId,
   containerRef,
   onScrollButtonVisible,
-  hasMore = false,
+  hasMore = false, // eslint-disable-line @typescript-eslint/no-unused-vars
   onLoadMore,
 }: {
   messages: ChatMessage[];
@@ -33,6 +33,13 @@ export function ChatMessages({
   const { user } = useUserContext();
   const { trigger } = useSendMessageTrigger();
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [pagination, setPagination] = useState<{
+    page_size: number;
+    direction: string;
+    has_next: boolean;
+    count: number;
+    next_cursor: string | null;
+  } | null>(null);
   const previousScrollHeight = useRef<number>(0);
   const isClient = useClientOnly();
 
@@ -54,6 +61,52 @@ export function ChatMessages({
     }
   }, [chatId, messagesArray.length, isLoadingMore, isClient]);
 
+  // Load older messages function
+  const loadOlderMessages = useCallback(async () => {
+    if (isLoadingMore || !pagination?.has_next || !pagination?.next_cursor) return;
+
+    setIsLoadingMore(true);
+    try {
+      const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chats/${chatId}/messages/`);
+      url.searchParams.set('cursor', pagination.next_cursor);
+      url.searchParams.set('direction', pagination.direction);
+      url.searchParams.set('page_size', pagination.page_size.toString());
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          // Invalid cursor format, reset pagination
+          console.warn('Invalid cursor format, resetting pagination');
+          setPagination(prev => prev ? { ...prev, has_next: false } : null);
+          return;
+        }
+        throw new Error('Failed to load older messages');
+      }
+
+      const data = await response.json();
+      const newMessages = data.results || [];
+      
+      if (newMessages.length === 0) {
+        setPagination(prev => prev ? { ...prev, has_next: false } : null);
+      } else {
+        // Prepend older messages to the beginning
+        if (onLoadMore) {
+          onLoadMore();
+        }
+        setPagination(data.pagination || null);
+      }
+    } catch (error) {
+      console.error('Error loading older messages:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, pagination, chatId, onLoadMore]);
+
   const handleScroll = () => {
     const el = viewportRef.current;
     if (!el) return;
@@ -64,10 +117,9 @@ export function ChatMessages({
     onScrollButtonVisible(!atBottom);
 
     // Check if scrolled to top to load more messages (WhatsApp style)
-    if (el.scrollTop === 0 && hasMore && !isLoadingMore && onLoadMore) {
-      setIsLoadingMore(true);
+    if (el.scrollTop === 0 && pagination?.has_next && !isLoadingMore) {
       previousScrollHeight.current = el.scrollHeight;
-      onLoadMore();
+      loadOlderMessages();
     }
   };
 
@@ -102,6 +154,14 @@ export function ChatMessages({
               <span className="ml-2">Loading older messages...</span>
             </div>
           )}
+          
+          {/* Show load more indicator when there are more messages */}
+          {pagination?.has_next && !isLoadingMore && (
+            <div className="text-center text-gray-400 py-2 text-sm">
+              Scroll up to load older messages
+            </div>
+          )}
+          
         </div>
 
         {/* Optional: Show a loading skeleton/spinner during initial fetch */}

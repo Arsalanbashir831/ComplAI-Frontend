@@ -2,32 +2,47 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useChatContext } from '@/contexts/chat-context';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { useClientOnly } from '@/lib/client-only';
-import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
+import { useChatMessages } from '@/hooks/useChat';
+import { useClientOnly } from '@/lib/client-only';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
   const chatId = id as string;
 
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<{
+    page_size: number;
+    direction: string;
+    has_next: boolean;
+    count: number;
+    next_cursor: string | null;
+  } | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isClient = useClientOnly();
 
   const { messages, setMessages } = useChatContext();
   const { data: chatMessagesData, isLoading } = useChatMessages(chatId);
 
-  // Initialize context messages only once when the page loads and context is empty.
+  // Initialize context messages and pagination when the page loads
   useEffect(() => {
     if (chatMessagesData?.results && messages.length === 0 && isClient) {
       setMessages(chatMessagesData.results);
+      if (chatMessagesData.pagination) {
+        setPagination({
+          page_size: chatMessagesData.pagination.page_size,
+          direction: chatMessagesData.pagination.direction,
+          has_next: chatMessagesData.pagination.has_next,
+          count: chatMessagesData.pagination.count,
+          next_cursor: chatMessagesData.pagination.next_cursor ?? null,
+        });
+      }
     }
     // We only want this to run when the initial chatMessages are loaded.
     // Removing `messages` from the dependency array prevents it from re-running unnecessarily.
@@ -40,11 +55,43 @@ export default function SpecificChatPage() {
     });
   };
 
-  const handleLoadMore = () => {
-    // TODO: Implement pagination API call with page parameter
-    // For now, this is a placeholder for when pagination endpoint is available
-    console.log('Loading more messages for page:', currentPage + 1);
-    setCurrentPage((prev) => prev + 1);
+  const handleLoadMore = async () => {
+    if (!pagination?.has_next || !pagination?.next_cursor) return;
+
+    try {
+      const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chats/${chatId}/messages/`);
+      url.searchParams.set('cursor', pagination.next_cursor);
+      url.searchParams.set('direction', pagination.direction);
+      url.searchParams.set('page_size', pagination.page_size.toString());
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          console.warn('Invalid cursor format, resetting pagination');
+          setPagination(prev => prev ? { ...prev, has_next: false } : null);
+          return;
+        }
+        throw new Error('Failed to load older messages');
+      }
+
+      const data = await response.json();
+      const newMessages = data.results || [];
+      
+      if (newMessages.length === 0) {
+        setPagination(prev => prev ? { ...prev, has_next: false } : null);
+      } else {
+        // Prepend older messages to the beginning
+        setMessages(prev => [...newMessages, ...prev]);
+        setPagination(data.pagination || null);
+      }
+    } catch (error) {
+      console.error('Error loading older messages:', error);
+    }
   };
 
   return (
@@ -68,7 +115,7 @@ export default function SpecificChatPage() {
               messagesContainerRef as React.RefObject<HTMLDivElement>
             }
             onScrollButtonVisible={setShowScrollButton}
-            hasMore={chatMessagesData?.pagination?.has_next ?? false}
+            hasMore={pagination?.has_next ?? false}
             onLoadMore={handleLoadMore}
           />
         </div>

@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -532,6 +532,7 @@ interface PaginationMetadata {
   direction: 'asc' | 'desc';
   has_next: boolean;
   count: number;
+  next_cursor?: string | null;
 }
 
 interface PaginatedMessagesResponse {
@@ -574,3 +575,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+
