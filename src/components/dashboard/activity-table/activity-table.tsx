@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
-import type { ActivityItem } from '@/types/dashboard';
-import { cn, getDefaultDateRange } from '@/lib/utils';
-import useTokensHistory from '@/hooks/useTokensHistory';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateRangePicker } from '@/components/common/date-range-picker';
 import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import useTokensHistory from '@/hooks/useTokensHistory';
+import { cn, getDefaultDateRange } from '@/lib/utils';
+import type { ActivityItem } from '@/types/dashboard';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
@@ -41,7 +41,7 @@ export function ActivityTable({
   if (isLoading) {
     return (
       <Card className="rounded-lg shadow-md border-none animate-pulse">
-        <CardHeader className="flex flex-col items-center justify-between items-end">
+        <CardHeader className="flex flex-col justify-between items-end">
           <div className="h-20 w-72 bg-gray-200 rounded" />
           <div className="h-96 w-full bg-gray-200 rounded" />
         </CardHeader>
