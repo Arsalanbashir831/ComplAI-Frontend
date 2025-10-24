@@ -56,9 +56,7 @@ export default function DashboardHeader({
             </AvatarFallback>
           </Avatar>
           <div className="hidden md:flex flex-col">
-            <p className="text-sm font-medium">
-              {user?.username || 'Username'}
-            </p>
+            <p className="text-sm font-medium">{user?.email ?? 'User'}</p>
             <p className="text-xs text-gray-500">User</p>
           </div>
         </Link>

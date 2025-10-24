@@ -7,7 +7,7 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
-import { LockKeyhole, Mail, User2 } from 'lucide-react';
+import { LockKeyhole, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -30,7 +30,6 @@ import { OAuthButtons } from './outh-buttons';
 
 const formSchema = z
   .object({
-    username: z.string().min(2, 'Username must be at least 2 characters long'),
     email: z
       .string()
       .email('Invalid email address')
@@ -42,15 +41,10 @@ const formSchema = z
       .min(8, 'Confirm Password must be at least 8 characters long'),
     acceptTerms: z.boolean(),
   })
-  // 1) Passwords must match
+  // Passwords must match
   .refine((data) => data.password === data.confirmPassword, {
     path: ['confirmPassword'],
     message: 'Passwords must match',
-  })
-  // 2) Username and email must not be the same (case-insensitive)
-  .refine((data) => data.username.toLowerCase() !== data.email, {
-    path: ['username'],
-    message: 'Username and email must not be the same',
   });
 
 export function SignUpForm() {
@@ -64,7 +58,6 @@ export function SignUpForm() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -82,7 +75,6 @@ export function SignUpForm() {
         API_ROUTES.AUTH.SIGNUP,
         'POST',
         {
-          username: values.username,
           email: values.email,
           password: values.password,
         },
@@ -159,24 +151,6 @@ export function SignUpForm() {
           {successMessage && (
             <p className="text-green-500 text-sm">{successMessage}</p>
           )}
-
-          {/* Username Field */}
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    placeholder="Username"
-                    startIcon={<User2 className="h-4 w-4" />}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           {/* Email Field */}
           <FormField

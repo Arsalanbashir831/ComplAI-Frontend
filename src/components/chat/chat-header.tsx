@@ -1,11 +1,12 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { Plus, Trash2 } from 'lucide-react';
 
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -14,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useChat } from '@/hooks/useChat';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 
@@ -43,15 +43,25 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
     <header className="flex justify-between md:justify-between items-center py-4 md:px-4 border-b-gray-100 border-b-2">
       {/* Logo Section */}
       <div className="items-center space-x-2 flex">
-        <Image src="/robot_icon.png" alt="Compl-AI-v1" width={40} height={40}/>
+        <Image src="/robot_icon.png" alt="Compl-AI-v1" width={40} height={40} />
         <Select value={selectedAuthority} onValueChange={setSelectedAuthority}>
           <SelectTrigger className="md:w-[310px] md:text-base font-semibold text-gray-800 border-none shadow-none bg-transparent focus:ring-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="SRA"><span className='hidden md:inline'>Solicitors Regulation Authority </span>(SRA)</SelectItem>
-            <SelectItem value="LAA"><span className='hidden md:inline'>Legal Aid Agency </span>(LAA)</SelectItem>
-            <SelectItem value="AML"><span className='hidden md:inline'>Anti-Money Laundering </span>(AML)</SelectItem>
+            <SelectItem value="SRA">
+              <span className="hidden md:inline">
+                Solicitors Regulation Authority{' '}
+              </span>
+              (SRA)
+            </SelectItem>
+            <SelectItem value="LAA">
+              <span className="hidden md:inline">Legal Aid Agency </span>(LAA)
+            </SelectItem>
+            <SelectItem value="AML">
+              <span className="hidden md:inline">Anti-Money Laundering </span>
+              (AML)
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
