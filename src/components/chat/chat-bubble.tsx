@@ -1,12 +1,12 @@
+import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 
-import { useChat } from '@/hooks/useChat';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -14,6 +14,7 @@ import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 // import CircularLogoAnimation from './CircularLogoAnimation';
 import CopyButton from './copy-button';
 import { FileCard } from './file-card';
+
 interface ChatBubbleProps {
   message: ChatMessage & {
     isError?: boolean;
@@ -168,9 +169,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         <div className="flex items-start gap-3">
           {isLoading && (
             <div className="flex items-center">
-              <Image unoptimized width={40} height={40}
-                src="/loading-anime-circle.gif" 
-                alt="Loading..." 
+              <Image
+                unoptimized
+                width={40}
+                height={40}
+                src="/loading-anime-circle.gif"
+                alt="Loading..."
                 className="w-10 h-10"
               />
               <span className="text-gray-600 ml-2 text-lg">Thinking...</span>
