@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { Chat } from '@/types/chat';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import type { Chat } from '@/types/chat';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -249,14 +249,6 @@ export function ChatSidebar() {
                   </div>
                 )}
 
-                {/* No more chats indicator */}
-                {!pagination?.has_next &&
-                  !loadingMore &&
-                  allChats.length > 0 && (
-                    <div className="text-center text-gray-400 py-2 text-sm">
-                      No more chats to load
-                    </div>
-                  )}
               </>
             ) : (
               // No chats message
