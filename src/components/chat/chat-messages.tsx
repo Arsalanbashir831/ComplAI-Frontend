@@ -1,11 +1,11 @@
 // src/components/chat/chat-messages.tsx
 
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
-import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useClientOnly } from '@/lib/client-only';
 import type { ChatMessage } from '@/types/chat';
+import { useClientOnly } from '@/lib/client-only';
 
 import { ChatBubble } from './chat-bubble';
 
@@ -63,11 +63,14 @@ export function ChatMessages({
 
   // Load older messages function
   const loadOlderMessages = useCallback(async () => {
-    if (isLoadingMore || !pagination?.has_next || !pagination?.next_cursor) return;
+    if (isLoadingMore || !pagination?.has_next || !pagination?.next_cursor)
+      return;
 
     setIsLoadingMore(true);
     try {
-      const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chats/${chatId}/messages/`);
+      const url = new URL(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chats/${chatId}/messages/`
+      );
       url.searchParams.set('cursor', pagination.next_cursor);
       url.searchParams.set('direction', pagination.direction);
       url.searchParams.set('page_size', pagination.page_size.toString());
@@ -82,7 +85,7 @@ export function ChatMessages({
         if (response.status === 400) {
           // Invalid cursor format, reset pagination
           console.warn('Invalid cursor format, resetting pagination');
-          setPagination(prev => prev ? { ...prev, has_next: false } : null);
+          setPagination((prev) => (prev ? { ...prev, has_next: false } : null));
           return;
         }
         throw new Error('Failed to load older messages');
@@ -90,9 +93,9 @@ export function ChatMessages({
 
       const data = await response.json();
       const newMessages = data.results || [];
-      
+
       if (newMessages.length === 0) {
-        setPagination(prev => prev ? { ...prev, has_next: false } : null);
+        setPagination((prev) => (prev ? { ...prev, has_next: false } : null));
       } else {
         // Prepend older messages to the beginning
         if (onLoadMore) {
@@ -154,14 +157,13 @@ export function ChatMessages({
               <span className="ml-2">Loading older messages...</span>
             </div>
           )}
-          
+
           {/* Show load more indicator when there are more messages */}
           {pagination?.has_next && !isLoadingMore && (
             <div className="text-center text-gray-400 py-2 text-sm">
               Scroll up to load older messages
             </div>
           )}
-          
         </div>
 
         {/* Optional: Show a loading skeleton/spinner during initial fetch */}

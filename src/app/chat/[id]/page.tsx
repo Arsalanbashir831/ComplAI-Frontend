@@ -2,15 +2,15 @@
 
 'use client';
 
-import { useChatContext } from '@/contexts/chat-context';
-import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useChatContext } from '@/contexts/chat-context';
 
+import { useClientOnly } from '@/lib/client-only';
+import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
-import { useChatMessages } from '@/hooks/useChat';
-import { useClientOnly } from '@/lib/client-only';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
@@ -59,7 +59,9 @@ export default function SpecificChatPage() {
     if (!pagination?.has_next || !pagination?.next_cursor) return;
 
     try {
-      const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chats/${chatId}/messages/`);
+      const url = new URL(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chats/${chatId}/messages/`
+      );
       url.searchParams.set('cursor', pagination.next_cursor);
       url.searchParams.set('direction', pagination.direction);
       url.searchParams.set('page_size', pagination.page_size.toString());
@@ -73,7 +75,7 @@ export default function SpecificChatPage() {
       if (!response.ok) {
         if (response.status === 400) {
           console.warn('Invalid cursor format, resetting pagination');
-          setPagination(prev => prev ? { ...prev, has_next: false } : null);
+          setPagination((prev) => (prev ? { ...prev, has_next: false } : null));
           return;
         }
         throw new Error('Failed to load older messages');
@@ -81,12 +83,12 @@ export default function SpecificChatPage() {
 
       const data = await response.json();
       const newMessages = data.results || [];
-      
+
       if (newMessages.length === 0) {
-        setPagination(prev => prev ? { ...prev, has_next: false } : null);
+        setPagination((prev) => (prev ? { ...prev, has_next: false } : null));
       } else {
         // Prepend older messages to the beginning
-        setMessages(prev => [...newMessages, ...prev]);
+        setMessages((prev) => [...newMessages, ...prev]);
         setPagination(data.pagination || null);
       }
     } catch (error) {
