@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 
@@ -10,13 +10,18 @@ interface UseSubscriptionReturn {
   isLoading: boolean;
   error: Error | null;
   handleSubscription: (subscription: SubscriptionType) => Promise<void>;
+  clearError: () => void;
 }
 
 export const useSubscription = (): UseSubscriptionReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const handleSubscription = async (
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  const handleSubscription = useCallback(async (
     subscription: SubscriptionType
   ): Promise<void> => {
     setIsLoading(true);
@@ -52,11 +57,12 @@ export const useSubscription = (): UseSubscriptionReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return {
     isLoading,
     error,
     handleSubscription,
+    clearError,
   };
 };

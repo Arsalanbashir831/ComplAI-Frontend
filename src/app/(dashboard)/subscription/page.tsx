@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import apiCaller from '@/config/apiCaller';
+import { formatDateLocal } from '@/lib/utils';
+import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -172,10 +172,6 @@ export default function SubscriptionPage() {
   // const isSubscribing = useIsMutating() > 0;
   const [autoRenew, setAutoRenew] = useState(true);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
   // const { data: paymentCards = [], isLoading: cardsLoading } = useQuery<
   //   PaymentCard[]
   // >({
@@ -188,7 +184,10 @@ export default function SubscriptionPage() {
     {
       queryKey: ['subscriptionItems'],
       queryFn: fetchSubscriptionItems,
-      staleTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60 * 10, // 10 minutes cache
+      gcTime: 1000 * 60 * 30, // 30 minutes garbage collection time
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      refetchOnMount: false, // Don't refetch on component mount if data exists
     }
   );
 
@@ -207,14 +206,16 @@ export default function SubscriptionPage() {
   } = useQuery({
     queryKey: ['userSubscriptions'],
     queryFn: fetchUserSubscriptions,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 10, // 10 minutes cache
+    gcTime: 1000 * 60 * 30, // 30 minutes garbage collection time
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnMount: false, // Don't refetch on component mount if data exists
   });
 
   // Log the subscriptions data when it becomes available (only on client)
   useEffect(() => {
     if (userSubscriptions && typeof window !== 'undefined') {
       console.log('User Subscriptions:', userSubscriptions);
-      // refetch();
     }
   }, [userSubscriptions]);
 
