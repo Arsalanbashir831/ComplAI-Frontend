@@ -90,26 +90,27 @@ const useChat = () => {
       content,
       documents,
       return_type,
+      systemPromptCategory,
       signal,
     }: {
       chatId: string;
       content: string;
       documents?: File[] | Blob;
       return_type?: 'docx' | 'pdf' | null;
+      systemPromptCategory: 'SRA' | 'LAA' | 'AML';
       signal?: AbortSignal;
     }): Promise<ChatMessage> => {
       try {
         // Create FormData
         const formData = new FormData();
         formData.append('content', content);
+        formData.append('stream', 'true');
+        formData.append('system_prompt_category', systemPromptCategory);
 
         // Append document only if it exists
         if (documents) {
           if (Array.isArray(documents)) {
-            documents.forEach((file, index) => {
-              console.log(
-                ` - Appending file ${index + 1}: ${file.name} with key 'document'`
-              );
+            documents.forEach((file) => {
               // Use the key 'document' as required by backend
               formData.append('document', file, file.name);
             });
@@ -306,24 +307,27 @@ const useChat = () => {
       chatId,
       content,
       documents,
+      systemPromptCategory,
       signal,
+      onChunkUpdate,
     }: {
       chatId: string;
       content: string;
       documents?: File[] | Blob;
+      systemPromptCategory: 'SRA' | 'LAA' | 'AML';
       signal?: AbortSignal;
+      onChunkUpdate?: (chunk: { reasoning?: string; content?: string }) => void;
     }): Promise<ChatMessage> => {
       const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
 
       // Prepare FormData for sending the message with optional file.
       const formData = new FormData();
       formData.append('content', content);
+      formData.append('stream', 'true');
+      formData.append('system_prompt_category', systemPromptCategory);
       if (documents) {
         if (Array.isArray(documents)) {
-          documents.forEach((file, index) => {
-            console.log(
-              ` - Appending file ${index + 1}: ${file.name} with key 'document'`
-            );
+          documents.forEach((file) => {
             // Use the key 'document' as required by backend
             formData.append('document', file, file.name);
           });
@@ -356,134 +360,124 @@ const useChat = () => {
             throw new Error(errorData.error || 'Failed to send message');
           }
 
-          // Parse the complete response
-          const responseData = await sendResponse.json();
+          // Handle streaming response
+          const reader = sendResponse.body?.getReader();
+          if (!reader) {
+            throw new Error('No response body');
+          }
 
-          // Helper function to parse nested array citations from Google Gemini format
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const parseCitations = (citationsData: any) => {
-            if (!citationsData) return undefined;
+          const decoder = new TextDecoder();
+          let reasoning = '';
+          let content = '';
+          let finalMessage: ChatMessage | null = null;
+          let hasReceivedContent = false;
+          let lastActivityTime = Date.now();
 
-            try {
-              // Handle nested array format from Google Gemini
-              if (Array.isArray(citationsData) && citationsData.length > 0) {
-                // Navigate to grounding_metadata: citations[0][6][1]
-                const candidateData = citationsData[0];
-                if (!Array.isArray(candidateData)) return undefined;
+          try {
+            // Read the streaming response
+            let buffer = '';
 
-                // Find the grounding_metadata array (index 6 in the structure)
-                const groundingMetadataEntry = candidateData.find(
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (item: any) =>
-                    Array.isArray(item) && item[0] === 'grounding_metadata'
-                );
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
 
-                if (
-                  !groundingMetadataEntry ||
-                  !Array.isArray(groundingMetadataEntry[1])
-                )
-                  return undefined;
+              // Decode the chunk and add to buffer
+              const chunk = decoder.decode(value, { stream: true });
+              buffer += chunk;
+              lastActivityTime = Date.now();
 
-                const groundingMetadata = groundingMetadataEntry[1];
+              // Process complete lines from buffer
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-                // Find grounding_chunks within grounding_metadata
-                const groundingChunksEntry = groundingMetadata.find(
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (item: any) =>
-                    Array.isArray(item) && item[0] === 'grounding_chunks'
-                );
+              for (const line of lines) {
+                if (line.trim() === '') continue; // Skip empty lines
 
-                if (
-                  !groundingChunksEntry ||
-                  !Array.isArray(groundingChunksEntry[1])
-                )
-                  return undefined;
+                if (line.startsWith('data: ')) {
+                  try {
+                    const jsonStr = line.slice(6).trim();
+                    if (jsonStr === '') continue; // Skip empty data lines
 
-                const groundingChunks = groundingChunksEntry[1];
+                    const data = JSON.parse(jsonStr);
 
-                // Extract web sources from each chunk
-                const sources = groundingChunks
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  .map((chunk: any, index: number) => {
-                    if (!Array.isArray(chunk) || !Array.isArray(chunk[0]))
-                      return null;
+                    if (data.reasoning) {
+                      reasoning += data.reasoning;
+                      onChunkUpdate?.({ reasoning: data.reasoning });
+                    }
 
-                    // Find the 'web' entry in the chunk
-                    const webEntry = chunk[0].find(
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      (item: any) => Array.isArray(item) && item[0] === 'web'
+                    if (data.content) {
+                      content += data.content;
+                      hasReceivedContent = true;
+                      onChunkUpdate?.({ content: data.content });
+                    }
+
+                    if (data.done) {
+                      // Final response received
+                      finalMessage = {
+                        id: data.message_id || Date.now(),
+                        chat: Number(chatId),
+                        user: 'AI',
+                        content: content,
+                        created_at: new Date().toISOString(),
+                        tokens_used: data.tokens_used || 0,
+                        is_system_message: true,
+                        files: null,
+                        citations: data.citations || null,
+                        reasoning: reasoning, // Add reasoning to the message
+                      };
+                      break;
+                    }
+                  } catch (parseError) {
+                    console.warn(
+                      'Failed to parse streaming data:',
+                      parseError,
+                      'Line:',
+                      line
                     );
-
-                    if (!webEntry || !Array.isArray(webEntry[1])) return null;
-
-                    const webData = webEntry[1];
-
-                    // Extract title and uri from webData
-                    const titleEntry = webData.find(
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      (item: any) => Array.isArray(item) && item[0] === 'title'
-                    );
-                    const uriEntry = webData.find(
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      (item: any) => Array.isArray(item) && item[0] === 'uri'
-                    );
-
-                    const title = titleEntry?.[1] || 'Unknown Source';
-                    const uri = uriEntry?.[1] || '';
-
-                    if (!uri) return null;
-
-                    return {
-                      id: `source_${index}`,
-                      title: title,
-                      publisher: title,
-                      url_hint: uri,
-                    };
-                  })
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  .filter((source: any) => source !== null);
-
-                return sources.length > 0 ? { sources } : undefined;
+                  }
+                } else {
+                }
               }
 
-              // Handle structured object format
-              if (typeof citationsData === 'object' && citationsData.sources) {
-                return citationsData;
+              // Timeout check: if we've received content but no done signal for 10 seconds, create fallback
+              if (hasReceivedContent && Date.now() - lastActivityTime > 10000) {
+                finalMessage = {
+                  id: Date.now(),
+                  chat: Number(chatId),
+                  user: 'AI',
+                  content: content,
+                  created_at: new Date().toISOString(),
+                  tokens_used: 0,
+                  is_system_message: true,
+                  files: null,
+                  citations: undefined,
+                  reasoning: reasoning,
+                };
+                break;
               }
-
-              // Handle string format
-              if (typeof citationsData === 'string') {
-                return citationsData;
-              }
-
-              return undefined;
-            } catch (error) {
-              console.error('Error parsing citations:', error);
-              return undefined;
             }
-          };
+          } finally {
+            reader.releaseLock();
+          }
 
-          // Handle the new response format with ai_response
-          if (responseData?.summary) {
-            const finalMessage: ChatMessage = {
-              id: responseData.summary.id,
-              chat: responseData.summary.chat,
-              user: responseData.summary.user,
-              content:
-                responseData.summary.ai_response ||
-                responseData.summary.content,
-              created_at: responseData.summary.created_at,
-              tokens_used: responseData.summary.tokens_used || 0,
+          if (!finalMessage) {
+            // Fallback: create final message from accumulated content and reasoning
+            finalMessage = {
+              id: Date.now(),
+              chat: Number(chatId),
+              user: 'AI',
+              content: content || 'No response received',
+              created_at: new Date().toISOString(),
+              tokens_used: 0,
               is_system_message: true,
               files: null,
-              citations: parseCitations(responseData.citations),
+              citations: undefined,
+              reasoning: reasoning,
             };
-            resolve(finalMessage);
-          } else {
-            throw new Error('Invalid response format from server');
           }
+
+          resolve(finalMessage);
         } catch (error) {
-          console.error('Error sending message:', error);
           reject(error);
         }
       });

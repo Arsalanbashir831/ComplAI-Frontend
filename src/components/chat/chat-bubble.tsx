@@ -34,8 +34,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const isBot = message.is_system_message;
   const isError = !!message.isError;
   const isLoading = message.content === 'loading';
-  const showSkeleton = isLoading && !isError;
+  const hasReasoningStarted =
+    message.reasoning && message.reasoning.trim().length > 0;
+  const showSkeleton = isLoading && !isError && !hasReasoningStarted;
   const showAvatar = isBot && !showSkeleton;
+
+  // Check if content has started streaming (not just 'loading')
+  const hasReasoning = message.reasoning && message.reasoning.trim().length > 0;
 
   const { setMessages } = useChatContext();
   const { sendMessage, addMessageNoStream } = useChat();
@@ -100,6 +105,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           uploadedFiles.length > 0
             ? (uploadedFiles as File[])
             : undefined,
+        systemPromptCategory: 'SRA', // Default to SRA for retry
         signal,
       });
       setMessages((prev) =>
@@ -125,6 +131,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             ? (uploadedFiles as File[])
             : undefined,
         return_type: mentionType as 'docx' | 'pdf' | null | undefined,
+        systemPromptCategory: 'SRA', // Default to SRA for retry
         signal,
       });
       const rawContent = response.content;
@@ -167,7 +174,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         )}
       >
         <div className="flex items-start gap-3">
-          {isLoading && (
+          {showSkeleton && (
             <div className="flex items-center">
               <Image
                 unoptimized
@@ -192,6 +199,39 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           )}
 
           <div className="flex flex-col gap-2 w-full">
+            {/* Show reasoning during loading state */}
+            {isBot && hasReasoning && (
+              <div
+                className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg"
+                key={`reasoning-section-${message.id}-${message.reasoning?.length || 0}`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <svg
+                    className="h-4 w-4 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
+                  </svg>
+                  <span className="text-sm font-semibold text-blue-800">
+                    AI Reasoning
+                  </span>
+                </div>
+                <div
+                  className="text-sm text-blue-700 italic"
+                  key={`reasoning-content-${message.id}-${message.reasoning?.length || 0}`}
+                >
+                  <MarkdownRenderer content={message.reasoning || ''} />
+                </div>
+              </div>
+            )}
+
             {!isLoading &&
               (isBot && isError ? (
                 <div className="bg-red-50 border border-red-300 text-red-700 rounded-lg p-4 flex flex-col items-start gap-2">
@@ -237,7 +277,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                     isError ? 'text-red-500 italic' : 'text-black'
                   )}
                 >
-                  <MarkdownRenderer content={message.content} />
+                  {message.content !== 'loading' && (
+                    <MarkdownRenderer content={message.content} />
+                  )}
                   {/* {isBot &&
                     /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(message.content) &&
                     message.citations && (

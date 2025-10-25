@@ -40,6 +40,7 @@ export interface ChatMessage {
   avatarUrl?: string;
   citations?: string | Citation;
   tokens_used: number;
+  reasoning?: string;
 }
 
 export interface Chat {
