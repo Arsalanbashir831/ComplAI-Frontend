@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage, Citation } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage, Citation } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -388,7 +388,7 @@ const useChat = () => {
 
           // helper to decide if we hit a safe boundary for UI
           // rule: push when we saw at least a double newline paragraph break
-          // or the server marked done
+          // or the server marked donee
           const safeToEmit = (chunkStr: string, force = false) => {
             if (force) return true;
             return chunkStr.includes('\n\n');
@@ -615,3 +615,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+
