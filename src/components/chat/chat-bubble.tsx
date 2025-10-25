@@ -1,13 +1,13 @@
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
 
-import { useChat } from '@/hooks/useChat';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -42,7 +42,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
   // Check if content has started streaming (not just 'loading')
   const hasReasoning = message.reasoning && message.reasoning.trim().length > 0;
-  
+
   // Only show reasoning if we're still in reasoning phase (no content yet)
   const shouldShowReasoning = hasReasoning && message.content === 'loading';
 
@@ -74,7 +74,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     // If content has grown, we're streaming
     if (currentContent.length > previousContent.length) {
       setIsStreaming(true);
-      
+
       // Clear any existing timeout
       if (chunkTimeoutRef.current) {
         clearTimeout(chunkTimeoutRef.current);
@@ -82,9 +82,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
       // Extract the new chunk (the difference)
       const newChunk = currentContent.slice(previousContent.length);
-      
+
       // Add new chunk to the list
-      setContentChunks(prev => [...prev, newChunk]);
+      setContentChunks((prev) => [...prev, newChunk]);
 
       // Set timeout to mark streaming as complete after a delay
       chunkTimeoutRef.current = setTimeout(() => {
@@ -120,7 +120,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     // If reasoning has grown, we're streaming
     if (currentReasoning.length > previousReasoning.length) {
       setIsReasoningStreaming(true);
-      
+
       // Clear any existing timeout
       if (reasoningTimeoutRef.current) {
         clearTimeout(reasoningTimeoutRef.current);
@@ -316,7 +316,11 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                     animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'linear',
+                    }}
                   >
                     <path
                       strokeLinecap="round"
@@ -329,7 +333,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                     AI Reasoning
                   </span>
                 </div>
-                
+
                 {/* Animated reasoning content - always show current reasoning */}
                 <div className="relative">
                   <AnimatePresence mode="wait">
@@ -339,13 +343,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -5 }}
-                      transition={{ 
+                      transition={{
                         duration: 0.5,
-                        ease: "easeInOut"
+                        ease: 'easeInOut',
                       }}
                     >
                       <MarkdownRenderer content={message.reasoning || ''} />
-                      
+
                       {/* Shining effect overlay - only during streaming */}
                       {isReasoningStreaming && (
                         <motion.div
@@ -356,11 +360,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                             duration: 1.5,
                             repeat: Infinity,
                             repeatDelay: 2,
-                            ease: "easeInOut"
+                            ease: 'easeInOut',
                           }}
                           style={{
-                            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                            pointerEvents: 'none'
+                            background:
+                              'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                            pointerEvents: 'none',
                           }}
                         />
                       )}
@@ -427,7 +432,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                           <MarkdownRenderer content={message.content} />
                         </motion.div>
                       )}
-                      
+
                       {/* Render streaming chunks with animations */}
                       {isStreaming && contentChunks.length > 0 && (
                         <div className="space-y-1">
@@ -437,16 +442,16 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                               key={`chunk-${index}`}
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
-                              transition={{ 
+                              transition={{
                                 duration: 0.4,
-                                ease: "easeOut"
+                                ease: 'easeOut',
                               }}
                               className="inline"
                             >
                               <MarkdownRenderer content={chunk} />
                             </motion.div>
                           ))}
-                          
+
                           {/* Animate the latest chunk */}
                           <AnimatePresence>
                             {contentChunks.length > 0 && (
@@ -455,13 +460,17 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0 }}
-                                transition={{ 
+                                transition={{
                                   duration: 0.6,
-                                  ease: "easeOut"
+                                  ease: 'easeOut',
                                 }}
                                 className="inline"
                               >
-                                <MarkdownRenderer content={contentChunks[contentChunks.length - 1]} />
+                                <MarkdownRenderer
+                                  content={
+                                    contentChunks[contentChunks.length - 1]
+                                  }
+                                />
                               </motion.div>
                             )}
                           </AnimatePresence>
