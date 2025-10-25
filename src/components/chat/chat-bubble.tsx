@@ -1,13 +1,13 @@
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
 
-import { useChat } from '@/hooks/useChat';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -42,7 +42,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
   // Check if content has started streaming (not just 'loading')
   const hasReasoning = message.reasoning && message.reasoning.trim().length > 0;
-  
+
   // Only show reasoning if we're still in reasoning phase (no content yet)
   const shouldShowReasoning = hasReasoning && message.content === 'loading';
 
@@ -56,7 +56,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const [isReasoningStreaming, setIsReasoningStreaming] = useState(false);
   const previousReasoningRef = useRef<string>('');
   const reasoningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // State for reasoning accordion
   const [isReasoningExpanded, setIsReasoningExpanded] = useState(false);
 
@@ -66,25 +66,25 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   // Function to extract heading from reasoning content
   const getReasoningHeading = (reasoning: string): string => {
     if (!reasoning) return 'AI Reasoning';
-    
+
     // Look for markdown headers (##, ###, ####)
     const headerMatch = reasoning.match(/^#{2,4}\s+(.+)$/m);
     if (headerMatch) {
       return headerMatch[1].trim();
     }
-    
+
     // Look for bold text at the beginning
     const boldMatch = reasoning.match(/^\*\*(.+?)\*\*/m);
     if (boldMatch) {
       return boldMatch[1].trim();
     }
-    
+
     // Look for the first sentence or phrase
     const firstSentence = reasoning.split('.')[0].trim();
     if (firstSentence.length > 0 && firstSentence.length < 50) {
       return firstSentence;
     }
-    
+
     return 'AI Reasoning';
   };
 
@@ -355,12 +355,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                         ease: 'easeInOut',
                       }}
                       style={{
-                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+                        background:
+                          'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
                         pointerEvents: 'none',
                       }}
                     />
                   )}
-                  
+
                   <div className="flex items-center gap-2 relative z-10">
                     <motion.svg
                       className="h-4 w-4 text-gray-600"
@@ -381,7 +382,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                         d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                       />
                     </motion.svg>
-                    <motion.span 
+                    <motion.span
                       className="text-sm font-medium text-gray-700"
                       key={`reasoning-title-${message.reasoning?.length || 0}`}
                       initial={{ opacity: 0, x: -10 }}
@@ -404,7 +405,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       </motion.span>
                     )}
                   </div>
-                  
+
                   <motion.svg
                     className="h-4 w-4 text-gray-500 relative z-10"
                     fill="none"
@@ -446,7 +447,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                                 ease: 'easeInOut',
                               }}
                             >
-                              <MarkdownRenderer content={message.reasoning || ''} />
+                              <MarkdownRenderer
+                                content={message.reasoning || ''}
+                              />
 
                               {/* Shining effect overlay - only during streaming */}
                               {isReasoningStreaming && (
