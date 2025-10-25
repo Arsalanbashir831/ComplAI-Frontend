@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { Chat, ChatMessage, Citation } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -316,11 +316,10 @@ const useChat = () => {
       documents?: File[] | Blob;
       systemPromptCategory: 'SRA' | 'LAA' | 'AML';
       signal?: AbortSignal;
-      onChunkUpdate?: (chunk: { reasoning?: string; content?: string }) => void;
+      onChunkUpdate?: (chunk: { reasoning: string; content: string; done?: boolean }) => void;
     }): Promise<ChatMessage> => {
       const streamUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.CHAT.ADD_MESSAGE_STREAM(chatId)}`;
-
-      // Prepare FormData for sending the message with optional file.
+  
       const formData = new FormData();
       formData.append('content', content);
       formData.append('stream', 'true');
@@ -328,18 +327,15 @@ const useChat = () => {
       if (documents) {
         if (Array.isArray(documents)) {
           documents.forEach((file) => {
-            // Use the key 'document' as required by backend
             formData.append('document', file, file.name);
           });
         } else {
-          // Handle single Blob
           formData.append('document', documents);
         }
       }
-
+  
       return new Promise<ChatMessage>(async (resolve, reject) => {
         try {
-          // Send message and get response
           const sendResponse = await fetch(streamUrl, {
             method: 'POST',
             body: formData,
@@ -349,136 +345,177 @@ const useChat = () => {
             },
             signal,
           });
-
-          // if you get a 400, throw a special Error
+  
           if (sendResponse.status === 400) {
             throw new Error('Network error');
           }
-
+  
           if (!sendResponse.ok) {
             const errorData = await sendResponse.json();
             throw new Error(errorData.error || 'Failed to send message');
           }
-
-          // Handle streaming response
+  
           const reader = sendResponse.body?.getReader();
-          if (!reader) {
-            throw new Error('No response body');
-          }
-
+          if (!reader) throw new Error('No response body');
+  
           const decoder = new TextDecoder();
-          let reasoning = '';
-          let content = '';
+  
+          // running aggregates
+          let fullReasoning = '';
+          let fullContent = '';
+  
+          // used for final ChatMessage
           let finalMessage: ChatMessage | null = null;
           let hasReceivedContent = false;
-          let lastActivityTime = Date.now();
-
-          try {
-            // Read the streaming response
-            let buffer = '';
-
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              // Decode the chunk and add to buffer
-              const chunk = decoder.decode(value, { stream: true });
-              buffer += chunk;
-              lastActivityTime = Date.now();
-
-              // Process complete lines from buffer
-              const lines = buffer.split('\n');
-              buffer = lines.pop() || ''; // Keep incomplete line in buffer
-
-              for (const line of lines) {
-                if (line.trim() === '') continue; // Skip empty lines
-
-                if (line.startsWith('data: ')) {
-                  try {
-                    const jsonStr = line.slice(6).trim();
-                    if (jsonStr === '') continue; // Skip empty data lines
-
-                    const data = JSON.parse(jsonStr);
-
-                    if (data.reasoning) {
-                      reasoning += data.reasoning;
-                      onChunkUpdate?.({ reasoning: data.reasoning });
-                    }
-
-                    if (data.content) {
-                      content += data.content;
-                      hasReceivedContent = true;
-                      onChunkUpdate?.({ content: data.content });
-                    }
-
-                    if (data.done) {
-                      // Final response received
-                      finalMessage = {
-                        id: data.message_id || Date.now(),
-                        chat: Number(chatId),
-                        user: 'AI',
-                        content: content,
-                        created_at: new Date().toISOString(),
-                        tokens_used: data.tokens_used || 0,
-                        is_system_message: true,
-                        files: null,
-                        citations: data.citations || null,
-                        reasoning: reasoning, // Add reasoning to the message
-                      };
-                      break;
-                    }
-                  } catch (parseError) {
-                    console.warn(
-                      'Failed to parse streaming data:',
-                      parseError,
-                      'Line:',
-                      line
-                    );
-                  }
-                } else {
+  
+          // streaming buffer for SSE lines
+          let buffer = '';
+  
+          // debounce control to avoid re-rendering on every micro-chunk
+          // we will choose to emit UI updates only when we hit a "safe boundary"
+          const emitUpdate = (done = false) => {
+            if (!onChunkUpdate) return;
+            onChunkUpdate({
+              reasoning: fullReasoning,
+              content: fullContent,
+              done,
+            });
+          };
+  
+          // helper to decide if we hit a safe boundary for UI
+          // rule: push when we saw at least a double newline paragraph break
+          // or the server marked done
+          const safeToEmit = (chunkStr: string, force = false) => {
+            if (force) return true;
+            return chunkStr.includes('\n\n');
+          };
+  
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+  
+            const chunkText = decoder.decode(value, { stream: true });
+            buffer += chunkText;
+  
+            // split by newline because server is using Server-Sent Events style:
+            // data: {...}\n\n
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // keep last partial line in buffer
+  
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || trimmed === '/n') continue;
+              if (!trimmed.startsWith('data:')) continue;
+  
+              // strip "data: "
+              const jsonStr = trimmed.slice(5).trim();
+              if (!jsonStr) continue;
+  
+              let dataObj: {
+                reasoning?: string;
+                content?: string;
+                done?: boolean;
+                message_id?: string;
+                tokens_used?: number;
+                citations?: unknown;
+              };
+              try {
+                dataObj = JSON.parse(jsonStr);
+              } catch {
+                // if partial JSON leaked into this line, skip
+                // next iteration will complete it
+                continue;
+              }
+  
+              // append reasoning/content aggregates
+              if (dataObj.reasoning) {
+                fullReasoning += dataObj.reasoning;
+              }
+  
+              if (dataObj.content) {
+                fullContent += dataObj.content;
+                hasReceivedContent = true;
+              }
+  
+              // push partial render only at safe breakpoints
+              if (dataObj.content || dataObj.reasoning) {
+                if (safeToEmit(dataObj.content || dataObj.reasoning || '')) {
+                  emitUpdate(false);
                 }
               }
-
-              // Timeout check: if we've received content but no done signal for 10 seconds, create fallback
-              if (hasReceivedContent && Date.now() - lastActivityTime > 10000) {
+  
+              // finalise if done
+              if (dataObj.done) {
+                // always emit final full text for UI with done=true
+                emitUpdate(true);
+  
                 finalMessage = {
-                  id: Date.now(),
+                  id: dataObj.message_id || Date.now(),
                   chat: Number(chatId),
                   user: 'AI',
-                  content: content,
+                  content: fullContent,
                   created_at: new Date().toISOString(),
-                  tokens_used: 0,
+                  tokens_used: dataObj.tokens_used || 0,
                   is_system_message: true,
                   files: null,
-                  citations: undefined,
-                  reasoning: reasoning,
+                  citations: dataObj.citations as string | Citation | undefined,
+                  reasoning: fullReasoning,
                 };
-                break;
               }
             }
-          } finally {
-            reader.releaseLock();
           }
-
+  
+          // after stream ends ensure we processed any remaining buffered line
+          if (buffer.trim().startsWith('data:')) {
+            try {
+              const lastJson = JSON.parse(buffer.trim().slice(5).trim());
+              if (lastJson.reasoning) fullReasoning += lastJson.reasoning;
+              if (lastJson.content) {
+                fullContent += lastJson.content;
+                hasReceivedContent = true;
+              }
+              emitUpdate(!!lastJson.done);
+              if (lastJson.done && !finalMessage) {
+                finalMessage = {
+                  id: lastJson.message_id || Date.now(),
+                  chat: Number(chatId),
+                  user: 'AI',
+                  content: fullContent,
+                  created_at: new Date().toISOString(),
+                  tokens_used: lastJson.tokens_used || 0,
+                  is_system_message: true,
+                  files: null,
+                   citations: lastJson.citations as string | Citation | undefined,
+                  reasoning: fullReasoning,
+                };
+              }
+            } catch {
+              // ignore trailing junk
+            }
+          }
+  
+          // fallback if stream ended without explicit done
           if (!finalMessage) {
-            // Fallback: create final message from accumulated content and reasoning
             finalMessage = {
               id: Date.now(),
               chat: Number(chatId),
               user: 'AI',
-              content: content || 'No response received',
+              content: hasReceivedContent ? fullContent : 'No response received',
               created_at: new Date().toISOString(),
               tokens_used: 0,
               is_system_message: true,
               files: null,
               citations: undefined,
-              reasoning: reasoning,
+              reasoning: fullReasoning,
             };
+            // emit final accumulated state
+            emitUpdate(true);
           }
-
+  
+          reader.releaseLock();
           resolve(finalMessage);
-        } catch (error) {
-          reject(error);
+        } catch (err) {
+          reject(err);
         }
       });
     },
@@ -488,6 +525,7 @@ const useChat = () => {
       });
     },
   });
+  
 
   // Mutation: Delete chat
   const deleteChatMutation = useMutation({
@@ -569,3 +607,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

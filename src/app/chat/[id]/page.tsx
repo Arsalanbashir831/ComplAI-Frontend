@@ -2,15 +2,15 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useChatContext } from '@/contexts/chat-context';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { useClientOnly } from '@/lib/client-only';
-import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
+import { useChatMessages } from '@/hooks/useChat';
+import { useClientOnly } from '@/lib/client-only';
 
 export default function SpecificChatPage() {
   const { id } = useParams();

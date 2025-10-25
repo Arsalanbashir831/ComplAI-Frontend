@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -42,7 +42,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
   // Check if content has started streaming (not just 'loading')
   const hasReasoning = message.reasoning && message.reasoning.trim().length > 0;
-
+  
   // Only show reasoning if we're still in reasoning phase (no content yet)
   const shouldShowReasoning = hasReasoning && message.content === 'loading';
 
@@ -56,9 +56,37 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const [isReasoningStreaming, setIsReasoningStreaming] = useState(false);
   const previousReasoningRef = useRef<string>('');
   const reasoningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // State for reasoning accordion
+  const [isReasoningExpanded, setIsReasoningExpanded] = useState(false);
 
   const { setMessages } = useChatContext();
   const { sendMessage, addMessageNoStream } = useChat();
+
+  // Function to extract heading from reasoning content
+  const getReasoningHeading = (reasoning: string): string => {
+    if (!reasoning) return 'AI Reasoning';
+    
+    // Look for markdown headers (##, ###, ####)
+    const headerMatch = reasoning.match(/^#{2,4}\s+(.+)$/m);
+    if (headerMatch) {
+      return headerMatch[1].trim();
+    }
+    
+    // Look for bold text at the beginning
+    const boldMatch = reasoning.match(/^\*\*(.+?)\*\*/m);
+    if (boldMatch) {
+      return boldMatch[1].trim();
+    }
+    
+    // Look for the first sentence or phrase
+    const firstSentence = reasoning.split('.')[0].trim();
+    if (firstSentence.length > 0 && firstSentence.length < 50) {
+      return firstSentence;
+    }
+    
+    return 'AI Reasoning';
+  };
 
   // Effect to track content changes and create animated chunks
   useEffect(() => {
@@ -300,78 +328,152 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           )}
 
           <div className="flex flex-col gap-2 w-full">
-            {/* Show reasoning only during reasoning phase (before content starts) */}
+            {/* Show reasoning accordion only during reasoning phase (before content starts) */}
             {isBot && shouldShowReasoning && (
               <motion.div
-                className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-r-lg shadow-sm"
-                key={`reasoning-section-${message.id}-${message.reasoning?.length || 0}`}
+                className="mb-4 border border-gray-200 rounded-lg overflow-hidden"
+                key={`reasoning-accordion-${message.id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex items-center gap-2 mb-2">
+                {/* Accordion Header with Shine Effect */}
+                <button
+                  onClick={() => setIsReasoningExpanded(!isReasoningExpanded)}
+                  className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 relative overflow-hidden"
+                >
+                  {/* Shine Effect Overlay */}
+                  {isReasoningStreaming && (
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                      initial={{ x: '-100%' }}
+                      animate={{ x: '100%' }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 1,
+                        ease: 'easeInOut',
+                      }}
+                      style={{
+                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  )}
+                  
+                  <div className="flex items-center gap-2 relative z-10">
+                    <motion.svg
+                      className="h-4 w-4 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      animate={isReasoningStreaming ? { rotate: [0, 360] } : {}}
+                      transition={{
+                        duration: 2,
+                        repeat: isReasoningStreaming ? Infinity : 0,
+                        ease: 'linear',
+                      }}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                      />
+                    </motion.svg>
+                    <motion.span 
+                      className="text-sm font-medium text-gray-700"
+                      key={`reasoning-title-${message.reasoning?.length || 0}`}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {getReasoningHeading(message.reasoning || '')}
+                    </motion.span>
+                    {isReasoningStreaming && (
+                      <motion.span
+                        className="text-xs text-blue-600"
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
+                      >
+                        Thinking...
+                      </motion.span>
+                    )}
+                  </div>
+                  
                   <motion.svg
-                    className="h-4 w-4 text-blue-600"
+                    className="h-4 w-4 text-gray-500 relative z-10"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
-                    animate={{ rotate: [0, 360] }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: 'linear',
-                    }}
+                    animate={{ rotate: isReasoningExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                      d="M19 9l-7 7-7-7"
                     />
                   </motion.svg>
-                  <span className="text-sm font-semibold text-blue-800">
-                    AI Reasoning
-                  </span>
-                </div>
+                </button>
 
-                {/* Animated reasoning content - always show current reasoning */}
-                <div className="relative">
-                  <AnimatePresence mode="wait">
+                {/* Accordion Content */}
+                <AnimatePresence>
+                  {isReasoningExpanded && (
                     <motion.div
-                      key={`reasoning-${message.reasoning?.length || 0}`}
-                      className="text-sm text-blue-700 italic relative"
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      transition={{
-                        duration: 0.5,
-                        ease: 'easeInOut',
-                      }}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden"
                     >
-                      <MarkdownRenderer content={message.reasoning || ''} />
+                      <div className="p-3 bg-white border-t border-gray-200">
+                        <div className="relative">
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={`reasoning-content-${message.reasoning?.length || 0}`}
+                              className="text-sm text-gray-700 relative"
+                              initial={{ opacity: 0, y: 5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -5 }}
+                              transition={{
+                                duration: 0.3,
+                                ease: 'easeInOut',
+                              }}
+                            >
+                              <MarkdownRenderer content={message.reasoning || ''} />
 
-                      {/* Shining effect overlay - only during streaming */}
-                      {isReasoningStreaming && (
-                        <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                          initial={{ x: '-100%' }}
-                          animate={{ x: '100%' }}
-                          transition={{
-                            duration: 1.5,
-                            repeat: Infinity,
-                            repeatDelay: 2,
-                            ease: 'easeInOut',
-                          }}
-                          style={{
-                            background:
-                              'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                            pointerEvents: 'none',
-                          }}
-                        />
-                      )}
+                              {/* Shining effect overlay - only during streaming */}
+                              {isReasoningStreaming && (
+                                <motion.div
+                                  className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent"
+                                  initial={{ x: '-100%' }}
+                                  animate={{ x: '100%' }}
+                                  transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    repeatDelay: 2,
+                                    ease: 'easeInOut',
+                                  }}
+                                  style={{
+                                    background:
+                                      'linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent)',
+                                    pointerEvents: 'none',
+                                  }}
+                                />
+                              )}
+                            </motion.div>
+                          </AnimatePresence>
+                        </div>
+                      </div>
                     </motion.div>
-                  </AnimatePresence>
-                </div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
 
