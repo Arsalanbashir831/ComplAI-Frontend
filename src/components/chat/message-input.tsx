@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -7,11 +10,11 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
+import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -26,9 +29,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useChat } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
-import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -568,13 +568,13 @@ export function MessageInput({
                 )}
               </Button>
 
-               {/* Authority Selection */}
-               <TooltipProvider>
+              {/* Authority Selection */}
+              <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div>
-                      <Select 
-                        value={selectedAuthority} 
+                      <Select
+                        value={selectedAuthority}
                         onValueChange={setSelectedAuthority}
                         disabled={!isNewChat}
                       >
@@ -589,10 +589,15 @@ export function MessageInput({
                             (SRA)
                           </SelectItem>
                           <SelectItem value="LAA">
-                            <span className="hidden md:inline">Legal Aid Agency </span>(LAA)
+                            <span className="hidden md:inline">
+                              Legal Aid Agency{' '}
+                            </span>
+                            (LAA)
                           </SelectItem>
                           <SelectItem value="AML">
-                            <span className="hidden md:inline">Anti-Money Laundering </span>
+                            <span className="hidden md:inline">
+                              Anti-Money Laundering{' '}
+                            </span>
                             (AML)
                           </SelectItem>
                         </SelectContent>
@@ -600,15 +605,13 @@ export function MessageInput({
                     </div>
                   </TooltipTrigger>
                   {!isNewChat && (
-                    <TooltipContent className='bg-black'>
+                    <TooltipContent className="bg-black">
                       <p>To use different type create new chat</p>
                     </TooltipContent>
                   )}
                 </Tooltip>
               </TooltipProvider>
             </div>
-
-            
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-dark">
