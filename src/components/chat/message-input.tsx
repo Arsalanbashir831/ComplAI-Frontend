@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,11 +7,11 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -29,6 +26,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -166,6 +166,7 @@ export function MessageInput({
 
   const handleSendMessage = async () => {
     if (isSending) return;
+    if (!promptText.trim()) return; // Don't send empty messages
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
       return;
@@ -378,10 +379,12 @@ export function MessageInput({
       setMentionType(null);
     }
 
-    // If plain Enter is pressed, send the message.
+    // If plain Enter is pressed, send the message (only if not empty).
     if (event.key === 'Enter') {
       event.preventDefault();
-      handleSendMessage();
+      if (promptText.trim()) {
+        handleSendMessage();
+      }
     }
   };
 
@@ -621,7 +624,7 @@ export function MessageInput({
                 size="icon"
                 className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
                 onClick={isSending ? handleStop : handleSendMessage}
-                disabled={!promptText.trim()}
+                disabled={!promptText.trim() || isSending}
                 aria-label="Send message"
               >
                 {isSending ? (
