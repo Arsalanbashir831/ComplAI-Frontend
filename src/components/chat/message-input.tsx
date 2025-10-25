@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,12 +7,28 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -57,6 +70,7 @@ export function MessageInput({
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [showMentionMenu, setShowMentionMenu] = useState(false);
   const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
+  const [selectedAuthority, setSelectedAuthority] = useState('SRA');
   // const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const maxChars = 10000;
 
@@ -512,7 +526,7 @@ export function MessageInput({
           </div>
 
           <div className="mt-2 flex items-center justify-between gap-2">
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
               {uploadedFiles.length > 0 && (
                 <ScrollArea className="whitespace-nowrap w-full max-w-[160px] min-[425px]:max-w-[250px] md:max-w-[600px]">
                   <div className="flex w-max space-x-2 p-2 h-14">
@@ -553,7 +567,48 @@ export function MessageInput({
                   </>
                 )}
               </Button>
+
+               {/* Authority Selection */}
+               <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Select 
+                        value={selectedAuthority} 
+                        onValueChange={setSelectedAuthority}
+                        disabled={!isNewChat}
+                      >
+                        <SelectTrigger className="text-xs border-none shadow-none bg-transparent focus:ring-0 bg-gradient-to-r from-[#020F26] to-[#07378C] text-white rounded-md h-auto space-x-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SRA">
+                            <span className="hidden md:inline">
+                              Solicitors Regulation Authority{' '}
+                            </span>
+                            (SRA)
+                          </SelectItem>
+                          <SelectItem value="LAA">
+                            <span className="hidden md:inline">Legal Aid Agency </span>(LAA)
+                          </SelectItem>
+                          <SelectItem value="AML">
+                            <span className="hidden md:inline">Anti-Money Laundering </span>
+                            (AML)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TooltipTrigger>
+                  {!isNewChat && (
+                    <TooltipContent className='bg-black'>
+                      <p>To use different type create new chat</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </div>
+
+            
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-dark">
