@@ -1,12 +1,13 @@
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -41,9 +42,109 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
   // Check if content has started streaming (not just 'loading')
   const hasReasoning = message.reasoning && message.reasoning.trim().length > 0;
+  
+  // Only show reasoning if we're still in reasoning phase (no content yet)
+  const shouldShowReasoning = hasReasoning && message.content === 'loading';
+
+  // State for tracking content chunks and animations
+  const [contentChunks, setContentChunks] = useState<string[]>([]);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const previousContentRef = useRef<string>('');
+  const chunkTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // State for tracking reasoning animations
+  const [isReasoningStreaming, setIsReasoningStreaming] = useState(false);
+  const previousReasoningRef = useRef<string>('');
+  const reasoningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { setMessages } = useChatContext();
   const { sendMessage, addMessageNoStream } = useChat();
+
+  // Effect to track content changes and create animated chunks
+  useEffect(() => {
+    if (!isBot || message.content === 'loading' || !message.content) {
+      setContentChunks([]);
+      setIsStreaming(false);
+      return;
+    }
+
+    const currentContent = message.content;
+    const previousContent = previousContentRef.current;
+
+    // If content has grown, we're streaming
+    if (currentContent.length > previousContent.length) {
+      setIsStreaming(true);
+      
+      // Clear any existing timeout
+      if (chunkTimeoutRef.current) {
+        clearTimeout(chunkTimeoutRef.current);
+      }
+
+      // Extract the new chunk (the difference)
+      const newChunk = currentContent.slice(previousContent.length);
+      
+      // Add new chunk to the list
+      setContentChunks(prev => [...prev, newChunk]);
+
+      // Set timeout to mark streaming as complete after a delay
+      chunkTimeoutRef.current = setTimeout(() => {
+        setIsStreaming(false);
+      }, 2000); // 2 seconds of no new content = streaming complete
+    } else if (currentContent !== previousContent) {
+      // Content changed but not streaming (complete replacement)
+      setIsStreaming(false);
+      setContentChunks([currentContent]);
+    }
+
+    // Update the previous content reference
+    previousContentRef.current = currentContent;
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (chunkTimeoutRef.current) {
+        clearTimeout(chunkTimeoutRef.current);
+      }
+    };
+  }, [message.content, isBot]);
+
+  // Effect to track reasoning changes and create animated chunks
+  useEffect(() => {
+    if (!isBot || !message.reasoning || message.reasoning.trim() === '') {
+      setIsReasoningStreaming(false);
+      return;
+    }
+
+    const currentReasoning = message.reasoning;
+    const previousReasoning = previousReasoningRef.current;
+
+    // If reasoning has grown, we're streaming
+    if (currentReasoning.length > previousReasoning.length) {
+      setIsReasoningStreaming(true);
+      
+      // Clear any existing timeout
+      if (reasoningTimeoutRef.current) {
+        clearTimeout(reasoningTimeoutRef.current);
+      }
+
+      // Set timeout to mark reasoning streaming as complete after a delay
+      reasoningTimeoutRef.current = setTimeout(() => {
+        setIsReasoningStreaming(false);
+      }, 2000); // 2 seconds of no new reasoning = streaming complete
+    } else if (currentReasoning !== previousReasoning) {
+      // Reasoning changed but not streaming (complete replacement)
+      setIsReasoningStreaming(false);
+    }
+
+    // Update the previous reasoning reference
+    previousReasoningRef.current = currentReasoning;
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (reasoningTimeoutRef.current) {
+        clearTimeout(reasoningTimeoutRef.current);
+      }
+    };
+  }, [message.reasoning, isBot]);
 
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
@@ -199,18 +300,23 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           )}
 
           <div className="flex flex-col gap-2 w-full">
-            {/* Show reasoning during loading state */}
-            {isBot && hasReasoning && (
-              <div
-                className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg"
+            {/* Show reasoning only during reasoning phase (before content starts) */}
+            {isBot && shouldShowReasoning && (
+              <motion.div
+                className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-r-lg shadow-sm"
                 key={`reasoning-section-${message.id}-${message.reasoning?.length || 0}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <svg
+                  <motion.svg
                     className="h-4 w-4 text-blue-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                   >
                     <path
                       strokeLinecap="round"
@@ -218,18 +324,50 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       strokeWidth={2}
                       d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                     />
-                  </svg>
+                  </motion.svg>
                   <span className="text-sm font-semibold text-blue-800">
                     AI Reasoning
                   </span>
                 </div>
-                <div
-                  className="text-sm text-blue-700 italic"
-                  key={`reasoning-content-${message.id}-${message.reasoning?.length || 0}`}
-                >
-                  <MarkdownRenderer content={message.reasoning || ''} />
+                
+                {/* Animated reasoning content - always show current reasoning */}
+                <div className="relative">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={`reasoning-${message.reasoning?.length || 0}`}
+                      className="text-sm text-blue-700 italic relative"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{ 
+                        duration: 0.5,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <MarkdownRenderer content={message.reasoning || ''} />
+                      
+                      {/* Shining effect overlay - only during streaming */}
+                      {isReasoningStreaming && (
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                          initial={{ x: '-100%' }}
+                          animate={{ x: '100%' }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            repeatDelay: 2,
+                            ease: "easeInOut"
+                          }}
+                          style={{
+                            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                            pointerEvents: 'none'
+                          }}
+                        />
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {!isLoading &&
@@ -278,7 +416,58 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   )}
                 >
                   {message.content !== 'loading' && (
-                    <MarkdownRenderer content={message.content} />
+                    <div className="relative">
+                      {/* Render accumulated content for non-streaming or completed content */}
+                      {!isStreaming && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <MarkdownRenderer content={message.content} />
+                        </motion.div>
+                      )}
+                      
+                      {/* Render streaming chunks with animations */}
+                      {isStreaming && contentChunks.length > 0 && (
+                        <div className="space-y-1">
+                          {/* Show accumulated content up to the last chunk */}
+                          {contentChunks.slice(0, -1).map((chunk, index) => (
+                            <motion.div
+                              key={`chunk-${index}`}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ 
+                                duration: 0.4,
+                                ease: "easeOut"
+                              }}
+                              className="inline"
+                            >
+                              <MarkdownRenderer content={chunk} />
+                            </motion.div>
+                          ))}
+                          
+                          {/* Animate the latest chunk */}
+                          <AnimatePresence>
+                            {contentChunks.length > 0 && (
+                              <motion.div
+                                key={`chunk-${contentChunks.length - 1}`}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ 
+                                  duration: 0.6,
+                                  ease: "easeOut"
+                                }}
+                                className="inline"
+                              >
+                                <MarkdownRenderer content={contentChunks[contentChunks.length - 1]} />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </div>
                   )}
                   {/* {isBot &&
                     /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(message.content) &&
