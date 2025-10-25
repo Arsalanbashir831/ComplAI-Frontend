@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -10,11 +7,11 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -29,6 +26,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -247,18 +247,19 @@ export function MessageInput({
 
                   if (chunk.reasoning) {
                     // Ensure reasoning field exists and append the chunk
-                    updatedMsg.reasoning =
-                      (updatedMsg.reasoning || '') + chunk.reasoning;
+                    // updatedMsg.reasoning =
+                    //   (updatedMsg.reasoning || '') + chunk.reasoning;
+                    updatedMsg.reasoning = chunk.reasoning;
                   }
 
-                  if (chunk.content) {
-                    // If content is still 'loading', start with empty string
-                    if (updatedMsg.content === 'loading') {
-                      updatedMsg.content = chunk.content;
-                    } else {
-                      updatedMsg.content = updatedMsg.content + chunk.content;
-                    }
-                  }
+                  // if (chunk.content) {
+                  //   // If content is still 'loading', start with empty string
+                  //   if (updatedMsg.content === 'loading') {
+                  //     updatedMsg.content = chunk.content;
+                  //   } else {
+                  //     updatedMsg.content = updatedMsg.content + chunk.content;
+                  //   }
+                  // }
 
                   return updatedMsg;
                 }

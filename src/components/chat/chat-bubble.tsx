@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -67,22 +67,33 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const getReasoningHeading = (reasoning: string): string => {
     if (!reasoning) return 'AI Reasoning';
 
-    // Look for markdown headers (##, ###, ####)
-    const headerMatch = reasoning.match(/^#{2,4}\s+(.+)$/m);
-    if (headerMatch) {
-      return headerMatch[1].trim();
+    // Look for markdown headers (##, ###, ####) - get the last one
+    const headerMatches = reasoning.match(/^#{2,4}\s+(.+)$/gm);
+    if (headerMatches && headerMatches.length > 0) {
+      const lastHeader = headerMatches[headerMatches.length - 1];
+      const headerText = lastHeader.match(/^#{2,4}\s+(.+)$/);
+      if (headerText) {
+        return headerText[1].trim();
+      }
     }
 
-    // Look for bold text at the beginning
-    const boldMatch = reasoning.match(/^\*\*(.+?)\*\*/m);
-    if (boldMatch) {
-      return boldMatch[1].trim();
+    // Look for bold text - get the last one
+    const boldMatches = reasoning.match(/\*\*(.+?)\*\*/g);
+    if (boldMatches && boldMatches.length > 0) {
+      const lastBold = boldMatches[boldMatches.length - 1];
+      const boldText = lastBold.match(/\*\*(.+?)\*\*/);
+      if (boldText) {
+        return boldText[1].trim();
+      }
     }
 
-    // Look for the first sentence or phrase
-    const firstSentence = reasoning.split('.')[0].trim();
-    if (firstSentence.length > 0 && firstSentence.length < 50) {
-      return firstSentence;
+    // Look for the last sentence or phrase
+    const sentences = reasoning.split('.');
+    if (sentences.length > 1) {
+      const lastSentence = sentences[sentences.length - 2].trim(); // -2 because last element is usually empty
+      if (lastSentence.length > 0 && lastSentence.length < 50) {
+        return lastSentence;
+      }
     }
 
     return 'AI Reasoning';
