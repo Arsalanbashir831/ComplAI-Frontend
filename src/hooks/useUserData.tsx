@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import { User } from '@/types/user';
+import apiCaller from '@/config/apiCaller';
 
 const fetchUserData = async (): Promise<User> => {
   const response = await apiCaller(
