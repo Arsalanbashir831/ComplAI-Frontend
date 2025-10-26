@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -381,8 +381,7 @@ const useChat = () => {
           // streaming buffer for SSE lines
           let buffer = '';
 
-          // debounce control to avoid re-rendering on every micro-chunk
-          // we will choose to emit UI updates only when we hit a "safe boundary"
+          // Emit updates for every chunk to enable real-time streaming
           const emitUpdate = (done = false) => {
             if (!onChunkUpdate) return;
             onChunkUpdate({
@@ -390,14 +389,6 @@ const useChat = () => {
               content: fullContent,
               done,
             });
-          };
-
-          // helper to decide if we hit a safe boundary for UI
-          // rule: push when we saw at least a double newline paragraph break
-          // or the server marked donee
-          const safeToEmit = (chunkStr: string, force = false) => {
-            if (force) return true;
-            return chunkStr.includes('\n\n');
           };
 
           while (true) {
@@ -449,11 +440,9 @@ const useChat = () => {
                 hasReceivedContent = true;
               }
 
-              // push partial render only at safe breakpoints
-              if (dataObj.content || dataObj.reasoning) {
-                if (safeToEmit(dataObj.content || dataObj.reasoning || '')) {
-                  emitUpdate(false);
-                }
+              // emit update for every chunk to enable real-time streaming
+              if (dataObj.content !== undefined || dataObj.reasoning !== undefined) {
+                emitUpdate(false);
               }
 
               // finalise if done
@@ -666,3 +655,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatById, useChatMessages };
+

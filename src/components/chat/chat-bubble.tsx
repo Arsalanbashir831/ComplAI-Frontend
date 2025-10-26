@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
+import { useChat } from '@/hooks/useChat';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { AUTHORITY_OPTIONS } from '@/types/chat';
 import { User } from '@/types/user';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -57,7 +57,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const [isReasoningStreaming, setIsReasoningStreaming] = useState(false);
   const previousReasoningRef = useRef<string>('');
   const reasoningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  const hasAnimatedRef = useRef(false);
   // State for reasoning accordion
   const [isReasoningExpanded, setIsReasoningExpanded] = useState(false);
 
@@ -123,17 +123,21 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       // Extract the new chunk (the difference)
       const newChunk = currentContent.slice(previousContent.length);
 
-      // Add new chunk to the list
-      setContentChunks((prev) => [...prev, newChunk]);
+      // Only add the new chunk, don't re-animate previous chunks
+      setContentChunks(() => {
+        // Keep only the latest chunk for animation
+        return [newChunk];
+      });
 
       // Set timeout to mark streaming as complete after a delay
       chunkTimeoutRef.current = setTimeout(() => {
         setIsStreaming(false);
-      }, 2000); // 2 seconds of no new content = streaming complete
+        setContentChunks([]); // Clear chunks when streaming is done
+      }, 1000); // Reduced timeout for faster transition
     } else if (currentContent !== previousContent) {
       // Content changed but not streaming (complete replacement)
       setIsStreaming(false);
-      setContentChunks([currentContent]);
+      setContentChunks([]);
     }
 
     // Update the previous content reference
@@ -153,6 +157,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       setIsReasoningStreaming(false);
       return;
     }
+
 
     const currentReasoning = message.reasoning;
     const previousReasoning = previousReasoningRef.current;
@@ -185,6 +190,14 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       }
     };
   }, [message.reasoning, isBot]);
+
+    // lock after first paint
+    useEffect(() => {
+      if (!hasAnimatedRef.current) hasAnimatedRef.current = true;
+    }, []);
+  
+    const containerInitial = hasAnimatedRef.current ? false : { opacity: 0, y: 10 };
+    const containerAnimate = { opacity: 1, y: 0 };
 
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
@@ -297,11 +310,13 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     }
   };
 
+  
+
   return (
     <motion.div
       id={`message-${message.id}`}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={containerInitial}   // runs once
+      animate={containerAnimate}   // stable on updates
       transition={{ duration: 0.3 }}
       className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}
     >
@@ -539,60 +554,23 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 >
                   {message.content !== 'loading' && (
                     <div className="relative">
-                      {/* Render accumulated content for non-streaming or completed content */}
-                      {!isStreaming && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <MarkdownRenderer content={message.content} />
-                        </motion.div>
-                      )}
-
-                      {/* Render streaming chunks with animations */}
-                      {isStreaming && contentChunks.length > 0 && (
-                        <div className="space-y-1">
-                          {/* Show accumulated content up to the last chunk */}
-                          {contentChunks.slice(0, -1).map((chunk, index) => (
-                            <motion.div
-                              key={`chunk-${index}`}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{
-                                duration: 0.4,
-                                ease: 'easeOut',
-                              }}
-                              className="inline"
-                            >
-                              <MarkdownRenderer content={chunk} />
-                            </motion.div>
-                          ))}
-
-                          {/* Animate the latest chunk */}
-                          <AnimatePresence>
-                            {contentChunks.length > 0 && (
-                              <motion.div
-                                key={`chunk-${contentChunks.length - 1}`}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0 }}
-                                transition={{
-                                  duration: 0.6,
-                                  ease: 'easeOut',
-                                }}
-                                className="inline"
-                              >
-                                <MarkdownRenderer
-                                  content={
-                                    contentChunks[contentChunks.length - 1]
-                                  }
-                                />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      )}
+                      {/* Render complete content */}
+                      <div className="relative">
+                        {/* Show the complete content */}
+                        <MarkdownRenderer content={message.content} />
+                        
+                        {/* Overlay the latest chunk with animation during streaming */}
+                        {isStreaming && contentChunks.length > 0 && (
+                          <motion.div
+                            className="absolute inset-0 pointer-events-none"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <div className="bg-gradient-to-r from-transparent via-blue-50/30 to-transparent h-full" />
+                          </motion.div>
+                        )}
+                      </div>
                     </div>
                   )}
                   {/* {isBot &&
