@@ -1,11 +1,14 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { useAuthority } from '@/contexts/authority-context';
+import { Plus, Trash2 } from 'lucide-react';
 
+import { AUTHORITY_OPTIONS } from '@/types/chat';
+import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -20,9 +23,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useAuthority } from '@/contexts/authority-context';
-import { useChat } from '@/hooks/useChat';
-import { AUTHORITY_OPTIONS } from '@/types/chat';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 
@@ -32,7 +32,12 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ currentChatId }: ChatHeaderProps) {
   const { deleteChat } = useChat();
-  const { selectedAuthority, setSelectedAuthority, isAuthorityLocked, isAuthorityLoading } = useAuthority();
+  const {
+    selectedAuthority,
+    setSelectedAuthority,
+    isAuthorityLocked,
+    isAuthorityLoading,
+  } = useAuthority();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -52,10 +57,15 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
       {/* Logo and Authority Section */}
       <div className="items-center space-x-4 flex">
         <div className="items-center space-x-2 flex">
-          <Image src="/robot_icon.png" alt="Compl-AI-v1" width={40} height={40} />
+          <Image
+            src="/robot_icon.png"
+            alt="Compl-AI-v1"
+            width={40}
+            height={40}
+          />
           <h1 className="text-xl font-semibold text-gray-800">Companion-v1</h1>
         </div>
-        
+
         {/* Authority Selection */}
         <TooltipProvider>
           <Tooltip>
@@ -72,18 +82,22 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                     onValueChange={setSelectedAuthority}
                     disabled={isAuthorityLocked}
                   >
-                    <SelectTrigger className={` h-8 text-xs font-medium border-0 bg-gray-50 hover:bg-gray-100 focus:ring-0 focus:bg-white focus:shadow-sm transition-all duration-150 rounded-md px-3 ${isAuthorityLocked ? 'opacity-60 cursor-not-allowed' : ''}`}>
+                    <SelectTrigger
+                      className={` h-8 text-xs font-medium border-0 bg-gray-50 hover:bg-gray-100 focus:ring-0 focus:bg-white focus:shadow-sm transition-all duration-150 rounded-md px-3 ${isAuthorityLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="w-[350px] border border-gray-200 shadow-lg rounded-md bg-white">
                       {AUTHORITY_OPTIONS.map((option) => (
-                        <SelectItem 
-                          key={option.value} 
+                        <SelectItem
+                          key={option.value}
                           value={option.value}
                           className="text-xs px-3 py-2 hover:bg-gray-50 focus:bg-gray-50 cursor-pointer rounded-sm"
                         >
                           <span className="font-medium">{option.label}</span>
-                          <span className="text-gray-500 ml-1">({option.abbreviation})</span>
+                          <span className="text-gray-500 ml-1">
+                            ({option.abbreviation})
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -93,7 +107,10 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
             </TooltipTrigger>
             {isAuthorityLocked && !isAuthorityLoading && (
               <TooltipContent className="bg-black">
-                <p>Chat Type is locked for this chat. Create a new chat to change.</p>
+                <p>
+                  Chat Type is locked for this chat. Create a new chat to
+                  change.
+                </p>
               </TooltipContent>
             )}
           </Tooltip>

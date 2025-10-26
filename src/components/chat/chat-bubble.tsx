@@ -1,14 +1,14 @@
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
 
-import { useChat } from '@/hooks/useChat';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { AUTHORITY_OPTIONS } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -158,7 +158,6 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       return;
     }
 
-
     const currentReasoning = message.reasoning;
     const previousReasoning = previousReasoningRef.current;
 
@@ -191,13 +190,15 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     };
   }, [message.reasoning, isBot]);
 
-    // lock after first paint
-    useEffect(() => {
-      if (!hasAnimatedRef.current) hasAnimatedRef.current = true;
-    }, []);
-  
-    const containerInitial = hasAnimatedRef.current ? false : { opacity: 0, y: 10 };
-    const containerAnimate = { opacity: 1, y: 0 };
+  // lock after first paint
+  useEffect(() => {
+    if (!hasAnimatedRef.current) hasAnimatedRef.current = true;
+  }, []);
+
+  const containerInitial = hasAnimatedRef.current
+    ? false
+    : { opacity: 0, y: 10 };
+  const containerAnimate = { opacity: 1, y: 0 };
 
   // Normalize files: allow string or array of file entries
   const files: Array<{ id?: number; file: string }> =
@@ -310,13 +311,11 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     }
   };
 
-  
-
   return (
     <motion.div
       id={`message-${message.id}`}
-      initial={containerInitial}   // runs once
-      animate={containerAnimate}   // stable on updates
+      initial={containerInitial} // runs once
+      animate={containerAnimate} // stable on updates
       transition={{ duration: 0.3 }}
       className={cn('flex mb-3', isBot ? 'justify-start' : 'justify-end')}
     >
@@ -558,7 +557,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       <div className="relative">
                         {/* Show the complete content */}
                         <MarkdownRenderer content={message.content} />
-                        
+
                         {/* Overlay the latest chunk with animation during streaming */}
                         {isStreaming && contentChunks.length > 0 && (
                           <motion.div
