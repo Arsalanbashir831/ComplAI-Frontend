@@ -5,22 +5,22 @@ export const AUTHORITY_OPTIONS = [
   {
     value: 'SRA',
     label: 'Solicitors Regulation Authority',
-    abbreviation: 'SRA'
+    abbreviation: 'SRA',
   },
   {
     value: 'LAA',
     label: 'Legal Aid Agency',
-    abbreviation: 'LAA'
+    abbreviation: 'LAA',
   },
   {
     value: 'AML',
     label: 'Anti-Money Laundering',
-    abbreviation: 'AML'
-  }
+    abbreviation: 'AML',
+  },
 ] as const;
 
 // Type for authority values derived from configuration
-export type AuthorityValue = typeof AUTHORITY_OPTIONS[number]['value'];
+export type AuthorityValue = (typeof AUTHORITY_OPTIONS)[number]['value'];
 
 export interface PromptCard {
   id: string;

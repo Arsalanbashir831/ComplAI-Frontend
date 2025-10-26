@@ -1,7 +1,8 @@
 'use client';
 
-import { AuthorityValue } from '@/types/chat';
 import { createContext, ReactNode, useContext, useState } from 'react';
+
+import { AuthorityValue } from '@/types/chat';
 
 interface AuthorityContextType {
   selectedAuthority: AuthorityValue;
@@ -10,10 +11,13 @@ interface AuthorityContextType {
   setIsAuthorityLocked: (locked: boolean) => void;
 }
 
-const AuthorityContext = createContext<AuthorityContextType | undefined>(undefined);
+const AuthorityContext = createContext<AuthorityContextType | undefined>(
+  undefined
+);
 
 export function AuthorityProvider({ children }: { children: ReactNode }) {
-  const [selectedAuthority, setSelectedAuthority] = useState<AuthorityValue>('SRA');
+  const [selectedAuthority, setSelectedAuthority] =
+    useState<AuthorityValue>('SRA');
   const [isAuthorityLocked, setIsAuthorityLocked] = useState(false);
 
   return (
