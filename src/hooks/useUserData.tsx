@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 
-import { User } from '@/types/user';
 import apiCaller from '@/config/apiCaller';
+import { User } from '@/types/user';
 
 const fetchUserData = async (): Promise<User> => {
   const response = await apiCaller(
@@ -20,8 +20,9 @@ const useUserData = () => {
   return useQuery<User, Error>({
     queryKey: ['user'],
     queryFn: fetchUserData,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
+    refetchOnWindowFocus: false, // Prevent auto-refetch on window focus
   });
 };
 
