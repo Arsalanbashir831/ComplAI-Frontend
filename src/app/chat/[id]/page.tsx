@@ -2,16 +2,16 @@
 
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
-import { useParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 
+import { useClientOnly } from '@/lib/client-only';
+import { useChatById, useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
-import { useChatById, useChatMessages } from '@/hooks/useChat';
-import { useClientOnly } from '@/lib/client-only';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
@@ -42,7 +42,12 @@ export default function SpecificChatPage() {
     } else {
       setIsAuthorityLoading(false);
     }
-  }, [chatData?.chat_category, isChatLoading, setAuthorityFromChat, setIsAuthorityLoading]);
+  }, [
+    chatData?.chat_category,
+    isChatLoading,
+    setAuthorityFromChat,
+    setIsAuthorityLoading,
+  ]);
 
   // Initialize context messages and pagination when the page loads
   useEffect(() => {

@@ -1,16 +1,16 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/constants/routes';
 import { useAuthority } from '@/contexts/authority-context';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
+import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+
 import type { Chat } from '@/types/chat';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';

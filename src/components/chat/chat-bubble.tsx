@@ -1,14 +1,14 @@
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
 
-import { useChat } from '@/hooks/useChat';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { AUTHORITY_OPTIONS } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -281,7 +281,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
       //   /\*\*([A-Z\s]+):\*\*([A-Z])/g,
       //   '**$1:**\n\n$2'
       // );
-   //   processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
+      //   processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMessageId

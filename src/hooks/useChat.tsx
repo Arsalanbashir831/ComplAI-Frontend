@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
+import apiCaller from '@/config/apiCaller';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -64,7 +64,13 @@ const useChat = () => {
 
   // Mutation: Create new chat
   const createChatMutation = useMutation({
-    mutationFn: async ({ name, chat_category }: { name: string; chat_category: AuthorityValue }): Promise<Chat> => {
+    mutationFn: async ({
+      name,
+      chat_category,
+    }: {
+      name: string;
+      chat_category: AuthorityValue;
+    }): Promise<Chat> => {
       const response = await apiCaller(
         API_ROUTES.CHAT.CREATE,
         'POST',
@@ -408,15 +414,14 @@ const useChat = () => {
 
             for (const line of lines) {
               const trimmed = line.trim();
-              if (!line.trim() || !line.startsWith("data: ")) {
+              if (!line.trim() || !line.startsWith('data: ')) {
                 continue; // Skip empty lines, comments, or non-data lines
               }
               // if (!trimmed.startsWith('data:')) continue;
 
               // strip "data: "
               const jsonString = trimmed.substring(6).trim();
-          if (!jsonString) continue; // Skip if it was just "data: "
-
+              if (!jsonString) continue; // Skip if it was just "data: "
 
               let dataObj: {
                 reasoning?: string;
@@ -586,19 +591,21 @@ interface PaginatedMessagesResponse {
 // Hook to fetch individual chat data by ID
 const useChatById = (chatId: string) => {
   const queryClient = useQueryClient();
-  
+
   return useQuery<Chat, Error>({
     queryKey: ['chat', chatId],
     queryFn: async (): Promise<Chat> => {
       // First try to get from the cached chats list
       const cachedChats = queryClient.getQueryData<Chat[]>(['chats']);
       if (cachedChats) {
-        const foundChat = cachedChats.find((chat: Chat) => String(chat.id) === chatId);
+        const foundChat = cachedChats.find(
+          (chat: Chat) => String(chat.id) === chatId
+        );
         if (foundChat) {
           return foundChat;
         }
       }
-      
+
       // If not found in cache, fetch from API
       const response = await apiCaller(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chats/user/`,
@@ -608,14 +615,14 @@ const useChatById = (chatId: string) => {
         true,
         'json'
       );
-      
+
       const chats = response.data?.results || response.data || [];
       const foundChat = chats.find((chat: Chat) => String(chat.id) === chatId);
-      
+
       if (foundChat) {
         return foundChat;
       }
-      
+
       throw new Error('Chat not found');
     },
     enabled: !!chatId,
@@ -659,4 +666,3 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatById, useChatMessages };
-
