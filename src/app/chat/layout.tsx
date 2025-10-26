@@ -11,13 +11,13 @@ export default function ChatLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      <ChatSidebar />
-      <AuthorityProvider>
+    <AuthorityProvider>
+      <div className="flex h-screen bg-background overflow-hidden">
+        <ChatSidebar />
         <SendMessageTriggerProvider>
           <main className="flex-1 overflow-auto">{children}</main>
         </SendMessageTriggerProvider>
-      </AuthorityProvider>
-    </div>
+      </div>
+    </AuthorityProvider>
   );
 }

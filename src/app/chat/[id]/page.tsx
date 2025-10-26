@@ -2,16 +2,16 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { useClientOnly } from '@/lib/client-only';
-import { useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
+import { useChatById, useChatMessages } from '@/hooks/useChat';
+import { useClientOnly } from '@/lib/client-only';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
@@ -29,14 +29,20 @@ export default function SpecificChatPage() {
   const isClient = useClientOnly();
 
   const { messages, setMessages } = useChatContext();
-  const { setIsAuthorityLocked } = useAuthority();
+  const { setAuthorityFromChat, setIsAuthorityLoading } = useAuthority();
   const { data: chatMessagesData, isLoading } = useChatMessages(chatId);
+  const { data: chatData, isLoading: isChatLoading } = useChatById(chatId);
 
-  // Lock authority for existing chats
+  // Set authority based on chat category and lock it for existing chats
   useEffect(() => {
-    setIsAuthorityLocked(true);
-    return () => setIsAuthorityLocked(false);
-  }, [setIsAuthorityLocked]);
+    if (isChatLoading) {
+      setIsAuthorityLoading(true);
+    } else if (chatData?.chat_category) {
+      setAuthorityFromChat(chatData.chat_category);
+    } else {
+      setIsAuthorityLoading(false);
+    }
+  }, [chatData?.chat_category, isChatLoading, setAuthorityFromChat, setIsAuthorityLoading]);
 
   // Initialize context messages and pagination when the page loads
   useEffect(() => {
@@ -119,7 +125,7 @@ export default function SpecificChatPage() {
         <div className="flex-1 overflow-y-auto px-6 pt-4">
           <ChatMessages
             messages={messages}
-            isLoading={isLoading}
+            isLoading={isLoading || isChatLoading}
             chatId={chatId}
             containerRef={
               messagesContainerRef as React.RefObject<HTMLDivElement>

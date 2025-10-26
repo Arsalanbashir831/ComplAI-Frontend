@@ -69,6 +69,7 @@ export interface Chat {
   id: string | number;
   name: string;
   user: string;
+  chat_category: AuthorityValue;
   created_at: string;
   updated_at: string;
 }

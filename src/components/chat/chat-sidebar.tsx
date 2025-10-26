@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { Chat } from '@/types/chat';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useAuthority } from '@/contexts/authority-context';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import type { Chat } from '@/types/chat';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -18,6 +19,7 @@ import { Input } from '../ui/input';
 
 export function ChatSidebar() {
   const { chats, isLoading, error } = useChat();
+  const { setAuthorityFromChat } = useAuthority();
   const [isOpen, setIsOpen] = useState(false);
 
   // For client-side filtering
@@ -224,9 +226,14 @@ export function ChatSidebar() {
                 {sortedChats.map((chat) => (
                   <React.Fragment key={chat.id}>
                     <Button
-                      onClick={() =>
-                        (window.location.href = ROUTES.CHAT_ID(String(chat.id)))
-                      }
+                      onClick={() => {
+                        // Set the authority based on the chat's category
+                        if (chat.chat_category) {
+                          setAuthorityFromChat(chat.chat_category);
+                        }
+                        // Navigate to the chat
+                        window.location.href = ROUTES.CHAT_ID(String(chat.id));
+                      }}
                       variant="ghost"
                       className={cn(
                         'w-full justify-start text-left font-normal text-gray-dark',

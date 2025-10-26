@@ -9,6 +9,9 @@ interface AuthorityContextType {
   setSelectedAuthority: (authority: AuthorityValue) => void;
   isAuthorityLocked: boolean;
   setIsAuthorityLocked: (locked: boolean) => void;
+  setAuthorityFromChat: (chatCategory: AuthorityValue) => void;
+  isAuthorityLoading: boolean;
+  setIsAuthorityLoading: (loading: boolean) => void;
 }
 
 const AuthorityContext = createContext<AuthorityContextType | undefined>(
@@ -19,6 +22,13 @@ export function AuthorityProvider({ children }: { children: ReactNode }) {
   const [selectedAuthority, setSelectedAuthority] =
     useState<AuthorityValue>('SRA');
   const [isAuthorityLocked, setIsAuthorityLocked] = useState(false);
+  const [isAuthorityLoading, setIsAuthorityLoading] = useState(false);
+
+  const setAuthorityFromChat = (chatCategory: AuthorityValue) => {
+    setSelectedAuthority(chatCategory);
+    setIsAuthorityLocked(true);
+    setIsAuthorityLoading(false);
+  };
 
   return (
     <AuthorityContext.Provider
@@ -27,6 +37,9 @@ export function AuthorityProvider({ children }: { children: ReactNode }) {
         setSelectedAuthority,
         isAuthorityLocked,
         setIsAuthorityLocked,
+        setAuthorityFromChat,
+        isAuthorityLoading,
+        setIsAuthorityLoading,
       }}
     >
       {children}

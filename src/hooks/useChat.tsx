@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -64,11 +64,11 @@ const useChat = () => {
 
   // Mutation: Create new chat
   const createChatMutation = useMutation({
-    mutationFn: async (name: string): Promise<Chat> => {
+    mutationFn: async ({ name, chat_category }: { name: string; chat_category: AuthorityValue }): Promise<Chat> => {
       const response = await apiCaller(
         API_ROUTES.CHAT.CREATE,
         'POST',
-        { name },
+        { name, chat_category },
         {},
         true,
         'json'
@@ -408,12 +408,15 @@ const useChat = () => {
 
             for (const line of lines) {
               const trimmed = line.trim();
-              if (!trimmed || trimmed === '/n') continue;
-              if (!trimmed.startsWith('data:')) continue;
+              if (!line.trim() || !line.startsWith("data: ")) {
+                continue; // Skip empty lines, comments, or non-data lines
+              }
+              // if (!trimmed.startsWith('data:')) continue;
 
               // strip "data: "
-              const jsonStr = trimmed.slice(5).trim();
-              if (!jsonStr) continue;
+              const jsonString = trimmed.substring(6).trim();
+          if (!jsonString) continue; // Skip if it was just "data: "
+
 
               let dataObj: {
                 reasoning?: string;
@@ -424,7 +427,7 @@ const useChat = () => {
                 citations?: unknown;
               };
               try {
-                dataObj = JSON.parse(jsonStr);
+                dataObj = JSON.parse(jsonString);
               } catch {
                 // if partial JSON leaked into this line, skip
                 // next iteration will complete it
@@ -580,6 +583,47 @@ interface PaginatedMessagesResponse {
   pagination: PaginationMetadata;
 }
 
+// Hook to fetch individual chat data by ID
+const useChatById = (chatId: string) => {
+  const queryClient = useQueryClient();
+  
+  return useQuery<Chat, Error>({
+    queryKey: ['chat', chatId],
+    queryFn: async (): Promise<Chat> => {
+      // First try to get from the cached chats list
+      const cachedChats = queryClient.getQueryData<Chat[]>(['chats']);
+      if (cachedChats) {
+        const foundChat = cachedChats.find((chat: Chat) => String(chat.id) === chatId);
+        if (foundChat) {
+          return foundChat;
+        }
+      }
+      
+      // If not found in cache, fetch from API
+      const response = await apiCaller(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chats/user/`,
+        'GET',
+        {},
+        {},
+        true,
+        'json'
+      );
+      
+      const chats = response.data?.results || response.data || [];
+      const foundChat = chats.find((chat: Chat) => String(chat.id) === chatId);
+      
+      if (foundChat) {
+        return foundChat;
+      }
+      
+      throw new Error('Chat not found');
+    },
+    enabled: !!chatId,
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
+  });
+};
+
 // Hook to fetch messages for a specific chat with pagination
 const useChatMessages = (chatId: string) => {
   return useQuery<PaginatedMessagesResponse, Error>({
@@ -614,4 +658,5 @@ const useChatMessages = (chatId: string) => {
   });
 };
 
-export { useChat, useChatMessages };
+export { useChat, useChatById, useChatMessages };
+

@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
@@ -11,12 +8,11 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { AUTHORITY_OPTIONS, AuthorityValue } from '@/types/chat';
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -31,6 +27,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { AUTHORITY_OPTIONS, AuthorityValue } from '@/types/chat';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -62,6 +62,7 @@ export function MessageInput({
     setSelectedAuthority,
     isAuthorityLocked,
     setIsAuthorityLocked,
+    isAuthorityLoading,
   } = useAuthority();
   //  const { refetch } = useChatMessages(currentChatId || '');
   const { setTrigger } = useSendMessageTrigger();
@@ -190,7 +191,10 @@ export function MessageInput({
       );
 
       if (!localChatId) {
-        const response = await createChat(shortenText(promptText.trim(), 5));
+        const response = await createChat({
+          name: shortenText(promptText.trim(), 5),
+          chat_category: selectedAuthority as AuthorityValue
+        });
         localChatId = String(response.id);
         setCurrentChatId(localChatId);
       }
@@ -261,14 +265,14 @@ export function MessageInput({
                     updatedMsg.reasoning = chunk.reasoning;
                   }
 
-                  // if (chunk.content) {
-                  //   // If content is still 'loading', start with empty string
-                  //   if (updatedMsg.content === 'loading') {
-                  //     updatedMsg.content = chunk.content;
-                  //   } else {
-                  //     updatedMsg.content = updatedMsg.content + chunk.content;
-                  //   }
-                  // }
+                  if (chunk.content) {
+                    // If content is still 'loading', start with empty string
+                    if (updatedMsg.content === 'loading') {
+                      updatedMsg.content = chunk.content;
+                    } else {
+                      updatedMsg.content = updatedMsg.content + chunk.content;
+                    }
+                  }
 
                   return updatedMsg;
                 }
@@ -622,28 +626,35 @@ export function MessageInput({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div>
-                      <Select
-                        value={selectedAuthority}
-                        onValueChange={setSelectedAuthority}
-                        disabled={!isNewChat || isAuthorityLocked}
-                      >
-                        <SelectTrigger className="text-xs border-none shadow-none bg-transparent focus:ring-0 bg-gradient-to-r from-[#020F26] to-[#07378C] text-white rounded-md h-auto space-x-2">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {AUTHORITY_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              <span className="hidden md:inline">
-                                {option.label}{' '}
-                              </span>
-                              ({option.abbreviation})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {isAuthorityLoading ? (
+                        <div className="text-xs border-none shadow-none bg-transparent bg-gradient-to-r from-[#020F26] to-[#07378C] text-white rounded-md h-auto space-x-2 px-3 py-2 flex items-center">
+                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Loading...
+                        </div>
+                      ) : (
+                        <Select
+                          value={selectedAuthority}
+                          onValueChange={setSelectedAuthority}
+                          disabled={!isNewChat || isAuthorityLocked}
+                        >
+                          <SelectTrigger className="text-xs border-none shadow-none bg-transparent focus:ring-0 bg-gradient-to-r from-[#020F26] to-[#07378C] text-white rounded-md h-auto space-x-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {AUTHORITY_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                <span className="hidden md:inline">
+                                  {option.label}{' '}
+                                </span>
+                                ({option.abbreviation})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   </TooltipTrigger>
-                  {(!isNewChat || isAuthorityLocked) && (
+                  {(!isNewChat || isAuthorityLocked) && !isAuthorityLoading && (
                     <TooltipContent className="bg-black">
                       <p>To use different type create new chat</p>
                     </TooltipContent>
