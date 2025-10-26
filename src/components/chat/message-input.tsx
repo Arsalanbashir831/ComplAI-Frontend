@@ -1,20 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
 import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -29,6 +27,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
+import { AUTHORITY_OPTIONS, AuthorityValue } from '@/types/chat';
+import { UploadedFile } from '@/types/upload';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -55,6 +57,7 @@ export function MessageInput({
   const { createChat, sendMessage, addMessageNoStream } = useChat();
   const { promptText, setPromptText } = usePrompt();
   const { user } = useUserContext();
+  const { selectedAuthority, setSelectedAuthority, isAuthorityLocked, setIsAuthorityLocked } = useAuthority();
   //  const { refetch } = useChatMessages(currentChatId || '');
   const { setTrigger } = useSendMessageTrigger();
   // Import chat messages context.
@@ -70,7 +73,6 @@ export function MessageInput({
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [showMentionMenu, setShowMentionMenu] = useState(false);
   const [mentionType, setMentionType] = useState<'pdf' | 'docx' | null>(null);
-  const [selectedAuthority, setSelectedAuthority] = useState('SRA');
   // const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const maxChars = 10000;
 
@@ -195,6 +197,8 @@ export function MessageInput({
 
       if (isNewChat && localChatId) {
         setMessages([]);
+        // Lock the authority when transitioning to existing chat
+        setIsAuthorityLocked(true);
         router.push(ROUTES.CHAT_ID(localChatId));
       }
 
@@ -237,7 +241,7 @@ export function MessageInput({
           chatId: localChatId,
           content: promptText.trim(),
           documents: documentsToSend,
-          systemPromptCategory: selectedAuthority as 'SRA' | 'LAA' | 'AML',
+          systemPromptCategory: selectedAuthority as AuthorityValue,
           signal,
           onChunkUpdate: (chunk) => {
             setMessages((prev) => {
@@ -290,7 +294,7 @@ export function MessageInput({
           content: promptText.trim(),
           documents: documentsToSend,
           return_type: mentionType,
-          systemPromptCategory: selectedAuthority as 'SRA' | 'LAA' | 'AML',
+          systemPromptCategory: selectedAuthority as AuthorityValue,
           signal,
         });
         const rawContent = response.content;
@@ -616,35 +620,25 @@ export function MessageInput({
                       <Select
                         value={selectedAuthority}
                         onValueChange={setSelectedAuthority}
-                        disabled={!isNewChat}
+                        disabled={!isNewChat || isAuthorityLocked}
                       >
                         <SelectTrigger className="text-xs border-none shadow-none bg-transparent focus:ring-0 bg-gradient-to-r from-[#020F26] to-[#07378C] text-white rounded-md h-auto space-x-2">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="SRA">
-                            <span className="hidden md:inline">
-                              Solicitors Regulation Authority{' '}
-                            </span>
-                            (SRA)
-                          </SelectItem>
-                          <SelectItem value="LAA">
-                            <span className="hidden md:inline">
-                              Legal Aid Agency{' '}
-                            </span>
-                            (LAA)
-                          </SelectItem>
-                          <SelectItem value="AML">
-                            <span className="hidden md:inline">
-                              Anti-Money Laundering{' '}
-                            </span>
-                            (AML)
-                          </SelectItem>
+                          {AUTHORITY_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              <span className="hidden md:inline">
+                                {option.label}{' '}
+                              </span>
+                              ({option.abbreviation})
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
                   </TooltipTrigger>
-                  {!isNewChat && (
+                  {(!isNewChat || isAuthorityLocked) && (
                     <TooltipContent className="bg-black">
                       <p>To use different type create new chat</p>
                     </TooltipContent>

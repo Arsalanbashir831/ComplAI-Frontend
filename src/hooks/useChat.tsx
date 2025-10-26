@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { Chat, ChatMessage, Citation } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -97,7 +97,7 @@ const useChat = () => {
       content: string;
       documents?: File[] | Blob;
       return_type?: 'docx' | 'pdf' | null;
-      systemPromptCategory: 'SRA' | 'LAA' | 'AML';
+      systemPromptCategory: AuthorityValue;
       signal?: AbortSignal;
     }): Promise<ChatMessage> => {
       try {
@@ -314,7 +314,7 @@ const useChat = () => {
       chatId: string;
       content: string;
       documents?: File[] | Blob;
-      systemPromptCategory: 'SRA' | 'LAA' | 'AML';
+      systemPromptCategory: AuthorityValue;
       signal?: AbortSignal;
       onChunkUpdate?: (chunk: {
         reasoning: string;
@@ -615,3 +615,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatMessages };
+

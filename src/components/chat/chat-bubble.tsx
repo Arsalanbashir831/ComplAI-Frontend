@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { AUTHORITY_OPTIONS } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -245,7 +246,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           uploadedFiles.length > 0
             ? (uploadedFiles as File[])
             : undefined,
-        systemPromptCategory: 'SRA', // Default to SRA for retry
+        systemPromptCategory: AUTHORITY_OPTIONS[0].value, // Default to first authority option for retry
         signal,
       });
       setMessages((prev) =>
@@ -271,7 +272,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             ? (uploadedFiles as File[])
             : undefined,
         return_type: mentionType as 'docx' | 'pdf' | null | undefined,
-        systemPromptCategory: 'SRA', // Default to SRA for retryyy
+        systemPromptCategory: AUTHORITY_OPTIONS[0].value, // Default to first authority option for retry
         signal,
       });
       const rawContent = response.content;

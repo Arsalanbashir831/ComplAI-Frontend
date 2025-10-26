@@ -1,5 +1,27 @@
 import { UploadedFile } from './upload';
 
+// Authority options configuration
+export const AUTHORITY_OPTIONS = [
+  {
+    value: 'SRA',
+    label: 'Solicitors Regulation Authority',
+    abbreviation: 'SRA'
+  },
+  {
+    value: 'LAA',
+    label: 'Legal Aid Agency',
+    abbreviation: 'LAA'
+  },
+  {
+    value: 'AML',
+    label: 'Anti-Money Laundering',
+    abbreviation: 'AML'
+  }
+] as const;
+
+// Type for authority values derived from configuration
+export type AuthorityValue = typeof AUTHORITY_OPTIONS[number]['value'];
+
 export interface PromptCard {
   id: string;
   icon: React.ReactNode;
