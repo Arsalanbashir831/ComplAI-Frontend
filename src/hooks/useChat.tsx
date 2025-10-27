@@ -58,7 +58,7 @@ const useChat = () => {
   } = useQuery<Chat[], Error>({
     queryKey: ['chats'],
     queryFn: fetchUserChats,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0, // Always consider data stale to allow immediate refetch
     retry: 1,
   });
 
@@ -85,7 +85,8 @@ const useChat = () => {
       queryClient.setQueryData<Chat[]>(['chats'], (oldChats = []) => {
         // Ensure oldChats is an array
         const chatsArray = Array.isArray(oldChats) ? oldChats : [];
-        return [newChat, ...chatsArray];
+        const updatedChats = [newChat, ...chatsArray];
+        return updatedChats;
       });
       // Invalidate to ensure server sync
       queryClient.invalidateQueries({ queryKey: ['chats'] });

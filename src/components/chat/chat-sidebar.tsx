@@ -52,27 +52,23 @@ export function ChatSidebar() {
         (chat, index, self) => index === self.findIndex((c) => c.id === chat.id)
       );
 
-      // Only update if chats have actually changed
-      const hasNewChats = uniqueChats.some(
-        (chat) => !allChats.some((existingChat) => existingChat.id === chat.id)
-      );
+      // Always update allChats when chats change from React Query
+      // The comparison logic can cause issues with stale closures
+      setAllChats(uniqueChats);
 
-      if (hasNewChats || allChats.length === 0) {
-        setAllChats(uniqueChats);
-        // Set initial pagination state
-        setPagination({
-          page_size: 20,
-          direction: 'desc',
-          has_next: true,
-          count: uniqueChats.length,
-          next_cursor:
-            uniqueChats.length > 0
-              ? uniqueChats[uniqueChats.length - 1].updated_at
-              : null,
-        });
-      }
+      // Set initial pagination state
+      setPagination({
+        page_size: 20,
+        direction: 'desc',
+        has_next: true,
+        count: uniqueChats.length,
+        next_cursor:
+          uniqueChats.length > 0
+            ? uniqueChats[uniqueChats.length - 1].updated_at
+            : null,
+      });
     }
-  }, [chats, allChats]);
+  }, [chats]);
 
   // Load more chats function
   const loadMoreChats = useCallback(async () => {
