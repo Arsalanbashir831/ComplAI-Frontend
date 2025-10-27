@@ -317,12 +317,15 @@ export function MessageInput({
       setUploadedFiles([]);
       setMentionType(null);
     } catch (error) {
-      console.error('Error sending message:', error);
-      console.error('Error details:', {
-        name: (error as Error)?.name,
-        message: (error as Error)?.message,
-        stack: (error as Error)?.stack,
-      });
+      // Only log non-abort errors (AbortError is expected when user clicks stop)
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        console.error('Error sending message:', error);
+        console.error('Error details:', {
+          name: (error as Error)?.name,
+          message: (error as Error)?.message,
+          stack: (error as Error)?.stack,
+        });
+      }
       // Show error as AI response in chat
       if (error instanceof DOMException && error.name === 'AbortError') {
         // Aborted by user (stop button)

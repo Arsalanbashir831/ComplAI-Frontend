@@ -354,7 +354,10 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         );
       }
     } catch (error) {
-      console.error('Error during retry:', error);
+      // Only log non-abort errors (AbortError is expected when user clicks stop)
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        console.error('Error during retry:', error);
+      }
       // Show error as AI response in chat
       if (error instanceof DOMException && error.name === 'AbortError') {
         // Aborted by user (stop button)
