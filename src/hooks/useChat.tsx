@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
+import apiCaller from '@/config/apiCaller';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -384,26 +384,26 @@ const useChat = () => {
           // streaming buffer for SSE lines
           let buffer = '';
 
-            // Emit updates only for reasoning changes and final content
-            const emitUpdate = (done = false) => {
-              if (!onChunkUpdate) return;
-              
-              if (done) {
-                // Only emit final content when done
-                onChunkUpdate({
-                  reasoning: fullReasoning,
-                  content: fullContent,
-                  done: true,
-                });
-              } else {
-                // Only emit reasoning updates during streaming
-                onChunkUpdate({
-                  reasoning: fullReasoning,
-                  content: '', // Don't send content during streaming
-                  done: false,
-                });
-              }
-            };
+          // Emit updates only for reasoning changes and final content
+          const emitUpdate = (done = false) => {
+            if (!onChunkUpdate) return;
+
+            if (done) {
+              // Only emit final content when done
+              onChunkUpdate({
+                reasoning: fullReasoning,
+                content: fullContent,
+                done: true,
+              });
+            } else {
+              // Only emit reasoning updates during streaming
+              onChunkUpdate({
+                reasoning: fullReasoning,
+                content: '', // Don't send content during streaming
+                done: false,
+              });
+            }
+          };
 
           while (true) {
             // Check if request was aborted
@@ -476,10 +476,10 @@ const useChat = () => {
                 hasReceivedContent = true;
               }
 
-               // Only emit reasoning updates during streaming
-               if (dataObj.reasoning !== undefined) {
-                 emitUpdate(false);
-               }
+              // Only emit reasoning updates during streaming
+              if (dataObj.reasoning !== undefined) {
+                emitUpdate(false);
+              }
 
               // finalise if done
               if (dataObj.done) {
@@ -703,4 +703,3 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatById, useChatMessages };
-
