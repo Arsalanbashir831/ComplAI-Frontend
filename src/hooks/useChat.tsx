@@ -552,9 +552,9 @@ const useChat = () => {
   const deleteChatMutation = useMutation({
     mutationFn: async (chatId: string): Promise<void> => {
       const response = await apiCaller(
-        API_ROUTES.CHAT.DELETE,
-        'POST',
-        { chat_id: chatId },
+        API_ROUTES.CHAT.DELETE(chatId),
+        'DELETE',
+        {},
         {},
         true,
         'json'

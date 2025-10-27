@@ -26,7 +26,7 @@ export const API_ROUTES = {
     ADD_MESSAGE_STREAM: (chatId: string) =>
       `/api/chats/${chatId}/messages/add-stream/`,
     GET_MESSAGES: (chatId: string) => `/api/chats/${chatId}/messages/`,
-    DELETE: '/api/chats/delete/',
+    DELETE: (chatId: string) => `/api/chats/${chatId}/delete/`,
     SEARCH_CHATS: (search: string) => `/api/search/elastic/?q=${search}`,
   },
   DOC_COMPLIANCE: {
