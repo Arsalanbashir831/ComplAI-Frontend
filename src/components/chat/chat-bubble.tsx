@@ -1,5 +1,8 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { useParams } from 'next/navigation';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
@@ -34,6 +37,9 @@ interface ChatBubbleProps {
 }
 
 export function ChatBubble({ message }: ChatBubbleProps) {
+  const params = useParams();
+  const currentChatId = params.id as string; // Get chatId from route params
+
   const isBot = message.is_system_message;
   const isError = !!message.isError;
   const isLoading = message.content === 'loading';
@@ -214,8 +220,21 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   // Retry handler for stopped responses
   const handleRetry = async () => {
     if (!message.retryData) return;
-    const { chatId, promptText, uploadedFiles, mentionType } =
-      message.retryData;
+    const { promptText, uploadedFiles, mentionType } = message.retryData;
+
+    // Use the current chatId from the URL instead of the retry data
+    const chatId = currentChatId;
+
+    console.log('🔄 Retry - Using chatId from URL:', chatId);
+    console.log(
+      '🔄 Retry - Original retryData chatId:',
+      message.retryData.chatId
+    );
+
+    if (!chatId) {
+      console.error('No chatId available for retry');
+      return;
+    }
 
     // Get the correct authority from the authority context
     const chatCategory = selectedAuthority;
