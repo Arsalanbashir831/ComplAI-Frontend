@@ -358,3 +358,39 @@ body {
 .initial-hidden {
   opacity: 0;
 }
+
+/* Professional fade-in animation for streaming content chunks */
+@keyframes fadeInBlur {
+  0% {
+    opacity: 0.6;
+    filter: blur(1px);
+    color: #9ca3af; /* Gray-400 */
+    transform: translateY(1px) scale(0.98);
+  }
+  30% {
+    opacity: 0.8;
+    filter: blur(0.5px);
+    color: #6b7280; /* Gray-500 */
+    transform: translateY(0.5px) scale(0.99);
+  }
+  70% {
+    opacity: 0.9;
+    filter: blur(0.2px);
+    color: #374151; /* Gray-700 */
+    transform: translateY(0.2px) scale(1);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    color: inherit; /* Final text color */
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInBlur 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, filter, transform, color;
+  animation-fill-mode: both;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}

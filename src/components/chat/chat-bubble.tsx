@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useParams } from 'next/navigation';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -55,8 +55,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const shouldShowReasoning = hasReasoning && message.content === 'loading';
 
   // State for tracking content chunks and animations
-  const [contentChunks, setContentChunks] = useState<string[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [animatedChunkStart, setAnimatedChunkStart] = useState<number>(0);
+  const [chunkAnimationKey, setChunkAnimationKey] = useState<number>(0);
   const previousContentRef = useRef<string>('');
   const chunkTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -72,6 +73,25 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const { selectedAuthority } = useAuthority();
   const { abortControllerRef } = useAbortController();
   const { sendMessage, addMessageNoStream } = useChat();
+
+  // Function to create animated content with word-level animation
+  const createAnimatedContent = (content: string, startIndex: number) => {
+    const stableContent = content.slice(0, startIndex);
+    const newContent = content.slice(startIndex);
+
+    // Split new content into words while preserving markdown structure
+    const words = newContent.split(/(\s+)/).filter((word) => word.length > 0);
+
+    return {
+      stableContent,
+      animatedWords: words.map((word, index) => ({
+        text: word,
+        key: `word-${chunkAnimationKey}-${index}`,
+        isWhitespace: /^\s+$/.test(word),
+        delay: index * 0.01, // Faster staggered delay for more responsive effect
+      })),
+    };
+  };
 
   // Function to extract heading from reasoning content
   const getReasoningHeading = (reasoning: string): string => {
@@ -112,8 +132,8 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   // Effect to track content changes and create animated chunks
   useEffect(() => {
     if (!isBot || message.content === 'loading' || !message.content) {
-      setContentChunks([]);
       setIsStreaming(false);
+      setAnimatedChunkStart(0);
       return;
     }
 
@@ -123,30 +143,23 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     // If content has grown, we're streaming
     if (currentContent.length > previousContent.length) {
       setIsStreaming(true);
+      setAnimatedChunkStart(previousContent.length); // Track where animation starts
+      setChunkAnimationKey((prev) => prev + 1); // Trigger animation for new chunk
 
       // Clear any existing timeout
       if (chunkTimeoutRef.current) {
         clearTimeout(chunkTimeoutRef.current);
       }
 
-      // Extract the new chunk (the difference)
-      const newChunk = currentContent.slice(previousContent.length);
-
-      // Only add the new chunk, don't re-animate previous chunks
-      setContentChunks(() => {
-        // Keep only the latest chunk for animation
-        return [newChunk];
-      });
-
       // Set timeout to mark streaming as complete after a delay
       chunkTimeoutRef.current = setTimeout(() => {
         setIsStreaming(false);
-        setContentChunks([]); // Clear chunks when streaming is done
-      }, 1000); // Reduced timeout for faster transition
+        setAnimatedChunkStart(0); // Reset animation position
+      }, 300); // Shorter timeout for more responsive animation
     } else if (currentContent !== previousContent) {
       // Content changed but not streaming (complete replacement)
       setIsStreaming(false);
-      setContentChunks([]);
+      setAnimatedChunkStart(0);
     }
 
     // Update the previous content reference
@@ -639,23 +652,41 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                 >
                   {message.content !== 'loading' && (
                     <div className="relative">
-                      {/* Render complete content */}
-                      <div className="relative">
-                        {/* Show the complete content */}
+                      {isStreaming &&
+                      animatedChunkStart < message.content.length ? (
+                        // During streaming: render stable content + animated words
+                        (() => {
+                          const { stableContent, animatedWords } =
+                            createAnimatedContent(
+                              message.content,
+                              animatedChunkStart
+                            );
+                          return (
+                            <>
+                              <MarkdownRenderer content={stableContent} />
+                              <span className="inline">
+                                {animatedWords.map((word) => (
+                                  <span
+                                    key={word.key}
+                                    className={
+                                      word.isWhitespace ? '' : 'animate-fade-in'
+                                    }
+                                    style={{
+                                      animationDelay: `${word.delay}s`,
+                                      display: 'inline-block',
+                                    }}
+                                  >
+                                    {word.text}
+                                  </span>
+                                ))}
+                              </span>
+                            </>
+                          );
+                        })()
+                      ) : (
+                        // After streaming: render normally
                         <MarkdownRenderer content={message.content} />
-
-                        {/* Overlay the latest chunk with animation during streaming */}
-                        {isStreaming && contentChunks.length > 0 && (
-                          <motion.div
-                            className="absolute inset-0 pointer-events-none"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <div className="bg-gradient-to-r from-transparent via-blue-50/30 to-transparent h-full" />
-                          </motion.div>
-                        )}
-                      </div>
+                      )}
                     </div>
                   )}
                   {/* {isBot &&
