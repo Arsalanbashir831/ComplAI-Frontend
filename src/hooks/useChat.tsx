@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -87,6 +87,8 @@ const useChat = () => {
         const chatsArray = Array.isArray(oldChats) ? oldChats : [];
         return [newChat, ...chatsArray];
       });
+      // Invalidate to ensure server sync
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
     },
   });
 
@@ -392,6 +394,11 @@ const useChat = () => {
           };
 
           while (true) {
+            // Check if request was aborted
+            if (signal?.aborted) {
+              throw new DOMException('Aborted', 'AbortError');
+            }
+
             const { done, value } = await reader.read();
             if (done) break;
 
@@ -404,6 +411,11 @@ const useChat = () => {
             buffer = lines.pop() || ''; // keep last partial line in buffer
 
             for (const line of lines) {
+              // Check if request was aborted during processing
+              if (signal?.aborted) {
+                throw new DOMException('Aborted', 'AbortError');
+              }
+              
               const trimmed = line.trim();
               if (!line.trim() || !line.startsWith('data: ')) {
                 continue; // Skip empty lines, comments, or non-data lines
@@ -658,3 +670,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatById, useChatMessages };
+

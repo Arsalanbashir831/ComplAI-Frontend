@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
@@ -11,13 +9,16 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
+import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
 import { AuthorityValue } from '@/types/chat';
 import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
-import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -49,11 +50,11 @@ export function MessageInput({
   const { setTrigger } = useSendMessageTrigger();
   // Import chat messages context.
   const { setMessages } = useChatContext();
+  // Import global abort controller
+  const { abortControllerRef, abortCurrentRequest } = useAbortController();
 
   // Global mutating state as our "isSending" indicator.
   const isSending = useIsMutating() > 0;
-  // AbortController ref to cancel the ongoing request.
-  const abortControllerRef = useRef<AbortController | null>(null);
   // Remove local message state since we're using promptText from context.
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isUplaodModalOpen, setIsUplaodModalOpen] = useState(false);
@@ -171,6 +172,11 @@ export function MessageInput({
         (upFile) => upFile.rawFile
       );
 
+      // Check if aborted before any async operations
+      if (signal.aborted) {
+        throw new DOMException('Aborted', 'AbortError');
+      }
+
       if (!localChatId) {
         const response = await createChat({
           name: shortenText(promptText.trim(), 5),
@@ -178,11 +184,11 @@ export function MessageInput({
         });
         localChatId = String(response.id);
         setCurrentChatId(localChatId);
-      }
-
-      // If the user aborted during chat creation, do not proceed
-      if (signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
+        
+        // Check if aborted after chat creation
+        if (signal.aborted) {
+          throw new DOMException('Aborted', 'AbortError');
+        }
       }
 
       if (isNewChat && localChatId) {
@@ -359,9 +365,7 @@ export function MessageInput({
   };
 
   const handleStop = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    abortCurrentRequest();
   };
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // If the user presses Escape and the mention menu is open, close it.
@@ -609,7 +613,7 @@ export function MessageInput({
                 size="icon"
                 className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
                 onClick={isSending ? handleStop : handleSendMessage}
-                disabled={!promptText.trim() || isSending}
+                disabled={!promptText.trim() && !isSending}
                 aria-label="Send message"
               >
                 {isSending ? (

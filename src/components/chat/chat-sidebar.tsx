@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuthority } from '@/contexts/authority-context';
 import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { Chat } from '@/types/chat';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import type { Chat } from '@/types/chat';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -44,27 +44,35 @@ export function ChatSidebar() {
     setIsOpen(!isOpen);
   };
 
-  // Initialize chats when they're first loaded
+  // Update chats when they change
   useEffect(() => {
-    if (chats && Array.isArray(chats) && allChats.length === 0) {
+    if (chats && Array.isArray(chats)) {
       // Ensure unique chats by ID to prevent duplicates
       const uniqueChats = chats.filter(
         (chat, index, self) => index === self.findIndex((c) => c.id === chat.id)
       );
-      setAllChats(uniqueChats);
-      // Set initial pagination state
-      setPagination({
-        page_size: 20,
-        direction: 'desc',
-        has_next: true,
-        count: uniqueChats.length,
-        next_cursor:
-          uniqueChats.length > 0
-            ? uniqueChats[uniqueChats.length - 1].updated_at
-            : null,
-      });
+      
+      // Only update if chats have actually changed
+      const hasNewChats = uniqueChats.some(chat => 
+        !allChats.some(existingChat => existingChat.id === chat.id)
+      );
+      
+      if (hasNewChats || allChats.length === 0) {
+        setAllChats(uniqueChats);
+        // Set initial pagination state
+        setPagination({
+          page_size: 20,
+          direction: 'desc',
+          has_next: true,
+          count: uniqueChats.length,
+          next_cursor:
+            uniqueChats.length > 0
+              ? uniqueChats[uniqueChats.length - 1].updated_at
+              : null,
+        });
+      }
     }
-  }, [chats, allChats.length]);
+  }, [chats, allChats]);
 
   // Load more chats function
   const loadMoreChats = useCallback(async () => {

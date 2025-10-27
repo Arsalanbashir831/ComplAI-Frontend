@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import { useAbortController } from '@/contexts/abort-controller-context';
+import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { AUTHORITY_OPTIONS } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -62,6 +63,8 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const [isReasoningExpanded, setIsReasoningExpanded] = useState(false);
 
   const { setMessages } = useChatContext();
+  const { selectedAuthority } = useAuthority();
+  const { abortControllerRef } = useAbortController();
   const { sendMessage, addMessageNoStream } = useChat();
 
   // Function to extract heading from reasoning content
@@ -213,6 +216,10 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     if (!message.retryData) return;
     const { chatId, promptText, uploadedFiles, mentionType } =
       message.retryData;
+    
+    // Get the correct authority from the authority context
+    const chatCategory = selectedAuthority;
+    
     // Remove the error message
     setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
     // Re-send the message
@@ -247,10 +254,12 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         files: null,
       },
     ]);
-    // Create a new AbortController for this retry
-    const abortController = new AbortController();
-    const signal = abortController.signal;
-    if (!mentionType) {
+    // Use the global AbortController for this retry
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
+    try {
+      if (!mentionType) {
       const completedResponse = await sendMessage({
         chatId,
         content: promptText,
@@ -260,8 +269,30 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           uploadedFiles.length > 0
             ? (uploadedFiles as File[])
             : undefined,
-        systemPromptCategory: AUTHORITY_OPTIONS[0].value, // Default to first authority option for retry
+        systemPromptCategory: chatCategory, // Use the correct chat category
         signal,
+        onChunkUpdate: (chunk) => {
+          setMessages((prev) => {
+            const updatedMessages = prev.map((msg) => {
+              if (msg.id === aiMessageId) {
+                const updatedMsg = { ...msg };
+
+                if (chunk.reasoning) {
+                  updatedMsg.reasoning = chunk.reasoning;
+                }
+
+                if (chunk.content) {
+                  updatedMsg.content = chunk.content;
+                }
+
+                return updatedMsg;
+              }
+              return msg;
+            });
+
+            return updatedMessages;
+          });
+        },
       });
       setMessages((prev) =>
         prev.map((msg) =>
@@ -286,7 +317,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             ? (uploadedFiles as File[])
             : undefined,
         return_type: mentionType as 'docx' | 'pdf' | null | undefined,
-        systemPromptCategory: AUTHORITY_OPTIONS[0].value, // Default to first authority option for retry
+        systemPromptCategory: chatCategory, // Use the correct chat category
         signal,
       });
       const rawContent = response.content;
@@ -308,6 +339,45 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             : msg
         )
       );
+    }
+    } catch (error) {
+      console.error('Error during retry:', error);
+      // Show error as AI response in chat
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        // Aborted by user (stop button)
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  content: 'You have stopped the response. Want to try again?',
+                  isError: true,
+                  is_system_message: true,
+                  retryData: {
+                    chatId,
+                    promptText,
+                    uploadedFiles,
+                    mentionType,
+                  },
+                }
+              : msg
+          )
+        );
+      } else {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  content:
+                    'Unable to generate response, please check your credit limit',
+                  isError: true,
+                  is_system_message: true,
+                }
+              : msg
+          )
+        );
+      }
     }
   };
 
