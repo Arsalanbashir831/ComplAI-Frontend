@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -42,9 +42,9 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
-  activeFilter,
+  // activeFilter,
   pageSize = 5,
-  isTabsPresent = true,
+  // isTabsPresent = true,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -69,15 +69,15 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  useEffect(() => {
-    if (isTabsPresent) {
-      if (activeFilter !== 'all') {
-        table.getColumn('activity_type')?.setFilterValue(activeFilter);
-      } else {
-        table.getColumn('activity_type')?.setFilterValue('');
-      }
-    }
-  }, [isTabsPresent, activeFilter, table]);
+  // useEffect(() => {
+  //   if (isTabsPresent) {
+  //     if (activeFilter !== 'all') {
+  //       table.getColumn('activity_type')?.setFilterValue(activeFilter);
+  //     } else {
+  //       table.getColumn('activity_type')?.setFilterValue('');
+  //     }
+  //   }
+  // }, [isTabsPresent, activeFilter, table]);
 
   const totalPages = table.getPageCount();
   const currentPage = table.getState().pagination.pageIndex + 1;
