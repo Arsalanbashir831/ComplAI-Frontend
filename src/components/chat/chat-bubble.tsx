@@ -225,12 +225,6 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     // Use the current chatId from the URL instead of the retry data
     const chatId = currentChatId;
 
-    console.log('🔄 Retry - Using chatId from URL:', chatId);
-    console.log(
-      '🔄 Retry - Original retryData chatId:',
-      message.retryData.chatId
-    );
-
     if (!chatId) {
       console.error('No chatId available for retry');
       return;
