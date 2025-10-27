@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useParams } from 'next/navigation';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -515,7 +515,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                     )}
                   </div>
 
-                  <motion.svg
+                  {/* <motion.svg
                     className="h-4 w-4 text-gray-500 relative z-10"
                     fill="none"
                     stroke="currentColor"
@@ -529,11 +529,11 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       strokeWidth={2}
                       d="M19 9l-7 7-7-7"
                     />
-                  </motion.svg>
+                  </motion.svg> */}
                 </button>
 
-                {/* Accordion Content */}
-                <AnimatePresence>
+             
+                {/* <AnimatePresence>
                   {isReasoningExpanded && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
@@ -560,7 +560,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                                 content={message.reasoning || ''}
                               />
 
-                              {/* Shining effect overlay - only during streaming */}
+                         
                               {isReasoningStreaming && (
                                 <motion.div
                                   className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent"
@@ -585,7 +585,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                       </div>
                     </motion.div>
                   )}
-                </AnimatePresence>
+                </AnimatePresence> */}
               </motion.div>
             )}
 
