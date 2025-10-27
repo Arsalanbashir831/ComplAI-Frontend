@@ -1,3 +1,6 @@
+import { Suspense } from 'react';
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
 import { AbortControllerProvider } from '@/contexts/abort-controller-context';
 import { ChatProvider } from '@/contexts/chat-context';
 import { LoaderProvider } from '@/contexts/loader-context';
@@ -5,12 +8,9 @@ import { PromptProvider } from '@/contexts/prompt-context';
 import { UserProvider } from '@/contexts/user-context';
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
-import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
-import { Suspense } from 'react';
 
-import LoadingSpinner from '@/components/common/loading-spinner';
 import { Toaster } from '@/components/ui/sonner';
+import LoadingSpinner from '@/components/common/loading-spinner';
 
 import './globals.css';
 

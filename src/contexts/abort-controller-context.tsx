@@ -7,7 +7,9 @@ interface AbortControllerContextType {
   abortCurrentRequest: () => void;
 }
 
-const AbortControllerContext = createContext<AbortControllerContextType | undefined>(undefined);
+const AbortControllerContext = createContext<
+  AbortControllerContextType | undefined
+>(undefined);
 
 export function AbortControllerProvider({ children }: { children: ReactNode }) {
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -19,7 +21,9 @@ export function AbortControllerProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AbortControllerContext.Provider value={{ abortControllerRef, abortCurrentRequest }}>
+    <AbortControllerContext.Provider
+      value={{ abortControllerRef, abortCurrentRequest }}
+    >
       {children}
     </AbortControllerContext.Provider>
   );
@@ -28,7 +32,9 @@ export function AbortControllerProvider({ children }: { children: ReactNode }) {
 export function useAbortController() {
   const context = useContext(AbortControllerContext);
   if (context === undefined) {
-    throw new Error('useAbortController must be used within an AbortControllerProvider');
+    throw new Error(
+      'useAbortController must be used within an AbortControllerProvider'
+    );
   }
   return context;
 }

@@ -1,15 +1,15 @@
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
 
-import { useChat } from '@/hooks/useChat';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -216,10 +216,10 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     if (!message.retryData) return;
     const { chatId, promptText, uploadedFiles, mentionType } =
       message.retryData;
-    
+
     // Get the correct authority from the authority context
     const chatCategory = selectedAuthority;
-    
+
     // Remove the error message
     setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
     // Re-send the message
@@ -257,89 +257,89 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     // Use the global AbortController for this retry
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
-    
+
     try {
       if (!mentionType) {
-      const completedResponse = await sendMessage({
-        chatId,
-        content: promptText,
-        documents:
-          uploadedFiles &&
-          Array.isArray(uploadedFiles) &&
-          uploadedFiles.length > 0
-            ? (uploadedFiles as File[])
-            : undefined,
-        systemPromptCategory: chatCategory, // Use the correct chat category
-        signal,
-        onChunkUpdate: (chunk) => {
-          setMessages((prev) => {
-            const updatedMessages = prev.map((msg) => {
-              if (msg.id === aiMessageId) {
-                const updatedMsg = { ...msg };
+        const completedResponse = await sendMessage({
+          chatId,
+          content: promptText,
+          documents:
+            uploadedFiles &&
+            Array.isArray(uploadedFiles) &&
+            uploadedFiles.length > 0
+              ? (uploadedFiles as File[])
+              : undefined,
+          systemPromptCategory: chatCategory, // Use the correct chat category
+          signal,
+          onChunkUpdate: (chunk) => {
+            setMessages((prev) => {
+              const updatedMessages = prev.map((msg) => {
+                if (msg.id === aiMessageId) {
+                  const updatedMsg = { ...msg };
 
-                if (chunk.reasoning) {
-                  updatedMsg.reasoning = chunk.reasoning;
+                  if (chunk.reasoning) {
+                    updatedMsg.reasoning = chunk.reasoning;
+                  }
+
+                  if (chunk.content) {
+                    updatedMsg.content = chunk.content;
+                  }
+
+                  return updatedMsg;
                 }
+                return msg;
+              });
 
-                if (chunk.content) {
-                  updatedMsg.content = chunk.content;
-                }
-
-                return updatedMsg;
-              }
-              return msg;
+              return updatedMessages;
             });
-
-            return updatedMessages;
-          });
-        },
-      });
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMessageId
-            ? {
-                ...completedResponse,
-                content: completedResponse.content,
-                id: aiMessageId,
-                citations: completedResponse.citations,
-              }
-            : msg
-        )
-      );
-    } else {
-      const response = await addMessageNoStream({
-        chatId,
-        content: promptText,
-        documents:
-          uploadedFiles &&
-          Array.isArray(uploadedFiles) &&
-          uploadedFiles.length > 0
-            ? (uploadedFiles as File[])
-            : undefined,
-        return_type: mentionType as 'docx' | 'pdf' | null | undefined,
-        systemPromptCategory: chatCategory, // Use the correct chat category
-        signal,
-      });
-      const rawContent = response.content;
-      // let processedContent = rawContent.replace(/\\n/g, '\n');
-      // processedContent = processedContent.replace(
-      //   /\*\*([A-Z\s]+):\*\*([A-Z])/g,
-      //   '**$1:**\n\n$2'
-      // );
-      //   processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMessageId
-            ? {
-                ...response,
-                content: rawContent,
-                id: aiMessageId,
-                citations: response.citations,
-              }
-            : msg
-        )
-      );
-    }
+          },
+        });
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...completedResponse,
+                  content: completedResponse.content,
+                  id: aiMessageId,
+                  citations: completedResponse.citations,
+                }
+              : msg
+          )
+        );
+      } else {
+        const response = await addMessageNoStream({
+          chatId,
+          content: promptText,
+          documents:
+            uploadedFiles &&
+            Array.isArray(uploadedFiles) &&
+            uploadedFiles.length > 0
+              ? (uploadedFiles as File[])
+              : undefined,
+          return_type: mentionType as 'docx' | 'pdf' | null | undefined,
+          systemPromptCategory: chatCategory, // Use the correct chat category
+          signal,
+        });
+        const rawContent = response.content;
+        // let processedContent = rawContent.replace(/\\n/g, '\n');
+        // processedContent = processedContent.replace(
+        //   /\*\*([A-Z\s]+):\*\*([A-Z])/g,
+        //   '**$1:**\n\n$2'
+        // );
+        //   processedContent = processedContent.replace(/-([a-zA-Z0-9])/g, '- $1');
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...response,
+                  content: rawContent,
+                  id: aiMessageId,
+                  citations: response.citations,
+                }
+              : msg
+          )
+        );
+      }
     } catch (error) {
       console.error('Error during retry:', error);
       // Show error as AI response in chat

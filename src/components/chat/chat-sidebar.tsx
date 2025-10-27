@@ -1,16 +1,16 @@
 'use client';
 
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuthority } from '@/contexts/authority-context';
 import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
 import type { Chat } from '@/types/chat';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -51,12 +51,12 @@ export function ChatSidebar() {
       const uniqueChats = chats.filter(
         (chat, index, self) => index === self.findIndex((c) => c.id === chat.id)
       );
-      
+
       // Only update if chats have actually changed
-      const hasNewChats = uniqueChats.some(chat => 
-        !allChats.some(existingChat => existingChat.id === chat.id)
+      const hasNewChats = uniqueChats.some(
+        (chat) => !allChats.some((existingChat) => existingChat.id === chat.id)
       );
-      
+
       if (hasNewChats || allChats.length === 0) {
         setAllChats(uniqueChats);
         // Set initial pagination state
