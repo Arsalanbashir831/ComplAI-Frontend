@@ -384,14 +384,25 @@ const useChat = () => {
           // streaming buffer for SSE lines
           let buffer = '';
 
-          // Emit updates for every chunk to enable real-time streaming
+          // Emit updates only for reasoning changes and final content
           const emitUpdate = (done = false) => {
             if (!onChunkUpdate) return;
-            onChunkUpdate({
-              reasoning: fullReasoning,
-              content: fullContent,
-              done,
-            });
+
+            if (done) {
+              // Only emit final content when done
+              onChunkUpdate({
+                reasoning: fullReasoning,
+                content: fullContent,
+                done: true,
+              });
+            } else {
+              // Only emit reasoning updates during streaming
+              onChunkUpdate({
+                reasoning: fullReasoning,
+                content: '', // Don't send content during streaming
+                done: false,
+              });
+            }
           };
 
           while (true) {
@@ -445,19 +456,28 @@ const useChat = () => {
 
               // append reasoning/content aggregates
               if (dataObj.reasoning) {
-                fullReasoning += dataObj.reasoning;
+                // If this is the final chunk with done=true, use the complete reasoning
+                // Otherwise, accumulate reasoning for streaming
+                if (dataObj.done) {
+                  fullReasoning = dataObj.reasoning; // Use complete reasoning from final chunk
+                } else {
+                  fullReasoning += dataObj.reasoning; // Accumulate for streaming
+                }
               }
 
               if (dataObj.content) {
-                fullContent += dataObj.content;
+                // If this is the final chunk with done=true, use the complete content
+                // Otherwise, accumulate content for streaming
+                if (dataObj.done) {
+                  fullContent = dataObj.content; // Use complete content from final chunk
+                } else {
+                  fullContent += dataObj.content; // Accumulate for streaming
+                }
                 hasReceivedContent = true;
               }
 
-              // emit update for every chunk to enable real-time streaming
-              if (
-                dataObj.content !== undefined ||
-                dataObj.reasoning !== undefined
-              ) {
+              // Only emit reasoning updates during streaming
+              if (dataObj.reasoning !== undefined) {
                 emitUpdate(false);
               }
 
@@ -486,9 +506,21 @@ const useChat = () => {
           if (buffer.trim().startsWith('data:')) {
             try {
               const lastJson = JSON.parse(buffer.trim().slice(5).trim());
-              if (lastJson.reasoning) fullReasoning += lastJson.reasoning;
+              if (lastJson.reasoning) {
+                // If this is the final chunk with done=true, use the complete reasoning
+                if (lastJson.done) {
+                  fullReasoning = lastJson.reasoning; // Use complete reasoning from final chunk
+                } else {
+                  fullReasoning += lastJson.reasoning; // Accumulate for streaming
+                }
+              }
               if (lastJson.content) {
-                fullContent += lastJson.content;
+                // If this is the final chunk with done=true, use the complete content
+                if (lastJson.done) {
+                  fullContent = lastJson.content; // Use complete content from final chunk
+                } else {
+                  fullContent += lastJson.content; // Accumulate for streaming
+                }
                 hasReceivedContent = true;
               }
               emitUpdate(!!lastJson.done);

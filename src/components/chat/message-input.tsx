@@ -238,49 +238,40 @@ export function MessageInput({
           systemPromptCategory: selectedAuthority as AuthorityValue,
           signal,
           onChunkUpdate: (chunk) => {
-            setMessages((prev) => {
-              const updatedMessages = prev.map((msg) => {
-                if (msg.id === aiMessageId) {
-                  const updatedMsg = { ...msg };
-
-                  if (chunk.reasoning) {
-                    // Ensure reasoning field exists and append the chunk
-                    // updatedMsg.reasoning =
-                    //   (updatedMsg.reasoning || '') + chunk.reasoning;
-                    updatedMsg.reasoning = chunk.reasoning;
+            // Only update reasoning during streaming, ignore content until done
+            if (chunk.reasoning && !chunk.done) {
+              setMessages((prev) => {
+                const updatedMessages = prev.map((msg) => {
+                  if (msg.id === aiMessageId) {
+                    return {
+                      ...msg,
+                      reasoning: chunk.reasoning,
+                    };
                   }
-
-                  if (chunk.content) {
-                    // If content is still 'loading', start with empty string
-                    // if (updatedMsg.content === 'loading') {
-                    updatedMsg.content = chunk.content;
-                    // } else {
-                    //   updatedMsg.content = updatedMsg.content + chunk.content;
-                    // }
-                  }
-
-                  return updatedMsg;
-                }
-                return msg;
+                  return msg;
+                });
+                return updatedMessages;
               });
-
-              return updatedMessages;
-            });
+            }
           },
         });
 
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? {
-                  ...completedResponse,
-                  content: completedResponse.content,
-                  id: aiMessageId,
-                  citations: completedResponse.citations,
-                }
-              : msg
-          )
-        );
+        // Only update the final message with complete content
+        if (completedResponse) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? {
+                    ...completedResponse,
+                    content: completedResponse.content,
+                    id: aiMessageId,
+                    citations: completedResponse.citations,
+                    reasoning: completedResponse.reasoning,
+                  }
+                : msg
+            )
+          );
+        }
       } else {
         // Non-streaming mode
         const response = await addMessageNoStream({
