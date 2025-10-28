@@ -27,12 +27,13 @@ export function normalizeTables(md: string): string {
 }
 
 export function preserveSpaces(md: string): string {
-  return md.replace(/ {2,}/g, (match) => '&nbsp;'.repeat(match.length));
+  // Don't convert spaces in list items to &nbsp;
+  // Only convert spaces in regular paragraphs (not at start of line with list markers)
+  return md.replace(/(?<!^\s*[-*+]\s|^\s*\d+\.\s|^\s*---\s*$)( {2,})/gm, (match) => '&nbsp;'.repeat(match.length));
 }
 
 export function preprocessMarkdown(md: string): string {
-  // Add any additional preprocessing here if needed
-  return md;
+  return md.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 }
 
 type CodeProps = {
@@ -52,7 +53,7 @@ export const markdownComponents = {
     <h3 className="mt-4 mb-2 text-lg font-semibold text-gray-700" {...props} />
   ),
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-    <p className="my-3 text-base leading-relaxed text-gray-900" {...props} />
+    <p className="my-3 text-base leading-relaxed text-gray-900 whitespace-pre-wrap" {...props} />
   ),
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
     <ul
@@ -62,7 +63,8 @@ export const markdownComponents = {
   ),
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
     <ol
-      className="my-3 ml-6 list-decimal text-base leading-relaxed text-gray-900 space-y-1"
+      className="my-3 pl-6 !list-decimal text-base leading-relaxed text-gray-900 space-y-1"
+      style={{ listStyleType: 'decimal' }}  
       {...props}
     />
   ),
@@ -141,16 +143,17 @@ export const markdownComponents = {
 export function MarkdownRenderer({ content }: { content: string }) {
   // Detect if content contains a table
   const containsTable = /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(content);
-  let processed = preprocessMarkdown(content);
+  let processed = preprocessMarkdown(content).replace(/\\n/g, '\n'); // keep only this
   if (containsTable) {
     processed = normalizeTables(processed);
   }
-  const finalContent = preserveSpaces(processed);
+
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-      {finalContent}
+      {processed}
     </ReactMarkdown>
   );
 }
 
 export { remarkGfm };
+
