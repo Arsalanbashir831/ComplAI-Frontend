@@ -29,7 +29,10 @@ export function normalizeTables(md: string): string {
 export function preserveSpaces(md: string): string {
   // Don't convert spaces in list items to &nbsp;
   // Only convert spaces in regular paragraphs (not at start of line with list markers)
-  return md.replace(/(?<!^\s*[-*+]\s|^\s*\d+\.\s|^\s*---\s*$)( {2,})/gm, (match) => '&nbsp;'.repeat(match.length));
+  return md.replace(
+    /(?<!^\s*[-*+]\s|^\s*\d+\.\s|^\s*---\s*$)( {2,})/gm,
+    (match) => '&nbsp;'.repeat(match.length)
+  );
 }
 
 export function preprocessMarkdown(md: string): string {
@@ -53,7 +56,10 @@ export const markdownComponents = {
     <h3 className="mt-4 mb-2 text-lg font-semibold text-gray-700" {...props} />
   ),
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-    <p className="my-3 text-base leading-relaxed text-gray-900 whitespace-pre-wrap" {...props} />
+    <p
+      className="my-3 text-base leading-relaxed text-gray-900 whitespace-pre-wrap"
+      {...props}
+    />
   ),
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
     <ul
@@ -64,7 +70,7 @@ export const markdownComponents = {
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
     <ol
       className="my-3 pl-6 !list-decimal text-base leading-relaxed text-gray-900 space-y-1"
-      style={{ listStyleType: 'decimal' }}  
+      style={{ listStyleType: 'decimal' }}
       {...props}
     />
   ),
@@ -156,4 +162,3 @@ export function MarkdownRenderer({ content }: { content: string }) {
 }
 
 export { remarkGfm };
-
