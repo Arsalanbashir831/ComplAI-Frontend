@@ -35,7 +35,16 @@ const formSchema = z
       .email('Invalid email address')
       // → normalize to lowercase right away
       .transform((val) => val.toLowerCase()),
-    password: z.string().min(8, 'Password must be at least 8 characters long'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters long')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(
+        /[^A-Za-z0-9]/,
+        'Password must contain at least one special character'
+      ),
     confirmPassword: z
       .string()
       .min(8, 'Confirm Password must be at least 8 characters long'),
@@ -46,6 +55,89 @@ const formSchema = z
     path: ['confirmPassword'],
     message: 'Passwords must match',
   });
+
+// Password strength checker component
+const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+  const getPasswordStrength = (password: string) => {
+    let score = 0;
+    const checks = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[^A-Za-z0-9]/.test(password),
+    };
+
+    score = Object.values(checks).filter(Boolean).length;
+
+    return {
+      score,
+      checks,
+      strength: score < 2 ? 'weak' : score < 4 ? 'medium' : 'strong',
+      color:
+        score < 2 ? 'bg-red-500' : score < 4 ? 'bg-yellow-500' : 'bg-green-500',
+    };
+  };
+
+  const { score, checks, strength, color } = getPasswordStrength(password);
+
+  if (!password) return null;
+
+  return (
+    <div className="mt-2 space-y-2">
+      <div className="flex items-center space-x-2">
+        <div className="flex-1 bg-gray-200 rounded-full h-2">
+          <div
+            className={`h-2 rounded-full transition-all duration-300 ${color}`}
+            style={{ width: `${(score / 5) * 100}%` }}
+          />
+        </div>
+        <span className="text-xs font-medium capitalize text-gray-600">
+          {strength}
+        </span>
+      </div>
+      <div className="grid grid-cols-1 gap-1 text-xs">
+        <div
+          className={`flex items-center space-x-1 ${checks.length ? 'text-green-600' : 'text-gray-400'}`}
+        >
+          <span>{checks.length ? '✓' : '○'}</span>
+          <span>8+ characters (e.g., &#34;password123&#34;)</span>
+        </div>
+        <div
+          className={`flex items-center space-x-1 ${checks.uppercase ? 'text-green-600' : 'text-gray-400'}`}
+        >
+          <span>{checks.uppercase ? '✓' : '○'}</span>
+          <span>
+            Uppercase letter (e.g., &#34;A&#34;, &#34;B&#34;, &#34;C&#34;)
+          </span>
+        </div>
+        <div
+          className={`flex items-center space-x-1 ${checks.lowercase ? 'text-green-600' : 'text-gray-400'}`}
+        >
+          <span>{checks.lowercase ? '✓' : '○'}</span>
+          <span>
+            Lowercase letter (e.g., &#34;a&#34;, &#34;b&#34;, &#34;c&#34;)
+          </span>
+        </div>
+        <div
+          className={`flex items-center space-x-1 ${checks.number ? 'text-green-600' : 'text-gray-400'}`}
+        >
+          <span>{checks.number ? '✓' : '○'}</span>
+          <span>Number (e.g., &#34;1&#34;, &#34;2&#34;, &#34;3&#34;)</span>
+        </div>
+        <div
+          className={`flex items-center space-x-1 ${checks.special ? 'text-green-600' : 'text-gray-400'}`}
+        >
+          <span>{checks.special ? '✓' : '○'}</span>
+          <span>
+            Special character (e.gl, &#34;!&#34;, &#34;@&#34;, &#34;#&#34;
+            &#34;$&#34;)
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export function SignUpForm() {
   const [loading, setLoading] = useState(false);
@@ -184,6 +276,7 @@ export function SignUpForm() {
                     {...field}
                   />
                 </FormControl>
+                <PasswordStrengthIndicator password={field.value} />
                 <FormMessage />
               </FormItem>
             )}
