@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -9,13 +10,15 @@ import DocxViewer from '@/components/common/DocxViewer';
 
 export default function UserAgreementPage() {
   const [agreed, setAgreed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
 
   const searchParams = useSearchParams();
 
   const email = searchParams.get('email');
   const password = searchParams.get('password');
-  const subscription = searchParams.get('subscription');
+  // const subscription = searchParams.get('subscription');
+
   const handleCheckboxChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ): void => {
@@ -23,15 +26,37 @@ export default function UserAgreementPage() {
   };
 
   const handleContinue = async () => {
-    if (agreed && email && password && !subscription) {
-      await signIn({ email, password, type: 'new' });
+    // Validate required fields
+    if (!email || !password) {
+      toast.error('Missing email or password. Please try signing up again.');
+      return;
+    }
+
+    if (!agreed) {
+      toast.error('Please agree to the terms and conditions.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
       console.log('User agreed. Continue...');
-    }
-    if (agreed && email && password && subscription === 'monthly') {
       await signIn({ email, password, type: 'new' });
-    } else if (agreed && email && password && subscription === 'topup') {
-      await signIn({ email, password, type: 'new' });
+      toast.success('Successfully signed in!');
+    } catch (err) {
+      console.error('Sign in error:', err);
+      toast.error('Failed to sign in. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
+    // if (agreed && email && password && !subscription) {
+    //   await signIn({ email, password, type: 'new' });
+    //   console.log('User agreed. Continue...');
+    // }
+    // if (agreed && email && password && subscription === 'monthly') {
+    //   await signIn({ email, password, type: 'new' });
+    // } else if (agreed && email && password && subscription === 'topup') {
+    //   await signIn({ email, password, type: 'new' });
+    // }
   };
 
   return (
@@ -51,17 +76,18 @@ export default function UserAgreementPage() {
             type="checkbox"
             checked={agreed}
             onChange={handleCheckboxChange}
-            className="mt-1 h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
+            disabled={isLoading}
+            className="mt-1 h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
           />
           <span>I have read and agree to the User License & Agreement.</span>
         </label>
 
         <Button
           onClick={handleContinue}
-          disabled={!agreed}
+          disabled={!agreed || isLoading}
           className="mt-6 w-full max-w-xs"
         >
-          Continue
+          {isLoading ? 'Processing...' : 'Continue'}
         </Button>
       </div>
     </div>
