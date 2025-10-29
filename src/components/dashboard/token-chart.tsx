@@ -3,19 +3,16 @@
 
 import { useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 import { getDefaultDateRange } from '@/lib/utils';
 import useTokensHistory from '@/hooks/useTokensHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
 
 import { DateRangePicker } from '../common/date-range-picker';
 
@@ -130,8 +127,22 @@ export function TokenChart() {
                   barSize={80}
                   radius={[4, 4, 0, 0]}
                   fill="hsl(var(--chart-1))"
+                  className="cursor-pointer"
+                  onMouseEnter={(data, index, event) => {
+                    // Change color to red on hover
+                    const barElement = event.target as SVGElement;
+                    barElement.style.fill = '#3a9f78';
+                  }}
+                  onMouseLeave={(data, index, event) => {
+                    // Restore original color
+                    const barElement = event.target as SVGElement;
+                    barElement.style.fill = 'hsl(var(--chart-1))';
+                  }}
                 />
-                <Tooltip content={<ChartTooltipContent />} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
               </BarChart>
             </ChartContainer>
           </ResponsiveContainer>
