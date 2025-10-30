@@ -1,16 +1,16 @@
 'use client';
 
+import React, { useCallback, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
-import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
 import apiCaller from '@/config/apiCaller';
+import { Button } from '@/components/ui/button';
 
 // import { useAuth } from '@/hooks/useAuth';
 
@@ -97,7 +97,11 @@ export function IdentityVerificationForm() {
           )
         ) {
           // Build redirect URL with proper encoding
-          const redirectUrl = buildUserAgreementUrl(email, password, subscription);
+          const redirectUrl = buildUserAgreementUrl(
+            email,
+            password,
+            subscription
+          );
           router.push(redirectUrl);
         }
       } else {
@@ -113,7 +117,11 @@ export function IdentityVerificationForm() {
   };
 
   // Helper function to verify email with retry logic
-  const verifyEmailWithRetry = async (email: string, otp: string, maxRetries: number = 3) => {
+  const verifyEmailWithRetry = async (
+    email: string,
+    otp: string,
+    maxRetries: number = 3
+  ) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await apiCaller(
@@ -127,28 +135,34 @@ export function IdentityVerificationForm() {
         return response;
       } catch (error) {
         console.warn(`Verification attempt ${attempt} failed:`, error);
-        
+
         if (attempt === maxRetries) {
           throw error; // Re-throw the last error
         }
-        
+
         // Wait before retry (exponential backoff)
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.pow(2, attempt) * 1000)
+        );
       }
     }
     throw new Error('All verification attempts failed');
   };
 
   // Helper function to build user agreement URL
-  const buildUserAgreementUrl = (email: string, password: string | null, subscription: string | null): string => {
+  const buildUserAgreementUrl = (
+    email: string,
+    password: string | null,
+    subscription: string | null
+  ): string => {
     const baseUrl = `${ROUTES.USER_AGGREMENT}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password || '')}`;
-    
+
     if (subscription === 'topup') {
       return `${baseUrl}&subscription=topup`;
     } else if (subscription === 'monthly') {
       return `${baseUrl}&subscription=monthly`;
     }
-    
+
     return baseUrl;
   };
 
@@ -156,12 +170,15 @@ export function IdentityVerificationForm() {
   const handleVerificationError = (error: unknown): void => {
     if (axios.isAxiosError(error) && error.response) {
       const { status, data } = error.response;
-      
+
       switch (status) {
         case 400:
           setMessage({
             type: 'error',
-            text: data?.otp?.[0] || data?.email?.[0] || 'Invalid verification code. Please check and try again.',
+            text:
+              data?.otp?.[0] ||
+              data?.email?.[0] ||
+              'Invalid verification code. Please check and try again.',
           });
           break;
         case 401:
@@ -191,7 +208,10 @@ export function IdentityVerificationForm() {
         default:
           setMessage({
             type: 'error',
-            text: data?.message || data?.detail || 'Verification failed. Please try again.',
+            text:
+              data?.message ||
+              data?.detail ||
+              'Verification failed. Please try again.',
           });
       }
     } else if (axios.isAxiosError(error)) {
@@ -249,7 +269,10 @@ export function IdentityVerificationForm() {
   };
 
   // Helper function to resend verification with retry logic
-  const resendVerificationWithRetry = async (email: string, maxRetries: number = 3): Promise<void> => {
+  const resendVerificationWithRetry = async (
+    email: string,
+    maxRetries: number = 3
+  ): Promise<void> => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await apiCaller(
@@ -260,21 +283,23 @@ export function IdentityVerificationForm() {
           true,
           'json'
         );
-        
+
         if (response.status === 200 || response.status === 201) {
           return; // Success, exit retry loop
         }
-        
+
         throw new Error(`Unexpected response status: ${response.status}`);
       } catch (error) {
         console.warn(`Resend attempt ${attempt} failed:`, error);
-        
+
         if (attempt === maxRetries) {
           throw error; // Re-throw the last error
         }
-        
+
         // Wait before retry (exponential backoff)
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.pow(2, attempt) * 1000)
+        );
       }
     }
   };
@@ -283,7 +308,7 @@ export function IdentityVerificationForm() {
   const handleResendError = (error: unknown): void => {
     if (axios.isAxiosError(error) && error.response) {
       const { status, data } = error.response;
-      
+
       switch (status) {
         case 400:
           setMessage({
@@ -306,7 +331,10 @@ export function IdentityVerificationForm() {
         default:
           setMessage({
             type: 'error',
-            text: data?.message || data?.detail || 'Failed to resend verification code.',
+            text:
+              data?.message ||
+              data?.detail ||
+              'Failed to resend verification code.',
           });
       }
     } else if (axios.isAxiosError(error)) {
