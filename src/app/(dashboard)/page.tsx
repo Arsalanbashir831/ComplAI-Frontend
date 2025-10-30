@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
-import apiCaller from '@/config/apiCaller';
 import { ActivityTable } from '@/components/dashboard/activity-table/activity-table';
 import { DonutChart } from '@/components/dashboard/donut-chart';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { TokenChart } from '@/components/dashboard/token-chart';
+import apiCaller from '@/config/apiCaller';
 
 type TokensSummary = {
   remaining_tokens: number;

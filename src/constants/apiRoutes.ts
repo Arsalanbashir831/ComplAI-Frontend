@@ -20,6 +20,7 @@ export const API_ROUTES = {
   },
   CHAT: {
     GET_INTERACTION_HISTORY: '/api/chats/token-usage/',
+    GET_TOKEN_STATISTICS: '/api/chats/token-usage/statistics/',
     GET_USER_CHATS: '/api/chats/user/',
     CREATE: '/api/chats/create/',
     ADD_MESSAGE: (chatId: string) => `/api/chats/${chatId}/messages/add/`,

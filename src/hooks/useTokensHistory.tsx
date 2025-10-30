@@ -2,39 +2,49 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 import { DateRange } from 'react-day-picker';
 
-import { ActivityItem } from '@/types/dashboard';
 import apiCaller from '@/config/apiCaller';
+import { ActivityItem } from '@/types/dashboard';
 
-const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
+// New types for the statistics API
+export interface TokenStatistics {
+  summary: {
+    total_tokens: number;
+    total_input_tokens: number;
+    total_output_tokens: number;
+    total_tokens_used: number;
+    total_requests: number;
+    avg_tokens_per_request: number;
+    avg_requests_per_day: number;
+    token_efficiency: number;
+    first_usage: string;
+    last_usage: string;
+  };
+  date_range: {
+    first_usage: string;
+    last_usage: string;
+    total_days: number;
+    date_span_days: number;
+  };
+  group_by: string;
+  statistics: Array<{
+    date: string;
+    total_tokens: number;
+    input_tokens: number;
+    output_tokens: number;
+    tokens_used: number;
+    request_count: number;
+    avg_tokens_per_request: number;
+  }>;
+  filters: {
+    start_date: string;
+    end_date: string;
+    activity_type: string | null;
+  };
+}
+
+const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem[]> => {
   if (!dateRange?.from || !dateRange?.to)
-    return {
-      id: 0,
-      usage_date: '',
-      activity_type: '',
-      tokens_used: 0,
-      tool: 'companion',
-      user_id: 0,
-      ai_message: {
-        id: 0,
-        chat: 0,
-        content: '',
-        created_at: '',
-        file: '',
-        file_size: 0,
-        is_system_message: false,
-        user: '',
-      },
-      user_message: {
-        id: 0,
-        chat: 0,
-        content: '',
-        created_at: '',
-        file: '',
-        file_size: 0,
-        is_system_message: false,
-        user: '',
-      },
-    };
+    return [];
 
   const queryParams = `?start_date=${
     dateRange.from.toISOString().split('T')[0]
@@ -48,12 +58,26 @@ const fetchHistory = async (dateRange: DateRange): Promise<ActivityItem> => {
     true,
     'json'
   );
-  console.log(response);
   return response.data.map((item: ActivityItem) => ({
     ...item,
     tokens_used: parseFloat((item.tokens_used / 1000).toFixed(1)),
     activity_type: item?.user_message?.file ? 'Uploaded Document' : 'query',
   }));
+};
+
+const fetchTokenStatistics = async (period: string): Promise<TokenStatistics> => {
+  const queryParams = period === '7d' ? '' : `?period=${period}`;
+
+  const response = await apiCaller(
+    `${API_ROUTES.CHAT.GET_TOKEN_STATISTICS}${queryParams}`,
+    'GET',
+    {},
+    {},
+    true,
+    'json'
+  );
+  
+  return response.data;
 };
 
 const useTokensHistory = (dateRange: DateRange) => {
@@ -67,4 +91,20 @@ const useTokensHistory = (dateRange: DateRange) => {
   });
 };
 
+const useTokenStatistics = (period: string) => {
+  return useQuery({
+    queryKey: ['tokenStatistics', period],
+    queryFn: () => fetchTokenStatistics(period),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
+    enabled: !!period,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    gcTime: 1000 * 60 * 10,
+  });
+};
+
 export default useTokensHistory;
+export { useTokenStatistics };
+

@@ -1,15 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DateRange } from 'react-day-picker';
 
-import type { ActivityItem } from '@/types/dashboard';
-import { cn, getDefaultDateRange } from '@/lib/utils';
-import useTokensHistory from '@/hooks/useTokensHistory';
+import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DateRangePicker } from '@/components/common/date-range-picker';
-import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
+import { useTokenStatistics } from '@/hooks/useTokensHistory';
+import { cn } from '@/lib/utils';
+import type { ActivityItem } from '@/types/dashboard';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
@@ -20,14 +18,16 @@ interface ActivityTableProps {
   showActions?: boolean;
 }
 
+type FilterPeriod = '7d' | '30d' | '90d';
+
 export function ActivityTable({
   pageSize,
   showTitle = true,
   showActions = true,
 }: ActivityTableProps) {
   const [activeTab] = useState('all');
-  const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange());
-  const { data, isLoading, error, refetch } = useTokensHistory(dateRange);
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('7d');
+  const { data: statistics, isLoading, error, refetch } = useTokenStatistics(filterPeriod);
 
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(
     null
@@ -36,7 +36,7 @@ export function ActivityTable({
 
   useEffect(() => {
     refetch();
-  }, [dateRange, activeTab, refetch]);
+  }, [filterPeriod, activeTab, refetch]);
 
   if (isLoading) {
     return (
@@ -49,20 +49,53 @@ export function ActivityTable({
     );
   }
 
-  if (error) return <div>Error loading data</div>;
+  if (error) {
+    return (
+      <Card className="rounded-lg shadow-md border-none">
+        <CardHeader>
+          <CardTitle className="text-[#1D1F2C]">Recent Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="py-20 text-center text-sm text-red-500">
+            Error loading data. Please try again.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  // Filter data based on the selected date range
-  const filteredData = Array.isArray(data)
-    ? data.filter((curr) => {
-        const usageDate = new Date(curr.usage_date);
-        const startDate = new Date(dateRange.from ?? new Date());
-        const endDate = new Date(dateRange.to ?? new Date());
-        return usageDate >= startDate && usageDate <= endDate;
-      })
-    : [];
+  // Transform statistics data to table format
+  const tableData: ActivityItem[] = statistics?.statistics?.map((stat, index) => ({
+    id: index + 1,
+    usage_date: stat.date,
+    activity_type: 'query', // Default to query since statistics don't have activity type
+    tokens_used: stat.tokens_used / 1000, // Convert to hundreds
+    tool: 'companion',
+    user_id: 0,
+    ai_message: {
+      id: 0,
+      chat: 0,
+      content: `Generated ${stat.request_count} requests with ${Math.round(stat.avg_tokens_per_request / 1000)}00 avg tokens per request`,
+      created_at: stat.date,
+      file: '',
+      file_size: 0,
+      is_system_message: false,
+      user: '',
+    },
+    user_message: {
+      id: 0,
+      chat: 0,
+      content: `Daily usage: ${Math.round(stat.tokens_used / 100)}00 total tokens (${Math.round(stat.input_tokens / 1000)}00 input, ${Math.round(stat.output_tokens / 100)}00 output)`,
+      created_at: stat.date,
+      file: '',
+      file_size: 0,
+      is_system_message: false,
+      user: '',
+    },
+  })) || [];
 
   // Filter based on the active tab (query or document)
-  const tabFilteredData = filteredData.filter((curr) => {
+  const tabFilteredData = tableData.filter((curr) => {
     if (activeTab === 'query') {
       return curr.activity_type === 'query';
     } else if (activeTab === 'document') {
@@ -89,44 +122,56 @@ export function ActivityTable({
           )}
         >
           {showTitle && (
-            <CardTitle className="flex items-center gap-2 text-[#1D1F2C]">
-              Recent Activity
-              <Badge className="bg-[#E9FAF7] text-[#09B975]">
-                {filteredData?.length}
-              </Badge>
-            </CardTitle>
+            <div className="flex flex-col gap-2">
+              <CardTitle className="flex items-center gap-2 text-[#1D1F2C]">
+                Credits Usage Activity
+                <Badge className="bg-[#E9FAF7] text-[#09B975]">
+                  {tableData?.length} days
+                </Badge>
+              </CardTitle>
+              {statistics?.summary && (
+                <div className="flex flex-wrap gap-4 text-sm text-[#667085]">
+                  <span>Total: {Math.round(statistics.summary.total_tokens_used / 1000)} Credits</span>
+                  <span>Requests: {statistics.summary.total_requests}</span>
+                  <span>Avg/Request: {Math.round(statistics.summary.avg_tokens_per_request / 1000)}</span>
+                </div>
+              )}
+            </div>
           )}
 
           <div className="flex flex-col items-start md:flex-row md:items-center gap-4">
-            <DateRangePicker
-              value={dateRange}
-              onChange={(newRange) => newRange && setDateRange(newRange)}
-            />
-            {/* <Tabs
-              defaultValue="all"
-              onValueChange={(value) => setActiveTab(value)}
-            >
-              <TabsList className="bg-white border border-[#E0E2E7]">
-                <TabsTrigger
-                  value="query"
-                  className="text-[#667085] data-[state=active]:bg-[#0F9B5A1F] data-[state=active]:text-[#09B975]"
-                >
-                  Query Mode
-                </TabsTrigger>
-                <TabsTrigger
-                  value="document"
-                  className="text-[#667085] data-[state=active]:bg-[#0F9B5A1F] data-[state=active]:text-[#09B975]"
-                >
-                  Document Upload
-                </TabsTrigger>
-                <TabsTrigger
-                  value="all"
-                  className="text-[#667085] data-[state=active]:bg-[#0F9B5A1F] data-[state=active]:text-[#09B975]"
-                >
-                  All
-                </TabsTrigger>
-              </TabsList>
-            </Tabs> */}
+            <div className="flex gap-2">
+              <button
+                className={`px-3 py-1 text-sm rounded-md border ${
+                  filterPeriod === '7d' 
+                    ? 'bg-blue-600 text-white border-blue-600' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => setFilterPeriod('7d')}
+              >
+                Last 7 days
+              </button>
+              <button
+                className={`px-3 py-1 text-sm rounded-md border ${
+                  filterPeriod === '30d' 
+                    ? 'bg-blue-600 text-white border-blue-600' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => setFilterPeriod('30d')}
+              >
+                Last 30 days
+              </button>
+              <button
+                className={`px-3 py-1 text-sm rounded-md border ${
+                  filterPeriod === '90d' 
+                    ? 'bg-blue-600 text-white border-blue-600' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => setFilterPeriod('90d')}
+              >
+                Last 90 days
+              </button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
