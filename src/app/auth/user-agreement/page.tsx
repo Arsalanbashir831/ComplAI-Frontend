@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
 import DocxViewer from '@/components/common/DocxViewer';
 import { NoSSR } from '@/components/common/no-ssr';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function UserAgreementPage() {
   const [agreed, setAgreed] = useState(false);
@@ -23,7 +23,7 @@ export default function UserAgreementPage() {
   const password = searchParams.get('password');
   const subscription = searchParams.get('subscription');
 
-  // Validate required parameters on mount
+  // Validate required parameters on mountt
   useEffect(() => {
     if (!email || !password) {
       setError('Missing email or password. Please try signing up again.');
