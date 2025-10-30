@@ -4,13 +4,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
+import { useTokenStatistics } from '@/hooks/useTokensHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { useTokenStatistics } from '@/hooks/useTokensHistory';
 
 type ChartData = {
   date: string;
@@ -25,7 +25,12 @@ type FilterPeriod = '7d' | '30d' | '90d';
 
 export function TokenChart() {
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('7d');
-  const { data: statistics, error, isLoading, refetch } = useTokenStatistics(filterPeriod);
+  const {
+    data: statistics,
+    error,
+    isLoading,
+    refetch,
+  } = useTokenStatistics(filterPeriod);
 
   // Memoize the refetch function to prevent unnecessary re-renders
   const handleRefetch = useCallback(() => {
@@ -51,9 +56,12 @@ export function TokenChart() {
   }, [statistics]);
 
   // Memoize chart configuration
-  const chartConfig = useMemo(() => ({
-    tokens: { label: 'Credits', color: 'hsl(var(--chart-1))' },
-  }), []);
+  const chartConfig = useMemo(
+    () => ({
+      tokens: { label: 'Credits', color: 'hsl(var(--chart-1))' },
+    }),
+    []
+  );
 
   // Memoize domain calculation
   const yDomain: [number, 'dataMax'] = useMemo(() => [0, 'dataMax'], []);
@@ -95,8 +103,8 @@ export function TokenChart() {
         <div className="flex gap-2">
           <button
             className={`px-3 py-1 text-sm rounded-md border ${
-              filterPeriod === '7d' 
-                ? 'bg-blue-600 text-white border-blue-600' 
+              filterPeriod === '7d'
+                ? 'bg-blue-600 text-white border-blue-600'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             }`}
             onClick={() => setFilterPeriod('7d')}
@@ -105,8 +113,8 @@ export function TokenChart() {
           </button>
           <button
             className={`px-3 py-1 text-sm rounded-md border ${
-              filterPeriod === '30d' 
-                ? 'bg-blue-600 text-white border-blue-600' 
+              filterPeriod === '30d'
+                ? 'bg-blue-600 text-white border-blue-600'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             }`}
             onClick={() => setFilterPeriod('30d')}
@@ -115,8 +123,8 @@ export function TokenChart() {
           </button>
           <button
             className={`px-3 py-1 text-sm rounded-md border ${
-              filterPeriod === '90d' 
-                ? 'bg-blue-600 text-white border-blue-600' 
+              filterPeriod === '90d'
+                ? 'bg-blue-600 text-white border-blue-600'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             }`}
             onClick={() => setFilterPeriod('90d')}
