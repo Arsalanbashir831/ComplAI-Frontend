@@ -1,16 +1,16 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
+import apiCaller from '@/config/apiCaller';
 
 // import { useAuth } from '@/hooks/useAuth';
 
@@ -60,19 +60,19 @@ export function IdentityVerificationForm() {
     return false;
   };
 
-  const handleError = (error: unknown, fallbackMsg: string) => {
-    if (axios.isAxiosError(error) && error.response) {
-      setMessage({
-        type: 'error',
-        text: error.response.data?.message || fallbackMsg,
-      });
-    } else {
-      setMessage({
-        type: 'error',
-        text: 'A network error occurred. Please try again.',
-      });
-    }
-  };
+  // const handleError = (error: unknown, fallbackMsg: string) => {
+  //   if (axios.isAxiosError(error) && error.response) {
+  //     setMessage({
+  //       type: 'error',
+  //       text: error.response.data?.message || fallbackMsg,
+  //     });
+  //   } else {
+  //     setMessage({
+  //       type: 'error',
+  //       text: 'A network error occurred. Please try again.',
+  //     });
+  //   }
+  // };
 
   const onSubmit = async (value: z.infer<typeof formSchema>) => {
     if (!email || !type) {
@@ -87,55 +87,141 @@ export function IdentityVerificationForm() {
 
     try {
       if (type === 'signup') {
-        // ✅ Call API for signup verification
-        const response = await apiCaller(
-          API_ROUTES.AUTH.VERIFY_EMAIL,
-          'POST',
-          { email, otp: value.code },
-          {},
-          true,
-          'json'
-        );
+        // ✅ Call API for signup verification with retry logic
+        const response = await verifyEmailWithRetry(email, value.code, 3);
 
         if (
           handleResponse(
             response.status,
-            'Verification successful! Redirecting to login...'
+            'Verification successful! Redirecting...'
           )
         ) {
-          // new to call the login api to create session
-          // await signIn({ email, password, type: 'new' });
-          if (subscription && subscription === 'topup') {
-            router.push(
-              `${ROUTES.USER_AGGREMENT}?email=${email}&password=${password}&subscription=topup`
-            );
-          } else if (subscription && subscription === 'monthly') {
-            router.push(
-              `${ROUTES.USER_AGGREMENT}?email=${email}&password=${password}&subscription=monthly`
-            );
-          } else {
-            router.push(
-              `${ROUTES.USER_AGGREMENT}?email=${email}&password=${password}`
-            );
-          }
-
-          // setTimeout(() => router.push(ROUTES.LOGIN), 2000);
+          // Build redirect URL with proper encoding
+          const redirectUrl = buildUserAgreementUrl(email, password, subscription);
+          router.push(redirectUrl);
         }
       } else {
         // ✅ Directly route to reset password with email & OTP
-        router.push(
-          `${ROUTES.RESET_PASSWORD}?email=${email}&otp=${value.code}`
-        );
+        const resetUrl = `${ROUTES.RESET_PASSWORD}?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(value.code)}`;
+        router.push(resetUrl);
       }
     } catch (error) {
-      handleError(error, 'Invalid verification code');
-      form.setError('code', {
-        type: 'manual',
-        message: 'Invalid verification code',
-      });
+      handleVerificationError(error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to verify email with retry logic
+  const verifyEmailWithRetry = async (email: string, otp: string, maxRetries: number = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await apiCaller(
+          API_ROUTES.AUTH.VERIFY_EMAIL,
+          'POST',
+          { email, otp },
+          {},
+          true,
+          'json'
+        );
+        return response;
+      } catch (error) {
+        console.warn(`Verification attempt ${attempt} failed:`, error);
+        
+        if (attempt === maxRetries) {
+          throw error; // Re-throw the last error
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+    throw new Error('All verification attempts failed');
+  };
+
+  // Helper function to build user agreement URL
+  const buildUserAgreementUrl = (email: string, password: string | null, subscription: string | null): string => {
+    const baseUrl = `${ROUTES.USER_AGGREMENT}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password || '')}`;
+    
+    if (subscription === 'topup') {
+      return `${baseUrl}&subscription=topup`;
+    } else if (subscription === 'monthly') {
+      return `${baseUrl}&subscription=monthly`;
+    }
+    
+    return baseUrl;
+  };
+
+  // Helper function to handle verification errors
+  const handleVerificationError = (error: unknown): void => {
+    if (axios.isAxiosError(error) && error.response) {
+      const { status, data } = error.response;
+      
+      switch (status) {
+        case 400:
+          setMessage({
+            type: 'error',
+            text: data?.otp?.[0] || data?.email?.[0] || 'Invalid verification code. Please check and try again.',
+          });
+          break;
+        case 401:
+          setMessage({
+            type: 'error',
+            text: 'Verification code has expired. Please request a new one.',
+          });
+          break;
+        case 404:
+          setMessage({
+            type: 'error',
+            text: 'Verification code not found. Please request a new one.',
+          });
+          break;
+        case 429:
+          setMessage({
+            type: 'error',
+            text: 'Too many verification attempts. Please wait a moment and try again.',
+          });
+          break;
+        case 500:
+          setMessage({
+            type: 'error',
+            text: 'Server error. Please try again later.',
+          });
+          break;
+        default:
+          setMessage({
+            type: 'error',
+            text: data?.message || data?.detail || 'Verification failed. Please try again.',
+          });
+      }
+    } else if (axios.isAxiosError(error)) {
+      if (error.code === 'ECONNABORTED') {
+        setMessage({
+          type: 'error',
+          text: 'Request timeout. Please check your connection and try again.',
+        });
+      } else if (error.code === 'NETWORK_ERROR') {
+        setMessage({
+          type: 'error',
+          text: 'Network error. Please check your connection and try again.',
+        });
+      } else {
+        setMessage({
+          type: 'error',
+          text: 'Connection failed. Please check your internet connection and try again.',
+        });
+      }
+    } else {
+      setMessage({
+        type: 'error',
+        text: 'An unexpected error occurred. Please try again.',
+      });
+    }
+
+    form.setError('code', {
+      type: 'manual',
+      message: 'Invalid verification code',
+    });
   };
 
   const handleResend = async () => {
@@ -149,19 +235,102 @@ export function IdentityVerificationForm() {
     resetMessage();
 
     try {
-      const response = await apiCaller(
-        API_ROUTES.AUTH.RESEND_VERIFICATION,
-        'POST',
-        { email },
-        {},
-        true,
-        'json'
-      );
-      handleResponse(response.status, 'Verification code resent successfully.');
+      // Add retry logic for resend as well
+      await resendVerificationWithRetry(email, 3);
+      setMessage({
+        type: 'success',
+        text: 'Verification code resent successfully.',
+      });
     } catch (error) {
-      handleError(error, 'Failed to resend verification code.');
+      handleResendError(error);
     } finally {
       setResendLoading(false);
+    }
+  };
+
+  // Helper function to resend verification with retry logic
+  const resendVerificationWithRetry = async (email: string, maxRetries: number = 3): Promise<void> => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await apiCaller(
+          API_ROUTES.AUTH.RESEND_VERIFICATION,
+          'POST',
+          { email },
+          {},
+          true,
+          'json'
+        );
+        
+        if (response.status === 200 || response.status === 201) {
+          return; // Success, exit retry loop
+        }
+        
+        throw new Error(`Unexpected response status: ${response.status}`);
+      } catch (error) {
+        console.warn(`Resend attempt ${attempt} failed:`, error);
+        
+        if (attempt === maxRetries) {
+          throw error; // Re-throw the last error
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+  };
+
+  // Helper function to handle resend errors
+  const handleResendError = (error: unknown): void => {
+    if (axios.isAxiosError(error) && error.response) {
+      const { status, data } = error.response;
+      
+      switch (status) {
+        case 400:
+          setMessage({
+            type: 'error',
+            text: data?.email?.[0] || 'Invalid email address.',
+          });
+          break;
+        case 429:
+          setMessage({
+            type: 'error',
+            text: 'Too many resend attempts. Please wait a moment before trying again.',
+          });
+          break;
+        case 500:
+          setMessage({
+            type: 'error',
+            text: 'Server error. Please try again later.',
+          });
+          break;
+        default:
+          setMessage({
+            type: 'error',
+            text: data?.message || data?.detail || 'Failed to resend verification code.',
+          });
+      }
+    } else if (axios.isAxiosError(error)) {
+      if (error.code === 'ECONNABORTED') {
+        setMessage({
+          type: 'error',
+          text: 'Request timeout. Please check your connection and try again.',
+        });
+      } else if (error.code === 'NETWORK_ERROR') {
+        setMessage({
+          type: 'error',
+          text: 'Network error. Please check your connection and try again.',
+        });
+      } else {
+        setMessage({
+          type: 'error',
+          text: 'Connection failed. Please check your internet connection and try again.',
+        });
+      }
+    } else {
+      setMessage({
+        type: 'error',
+        text: 'Failed to resend verification code. Please try again.',
+      });
     }
   };
 
@@ -192,10 +361,10 @@ export function IdentityVerificationForm() {
                 <FormControl>
                   <InputOTP maxLength={6} {...field}>
                     {[...Array(6)].map((_, index) => (
-                      <>
-                        <InputOTPSlot key={index} index={index} />
+                      <React.Fragment key={index}>
+                        <InputOTPSlot index={index} />
                         {index < 5 && <InputOTPSeparator />}
-                      </>
+                      </React.Fragment>
                     ))}
                   </InputOTP>
                 </FormControl>

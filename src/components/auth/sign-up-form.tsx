@@ -1,20 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -163,6 +163,7 @@ export function SignUpForm() {
     setSuccessMessage(null);
 
     try {
+      // Step 1: Create account
       const response = await apiCaller(
         API_ROUTES.AUTH.SIGNUP,
         'POST',
@@ -180,38 +181,102 @@ export function SignUpForm() {
           'Account created successfully! Please verify your email.'
         );
         form.reset();
-        await apiCaller(API_ROUTES.AUTH.RESEND_VERIFICATION, 'POST', {
-          email: values.email,
-        });
-        if (subscription && subscription === 'topup') {
-          router.push(
-            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&type=signup&password=${values.password}&subscription=topup`
-          );
-        } else if (subscription && subscription === 'monthly') {
-          router.push(
-            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&type=signup&password=${values.password}&subscription=monthly`
-          );
-        } else {
-          router.push(
-            `${ROUTES.VERIFY_IDENTITY}?email=${values.email}&type=signup&&password=${values.password}`
-          );
+
+        try {
+          // Step 2: Send verification email (with retry logic)
+          await sendVerificationEmail(values.email, 3);
+          
+          // Step 3: Navigate to verification page
+          const redirectUrl = buildRedirectUrl(values.email, values.password, subscription);
+          router.push(redirectUrl);
+        } catch (verificationError) {
+          console.error('Failed to send verification email:', verificationError);
+          // Still redirect to verification page even if email sending fails
+          const redirectUrl = buildRedirectUrl(values.email, values.password, subscription);
+          router.push(redirectUrl);
         }
       }
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response) {
-        const { status, data } = error.response;
-        if (status === 400) {
-          if (data.email) setError(data.email[0]);
-          else if (data.password) setError(data.password[0]);
-          else setError('Invalid input. Please check your details.');
-        } else if (status === 401) {
-          setError('Not Found Resources');
-        } else {
-          setError(data.message || 'An unexpected error occurred.');
-        }
-      }
+      handleSignupError(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper function to send verification email with retry logic
+  const sendVerificationEmail = async (email: string, maxRetries: number = 3): Promise<void> => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await apiCaller(API_ROUTES.AUTH.RESEND_VERIFICATION, 'POST', {
+          email: email,
+        });
+        return; // Success, exit retry loop
+      } catch (error) {
+        console.warn(`Verification email attempt ${attempt} failed:`, error);
+        if (attempt === maxRetries) {
+          throw new Error('Failed to send verification email after multiple attempts');
+        }
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+  };
+
+  // Helper function to build redirect URL
+  const buildRedirectUrl = (email: string, password: string, subscription: string | null): string => {
+    const baseUrl = `${ROUTES.VERIFY_IDENTITY}?email=${encodeURIComponent(email)}&type=signup&password=${encodeURIComponent(password)}`;
+    
+    if (subscription === 'topup') {
+      return `${baseUrl}&subscription=topup`;
+    } else if (subscription === 'monthly') {
+      return `${baseUrl}&subscription=monthly`;
+    }
+    
+    return baseUrl;
+  };
+
+  // Helper function to handle signup errors
+  const handleSignupError = (error: unknown): void => {
+    if (axios.isAxiosError(error) && error.response) {
+      const { status, data } = error.response;
+      
+      switch (status) {
+        case 400:
+          if (data.email) {
+            setError(Array.isArray(data.email) ? data.email[0] : data.email);
+          } else if (data.password) {
+            setError(Array.isArray(data.password) ? data.password[0] : data.password);
+          } else if (data.non_field_errors) {
+            setError(Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors);
+          } else {
+            setError('Invalid input. Please check your details.');
+          }
+          break;
+        case 401:
+          setError('Authentication failed. Please try again.');
+          break;
+        case 409:
+          setError('An account with this email already exists. Please try logging in instead.');
+          break;
+        case 422:
+          setError('Invalid email format or password requirements not met.');
+          break;
+        case 500:
+          setError('Server error. Please try again later.');
+          break;
+        default:
+          setError(data?.message || data?.detail || 'An unexpected error occurred. Please try again.');
+      }
+    } else if (axios.isAxiosError(error)) {
+      if (error.code === 'ECONNABORTED') {
+        setError('Request timeout. Please check your connection and try again.');
+      } else if (error.code === 'NETWORK_ERROR') {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError('Connection failed. Please check your internet connection and try again.');
+      }
+    } else {
+      setError('An unexpected error occurred. Please try again.');
     }
   };
 
