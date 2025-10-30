@@ -9,28 +9,31 @@ This is likely the root cause of routing issues for some users.
 ## 📊 Authoritative DNS Analysis
 
 ### Nameservers
+
 - **Primary**: ns29.domaincontrol.com (GoDaddy)
 - **Secondary**: ns30.domaincontrol.com (GoDaddy)
 
 ### Current DNS Records (Authoritative)
 
-| Record Type | Domain | Value | Status |
-|-------------|--------|-------|--------|
-| A | `app.compl-ai.co.uk` | `147.93.85.168` | ✅ CORRECT |
-| AAAA | `app.compl-ai.co.uk` | (none) | ✅ CORRECT |
-| CNAME | `*.compl-ai.co.uk` | (none) | ✅ CORRECT |
-| CNAME | `compl-ai.co.uk` | (none) | ✅ CORRECT |
-| **A** | **`compl-ai.co.uk`** | **`216.198.79.193`** | **🚨 VERCEL IP** |
+| Record Type | Domain               | Value                | Status           |
+| ----------- | -------------------- | -------------------- | ---------------- |
+| A           | `app.compl-ai.co.uk` | `147.93.85.168`      | ✅ CORRECT       |
+| AAAA        | `app.compl-ai.co.uk` | (none)               | ✅ CORRECT       |
+| CNAME       | `*.compl-ai.co.uk`   | (none)               | ✅ CORRECT       |
+| CNAME       | `compl-ai.co.uk`     | (none)               | ✅ CORRECT       |
+| **A**       | **`compl-ai.co.uk`** | **`216.198.79.193`** | **🚨 VERCEL IP** |
 
 ### Analysis Results
 
 ✅ **GOOD:**
+
 - `app.compl-ai.co.uk` A record: `147.93.85.168` (correct)
 - No AAAA records for `app.compl-ai.co.uk`
 - No wildcard CNAME records
 - No CNAME records for apex domain
 
 🚨 **CRITICAL ISSUE:**
+
 - **Apex domain `compl-ai.co.uk` points to `216.198.79.193`**
 - This IP returns HTTP 308 redirect (likely Vercel)
 - Some DNS resolvers or browsers may use apex domain for subdomain resolution
@@ -42,16 +45,19 @@ This is likely the root cause of routing issues for some users.
 **CRITICAL:** Update the apex domain `compl-ai.co.uk` A record:
 
 **Current (WRONG):**
+
 ```
 compl-ai.co.uk.    A    216.198.79.193
 ```
 
 **Should be (CORRECT):**
+
 ```
 compl-ai.co.uk.    A    147.93.85.168
 ```
 
 **Steps:**
+
 1. Log into your DNS provider (GoDaddy based on nameservers)
 2. Find the A record for `compl-ai.co.uk` (not `app.compl-ai.co.uk`)
 3. Change the value from `216.198.79.193` to `147.93.85.168`
@@ -73,10 +79,12 @@ compl-ai.co.uk.    A    147.93.85.168
 After fixing the apex domain:
 
 1. **Lower TTL** to 60 seconds for both records:
+
    - `compl-ai.co.uk` A record: TTL 60
    - `app.compl-ai.co.uk` A record: TTL 60
 
 2. **Toggle records** to force cache refresh:
+
    - Change `compl-ai.co.uk` A to `1.1.1.1`
    - Wait 5 minutes
    - Change back to `147.93.85.168`
