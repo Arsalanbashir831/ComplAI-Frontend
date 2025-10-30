@@ -12,7 +12,7 @@ export default function HistoryPage() {
 
       {/* Centered Content */}
       <div className="flex flex-col justify-center flex-1 w-full    rounded-xl ">
-        <ActivityTable pageSize={7} showTitle={false} />
+        <ActivityTable pageSize={7} showTitle={false} showActions={false} />
       </div>
     </div>
   );

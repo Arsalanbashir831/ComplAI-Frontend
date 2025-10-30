@@ -14,6 +14,7 @@ import {
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
 import {
   Pagination,
   PaginationContent,
@@ -37,6 +38,15 @@ interface DataTableProps<TData, TValue> {
   activeFilter?: string;
   pageSize?: number;
   isTabsPresent?: boolean;
+  serverPagination?: {
+    page: number;
+    totalPages?: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
+    onPrev?: () => void;
+    onNext?: () => void;
+    onPage?: (page: number) => void; // 1-based
+  };
 }
 
 export function DataTable<TData, TValue>({
@@ -45,6 +55,7 @@ export function DataTable<TData, TValue>({
   // activeFilter,
   pageSize = 5,
   // isTabsPresent = true,
+  serverPagination,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -82,14 +93,19 @@ export function DataTable<TData, TValue>({
   const totalPages = table.getPageCount();
   const currentPage = table.getState().pagination.pageIndex + 1;
 
+  const useServer = !!serverPagination;
+  const sp = serverPagination;
+  const effectiveTotalPages = useServer ? (sp?.totalPages ?? 0) : totalPages;
+  const effectiveCurrentPage = useServer ? (sp?.page ?? 1) : currentPage;
+
   // Compute dynamic pagination pages:
   // - If total pages ≤ 5, show all pages.
   // - If currentPage ≤ 3, show pages 1, 2, 3, ellipsis, last.
   // - If currentPage ≥ totalPages - 2, show ellipsis, then last 3 pages.
   // - Otherwise (middle), hide the first page and show: ellipsis, (currentPage-1, currentPage, currentPage+1), ellipsis, last.
   const getPaginationPages = (): (number | 'ellipsis')[] => {
-    const total = totalPages;
-    const current = currentPage;
+    const total = effectiveTotalPages;
+    const current = effectiveCurrentPage;
     let pages: (number | 'ellipsis')[] = [];
     if (total <= 5) {
       pages = Array.from({ length: total }, (_, i) => i + 1);
@@ -111,6 +127,8 @@ export function DataTable<TData, TValue>({
   };
 
   const pagesToShow = getPaginationPages();
+  const canPrev = useServer ? !!sp?.hasPrev : table.getCanPreviousPage();
+  const canNext = useServer ? !!sp?.hasNext : table.getCanNextPage();
 
   return (
     <div>
@@ -194,10 +212,21 @@ export function DataTable<TData, TValue>({
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  table.previousPage();
+                  if (!canPrev) return;
+                  if (useServer) {
+                    if (sp?.onPrev) {
+                      sp.onPrev();
+                    }
+                  } else {
+                    table.previousPage();
+                  }
                 }}
-                isActive={table.getCanPreviousPage()}
-                className="border border-[#DFE3E8] pr-2.5 text-[#667085]"
+                isActive={canPrev}
+                className={cn(
+                  'border border-[#DFE3E8] pr-2.5 text-[#667085]',
+                  !canPrev &&
+                    'opacity-50 pointer-events-none cursor-not-allowed'
+                )}
               />
             </PaginationItem>
 
@@ -215,11 +244,15 @@ export function DataTable<TData, TValue>({
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        table.setPageIndex(page - 1);
+                        if (useServer) {
+                          if (sp?.onPage) {
+                            sp.onPage(page as number);
+                          }
+                        } else {
+                          table.setPageIndex(page - 1);
+                        }
                       }}
-                      isActive={
-                        table.getState().pagination.pageIndex + 1 === page
-                      }
+                      isActive={effectiveCurrentPage === page}
                     >
                       {page}
                     </PaginationLink>
@@ -234,10 +267,21 @@ export function DataTable<TData, TValue>({
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  table.nextPage();
+                  if (!canNext) return;
+                  if (useServer) {
+                    if (sp?.onNext) {
+                      sp.onNext();
+                    }
+                  } else {
+                    table.nextPage();
+                  }
                 }}
-                isActive={table.getCanNextPage()}
-                className="border border-[#DFE3E8] pl-2.5 text-[#667085]"
+                isActive={canNext}
+                className={cn(
+                  'border border-[#DFE3E8] pl-2.5 text-[#667085]',
+                  !canNext &&
+                    'opacity-50 pointer-events-none cursor-not-allowed'
+                )}
               />
             </PaginationItem>
           </PaginationContent>

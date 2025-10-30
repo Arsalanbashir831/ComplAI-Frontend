@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import type { ActivityItem } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
-import { useTokenStatistics } from '@/hooks/useTokensHistory';
+import { useCreditsHistory } from '@/hooks/useTokensHistory';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
@@ -27,12 +27,13 @@ export function ActivityTable({
 }: ActivityTableProps) {
   const [activeTab] = useState('all');
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('7d');
-  const {
-    data: statistics,
-    isLoading,
-    error,
-    refetch,
-  } = useTokenStatistics(filterPeriod);
+  const [page, setPage] = useState(1);
+  const effectivePageSize = pageSize ?? 20;
+  const { data, isLoading, error, refetch } = useCreditsHistory(
+    filterPeriod,
+    page,
+    effectivePageSize
+  );
 
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(
     null
@@ -41,7 +42,7 @@ export function ActivityTable({
 
   useEffect(() => {
     refetch();
-  }, [filterPeriod, activeTab, refetch]);
+  }, [filterPeriod, page, activeTab, refetch]);
 
   if (isLoading) {
     return (
@@ -69,20 +70,20 @@ export function ActivityTable({
     );
   }
 
-  // Transform statistics data to table format
+  // Transform credits history response to table format
   const tableData: ActivityItem[] =
-    statistics?.statistics?.map((stat, index) => ({
-      id: index + 1,
-      usage_date: stat.date,
-      activity_type: 'query', // Default to query since statistics don't have activity type
-      tokens_used: stat.tokens_used / 1000, // Convert to hundreds
+    data?.results?.map((item) => ({
+      id: item.id,
+      usage_date: item.usage_date,
+      activity_type: item.activity_type ?? 'query',
+      tokens_used: item.credits, // Credits (already total_tokens/1000, 2dp)
       tool: 'companion',
       user_id: 0,
       ai_message: {
         id: 0,
         chat: 0,
-        content: `Generated ${stat.request_count} requests with ${Math.round(stat.avg_tokens_per_request / 1000)}00 avg tokens per request`,
-        created_at: stat.date,
+        content: `Output: ${item.output_tokens} tokens`,
+        created_at: item.usage_date,
         file: '',
         file_size: 0,
         is_system_message: false,
@@ -91,8 +92,8 @@ export function ActivityTable({
       user_message: {
         id: 0,
         chat: 0,
-        content: `Daily usage: ${Math.round(stat.tokens_used / 100)}00 total tokens (${Math.round(stat.input_tokens / 1000)}00 input, ${Math.round(stat.output_tokens / 100)}00 output)`,
-        created_at: stat.date,
+        content: `Input: ${item.input_tokens} tokens • Total: ${item.total_tokens} tokens`,
+        created_at: item.usage_date,
         file: '',
         file_size: 0,
         is_system_message: false,
@@ -135,22 +136,13 @@ export function ActivityTable({
                   {tableData?.length} days
                 </Badge>
               </CardTitle>
-              {statistics?.summary && (
-                <div className="flex flex-wrap gap-4 text-sm text-[#667085]">
-                  <span>
-                    Total:{' '}
-                    {Math.round(statistics.summary.total_tokens_used / 1000)}{' '}
-                    Credits
-                  </span>
-                  <span>Requests: {statistics.summary.total_requests}</span>
-                  <span>
-                    Avg/Request:{' '}
-                    {Math.round(
-                      statistics.summary.avg_tokens_per_request / 1000
-                    )}
-                  </span>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-4 text-sm text-[#667085]">
+                <span>Period: {filterPeriod}</span>
+                <span>
+                  Page {data?.pagination?.page ?? page} of{' '}
+                  {data?.pagination?.total_pages ?? 1}
+                </span>
+              </div>
             </div>
           )}
 
@@ -196,6 +188,15 @@ export function ActivityTable({
             activeFilter={activeTab}
             pageSize={pageSize}
             isTabsPresent={true}
+            serverPagination={{
+              page: data?.pagination?.page ?? page,
+              totalPages: data?.pagination?.total_pages ?? 1,
+              hasNext: data?.pagination?.has_next ?? false,
+              hasPrev: data?.pagination?.has_prev ?? false,
+              onPrev: () => setPage((p) => Math.max(1, p - 1)),
+              onNext: () => setPage((p) => p + 1),
+              onPage: (pg) => setPage(pg),
+            }}
           />
         </CardContent>
       </Card>
