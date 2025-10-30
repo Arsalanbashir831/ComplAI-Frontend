@@ -2,10 +2,31 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 import { DateRange } from 'react-day-picker';
 
-import { ActivityItem } from '@/types/dashboard';
 import apiCaller from '@/config/apiCaller';
+import { ActivityItem } from '@/types/dashboard';
 
 // New types for the statistics API
+export type CreditsHistoryResponse = {
+  period: '7d' | '30d' | '90d';
+  pagination: {
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  results: Array<{
+    id: number;
+    usage_date: string;
+    activity_type: string | null;
+    credits: number;
+    total_tokens: number;
+    input_tokens: number;
+    output_tokens: number;
+  }>;
+};
+
 export interface TokenStatistics {
   summary: {
     total_tokens: number;
@@ -81,6 +102,23 @@ const fetchTokenStatistics = async (
   return response.data;
 };
 
+const fetchCreditsHistory = async (
+  period: '7d' | '30d' | '90d',
+  page: number,
+  pageSize: number
+): Promise<CreditsHistoryResponse> => {
+  const queryParams = `?period=${period}&page=${page}&page_size=${pageSize}`;
+  const response = await apiCaller(
+    `${API_ROUTES.CHAT.GET_CREDITS_HISTORY}${queryParams}`,
+    'GET',
+    {},
+    {},
+    true,
+    'json'
+  );
+  return response.data as CreditsHistoryResponse;
+};
+
 const useTokensHistory = (dateRange: DateRange) => {
   return useQuery({
     queryKey: ['history', dateRange],
@@ -106,5 +144,21 @@ const useTokenStatistics = (period: string) => {
   });
 };
 
+const useCreditsHistory = (
+  period: '7d' | '30d' | '90d',
+  page: number,
+  pageSize: number
+) => {
+  return useQuery({
+    queryKey: ['creditsHistory', period, page, pageSize],
+    queryFn: () => fetchCreditsHistory(period, page, pageSize),
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
+    enabled: !!period && page > 0 && pageSize > 0,
+    refetchOnWindowFocus: false,
+  });
+};
+
 export default useTokensHistory;
-export { useTokenStatistics };
+export { useCreditsHistory, useTokenStatistics };
+
