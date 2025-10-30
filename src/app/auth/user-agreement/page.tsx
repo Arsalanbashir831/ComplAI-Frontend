@@ -1,13 +1,13 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
 import DocxViewer from '@/components/common/DocxViewer';
 import { NoSSR } from '@/components/common/no-ssr';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function UserAgreementPage() {
   const [agreed, setAgreed] = useState(false);
@@ -67,27 +67,31 @@ export default function UserAgreementPage() {
       });
 
       const signInPromise = signIn({ email, password, type: 'new' });
-      
+
       await Promise.race([signInPromise, timeoutPromise]);
-      
+
       toast.success('Successfully signed in!');
       console.log('Sign in successful, redirecting...');
-      
+
       // Redirect to dashboard after successful sign in
       router.push('/');
-      
     } catch (err) {
       console.error('Sign in error:', err);
-      
-      const errorMessage = err instanceof Error ? err.message : 'Failed to sign in. Please try again.';
+
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Failed to sign in. Please try again.';
       setError(errorMessage);
-      
+
       if (errorMessage.includes('timeout')) {
-        toast.error('Request timed out. Please check your connection and try again.');
+        toast.error(
+          'Request timed out. Please check your connection and try again.'
+        );
       } else if (retryCount < 2) {
         toast.error(`Sign in failed. Retrying... (${retryCount + 1}/3)`);
-        setRetryCount(prev => prev + 1);
-        
+        setRetryCount((prev) => prev + 1);
+
         // Auto-retry after 2 seconds
         setTimeout(() => {
           if (!isLoading) {
@@ -95,7 +99,9 @@ export default function UserAgreementPage() {
           }
         }, 2000);
       } else {
-        toast.error('Failed to sign in after multiple attempts. Please try again.');
+        toast.error(
+          'Failed to sign in after multiple attempts. Please try again.'
+        );
         setRetryCount(0); // Reset retry count
       }
     } finally {
@@ -110,17 +116,19 @@ export default function UserAgreementPage() {
   };
 
   return (
-    <NoSSR fallback={
-      <div className="min-h-screen w-full flex flex-col items-center justify-center">
-        <div className="w-full">
-          <div className="h-96 bg-gray-200 rounded-lg animate-pulse" />
+    <NoSSR
+      fallback={
+        <div className="min-h-screen w-full flex flex-col items-center justify-center">
+          <div className="w-full">
+            <div className="h-96 bg-gray-200 rounded-lg animate-pulse" />
+          </div>
+          <div className="mt-8 w-full max-w-3xl flex flex-col items-center">
+            <div className="h-6 w-64 bg-gray-200 rounded animate-pulse" />
+            <div className="mt-6 h-10 w-48 bg-gray-200 rounded animate-pulse" />
+          </div>
         </div>
-        <div className="mt-8 w-full max-w-3xl flex flex-col items-center">
-          <div className="h-6 w-64 bg-gray-200 rounded animate-pulse" />
-          <div className="mt-6 h-10 w-48 bg-gray-200 rounded animate-pulse" />
-        </div>
-      </div>
-    }>
+      }
+    >
       <div className="min-h-screen w-full flex flex-col items-center justify-center">
         <div className="w-full">
           <DocxViewer
@@ -170,7 +178,9 @@ export default function UserAgreementPage() {
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                {retryCount > 0 ? `Retrying... (${retryCount}/3)` : 'Processing...'}
+                {retryCount > 0
+                  ? `Retrying... (${retryCount}/3)`
+                  : 'Processing...'}
               </div>
             ) : (
               'Continue'
