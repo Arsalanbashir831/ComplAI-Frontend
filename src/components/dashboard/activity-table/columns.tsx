@@ -3,8 +3,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import type { ActivityItem } from '@/types/dashboard';
+import { Button } from '@/components/ui/button';
 
 export const createColumns = (
   showActions = false,
@@ -76,7 +76,9 @@ export const createColumns = (
       enableSorting: false,
       cell: ({ row }) => {
         const amount = Number.parseFloat(row.getValue('tokens_used'));
-        return <div className="font-medium text-[#667085]">{Math.round(amount)}</div>;
+        return (
+          <div className="font-medium text-[#667085]">{Math.round(amount)}</div>
+        );
       },
     },
   ];
