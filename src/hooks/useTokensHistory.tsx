@@ -2,8 +2,8 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
 import { DateRange } from 'react-day-picker';
 
-import apiCaller from '@/config/apiCaller';
 import { ActivityItem } from '@/types/dashboard';
+import apiCaller from '@/config/apiCaller';
 
 // New types for the statistics API
 export type CreditsHistoryResponse = {
@@ -161,4 +161,3 @@ const useCreditsHistory = (
 
 export default useTokensHistory;
 export { useCreditsHistory, useTokenStatistics };
-

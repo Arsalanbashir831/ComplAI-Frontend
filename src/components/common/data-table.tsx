@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -12,8 +13,8 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
 
+import { cn } from '@/lib/utils';
 import {
   Pagination,
   PaginationContent,
@@ -30,7 +31,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -224,7 +224,8 @@ export function DataTable<TData, TValue>({
                 isActive={canPrev}
                 className={cn(
                   'border border-[#DFE3E8] pr-2.5 text-[#667085]',
-                  !canPrev && 'opacity-50 pointer-events-none cursor-not-allowed'
+                  !canPrev &&
+                    'opacity-50 pointer-events-none cursor-not-allowed'
                 )}
               />
             </PaginationItem>
@@ -243,17 +244,15 @@ export function DataTable<TData, TValue>({
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                    if (useServer) {
-                      if (sp?.onPage) {
-                        sp.onPage(page as number);
-                      }
-                    } else {
-                      table.setPageIndex(page - 1);
-                    }
+                        if (useServer) {
+                          if (sp?.onPage) {
+                            sp.onPage(page as number);
+                          }
+                        } else {
+                          table.setPageIndex(page - 1);
+                        }
                       }}
-                      isActive={
-                    effectiveCurrentPage === page
-                      }
+                      isActive={effectiveCurrentPage === page}
                     >
                       {page}
                     </PaginationLink>
@@ -280,7 +279,8 @@ export function DataTable<TData, TValue>({
                 isActive={canNext}
                 className={cn(
                   'border border-[#DFE3E8] pl-2.5 text-[#667085]',
-                  !canNext && 'opacity-50 pointer-events-none cursor-not-allowed'
+                  !canNext &&
+                    'opacity-50 pointer-events-none cursor-not-allowed'
                 )}
               />
             </PaginationItem>
