@@ -22,6 +22,35 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: 'Compl-AI',
   description: 'Compl-AI is a compliance assistant for family offices.',
+  metadataBase: new URL('https://app.compl-ai.co.uk'),
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'Compl-AI - AI-powered Compliance Assistant',
+    description: 'Compl-AI is a compliance assistant for family offices.',
+    url: 'https://app.compl-ai.co.uk',
+    siteName: 'Compl-AI',
+    type: 'website',
+    images: [
+      {
+        url: 'https://app.compl-ai.co.uk/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Compl-AI Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Compl-AI - AI-powered Compliance Assistant',
+    description: 'Compl-AI is a compliance assistant for family offices.',
+    images: ['https://app.compl-ai.co.uk/logo.png'],
+  },
 };
 
 export default function RootLayout({

@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 // --- Import necessary types and components ---
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { Editor } from '@/components/dashboard/doc-compliance/editor/editor';
-import { ToolBar } from '@/components/dashboard/doc-compliance/editor/toolbar';
+// import { ToolBar } from '@/components/dashboard/doc-compliance/editor/toolbar';
 import IssueList from '@/components/dashboard/doc-compliance/issue-list';
 
 // --- Type definitions ---
@@ -242,7 +242,7 @@ export default function DocumentIdPage() {
       <div className="px-4 pt-2 bg-[#FAFBFD] space-y-4 print:hidden z-10">
         <DashboardHeader title="Document Compliance" />
         {/* Render Toolbar only if editor exists */}
-        {editor && <ToolBar />}
+        {/* {editor && <ToolBar />} */}
       </div>
 
       <div className="flex flex-1 mt-2 px-4 gap-x-4 overflow-hidden print:hidden">

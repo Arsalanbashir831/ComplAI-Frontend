@@ -64,7 +64,7 @@ export function DonutChart({ used, remaining }: DonutChartProps) {
                             x={viewBox.cx}
                             y={viewBox.cy}
                             textAnchor="middle"
-                            dominantBaseline="top"
+                            dominantBaseline="middle"
                           >
                             <tspan
                               x={viewBox.cx}
