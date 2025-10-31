@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
@@ -9,16 +12,13 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { Button } from '@/components/ui/button';
-import { useChat } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
 import { AuthorityValue } from '@/types/chat';
 import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -346,12 +346,15 @@ export function MessageInput({
         };
 
         const isRetryable = errorWithType.retryable !== false;
-        const errorMessage = errorWithType.message || 'Unable to generate response. Please try again.';
-        
+        const errorMessage =
+          errorWithType.message ||
+          'Unable to generate response. Please try again.';
+
         // Check if it's a token/credit error
-        const isCreditError = errorMessage.toLowerCase().includes('token') || 
-                              errorMessage.toLowerCase().includes('credit') ||
-                              errorMessage.toLowerCase().includes('limit');
+        const isCreditError =
+          errorMessage.toLowerCase().includes('token') ||
+          errorMessage.toLowerCase().includes('credit') ||
+          errorMessage.toLowerCase().includes('limit');
 
         setMessages((prev) =>
           prev.map((msg) =>
@@ -361,14 +364,15 @@ export function MessageInput({
                   content: errorMessage,
                   isError: true,
                   is_system_message: true,
-                  retryData: isRetryable && !isCreditError
-                    ? {
-                        chatId: currentChatId,
-                        promptText,
-                        uploadedFiles,
-                        mentionType,
-                      }
-                    : undefined,
+                  retryData:
+                    isRetryable && !isCreditError
+                      ? {
+                          chatId: currentChatId,
+                          promptText,
+                          uploadedFiles,
+                          mentionType,
+                        }
+                      : undefined,
                   errorChunk: errorMessage,
                 }
               : msg

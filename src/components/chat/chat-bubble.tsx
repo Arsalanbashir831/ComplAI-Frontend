@@ -1,18 +1,18 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
-import { useParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 
-import { useChat } from '@/hooks/useChat';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -387,12 +387,15 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         };
 
         const isRetryable = errorWithType.retryable !== false;
-        const errorMessage = errorWithType.message || 'Unable to generate response. Please try again.';
-        
+        const errorMessage =
+          errorWithType.message ||
+          'Unable to generate response. Please try again.';
+
         // Check if it's a token/credit error
-        const isCreditError = errorMessage.toLowerCase().includes('token') || 
-                              errorMessage.toLowerCase().includes('credit') ||
-                              errorMessage.toLowerCase().includes('limit');
+        const isCreditError =
+          errorMessage.toLowerCase().includes('token') ||
+          errorMessage.toLowerCase().includes('credit') ||
+          errorMessage.toLowerCase().includes('limit');
 
         setMessages((prev) =>
           prev.map((msg) =>
@@ -402,14 +405,15 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   content: errorMessage,
                   isError: true,
                   is_system_message: true,
-                  retryData: isRetryable && !isCreditError
-                    ? {
-                        chatId,
-                        promptText,
-                        uploadedFiles,
-                        mentionType,
-                      }
-                    : undefined,
+                  retryData:
+                    isRetryable && !isCreditError
+                      ? {
+                          chatId,
+                          promptText,
+                          uploadedFiles,
+                          mentionType,
+                        }
+                      : undefined,
                   errorChunk: errorMessage,
                 }
               : msg
