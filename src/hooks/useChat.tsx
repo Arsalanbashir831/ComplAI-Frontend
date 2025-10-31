@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -149,8 +149,29 @@ const useChat = () => {
 
         // Handle non-OK responses
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to send message');
+          let errorData: { error?: string };
+          try {
+            errorData = await response.json();
+          } catch {
+            errorData = { error: 'Unknown error occurred' };
+          }
+          
+          // Create error with backend error message and status info
+          const error = new Error(errorData.error || 'Failed to send message') as Error & {
+            status?: number;
+            retryable?: boolean;
+          };
+          error.status = response.status;
+          
+          // Determine retryability based on status code
+          // 400 and 403 are not retryable, 500 and 503 are retryable
+          if (response.status === 400 || response.status === 403) {
+            error.retryable = false;
+          } else if (response.status === 500 || response.status === 503) {
+            error.retryable = true;
+          }
+          
+          throw error;
         }
 
         // Check the content-type to decide how to process the response.
@@ -359,13 +380,29 @@ const useChat = () => {
             signal,
           });
 
-          if (sendResponse.status === 400) {
-            throw new Error('Network error');
-          }
-
           if (!sendResponse.ok) {
-            const errorData = await sendResponse.json();
-            throw new Error(errorData.error || 'Failed to send message');
+            let errorData: { error?: string };
+            try {
+              errorData = await sendResponse.json();
+            } catch {
+              errorData = { error: 'Unknown error occurred' };
+            }
+            
+            // Create error with backend error message and status info
+            const error = new Error(errorData.error || 'Failed to send message') as Error & {
+              status?: number;
+              retryable?: boolean;
+            };
+            error.status = sendResponse.status;
+            
+            // Determine retryability based on status code
+            if (sendResponse.status === 400 || sendResponse.status === 403) {
+              error.retryable = false;
+            } else if (sendResponse.status === 500 || sendResponse.status === 503) {
+              error.retryable = true;
+            }
+            
+            throw error;
           }
 
           const reader = sendResponse.body?.getReader();
@@ -380,6 +417,7 @@ const useChat = () => {
           // used for final ChatMessage
           let finalMessage: ChatMessage | null = null;
           let hasReceivedContent = false;
+          let chunksReceived = 0;
 
           // streaming buffer for SSE lines
           let buffer = '';
@@ -443,15 +481,31 @@ const useChat = () => {
                 content?: string;
                 done?: boolean;
                 message_id?: string;
+                ai_message_id?: string;
                 tokens_used?: number;
                 citations?: unknown;
+                error?: string;
+                thought_summary?: string;
               };
               try {
                 dataObj = JSON.parse(jsonString);
+                chunksReceived++; // Track chunks received
               } catch {
                 // if partial JSON leaked into this line, skip
                 // next iteration will complete it
                 continue;
+              }
+
+              // Handle error chunks from backend (backend sends errors with done=true)
+              if (dataObj.error && dataObj.done) {
+                const error = new Error(dataObj.error) as Error & {
+                  retryable?: boolean;
+                };
+                // Errors from backend are generally retryable unless they're validation errors
+                error.retryable = !dataObj.error.toLowerCase().includes('invalid') && 
+                                  !dataObj.error.toLowerCase().includes('permission');
+                reject(error);
+                return;
               }
 
               // append reasoning/content aggregates
@@ -483,11 +537,24 @@ const useChat = () => {
 
               // finalise if done
               if (dataObj.done) {
+                // Check for empty response scenario
+                if (!fullContent || fullContent.trim().length === 0) {
+                  const error = new Error('No response generated from AI service') as Error & {
+                    retryable?: boolean;
+                  };
+                  error.retryable = true;
+                  reject(error);
+                  return;
+                }
+
                 // always emit final full text for UI with done=true
                 emitUpdate(true);
 
+                // Use thought_summary from backend if available, otherwise use accumulated reasoning
+                const finalReasoning = dataObj.thought_summary || fullReasoning;
+
                 finalMessage = {
-                  id: dataObj.message_id || Date.now(),
+                  id: dataObj.ai_message_id || dataObj.message_id || Date.now(),
                   chat: Number(chatId),
                   user: 'AI',
                   content: fullContent,
@@ -496,7 +563,7 @@ const useChat = () => {
                   is_system_message: true,
                   files: null,
                   citations: dataObj.citations as string | Citation | undefined,
-                  reasoning: fullReasoning,
+                  reasoning: finalReasoning,
                 };
               }
             }
@@ -525,8 +592,11 @@ const useChat = () => {
               }
               emitUpdate(!!lastJson.done);
               if (lastJson.done && !finalMessage) {
+                // Use thought_summary from backend if available, otherwise use accumulated reasoning
+                const finalReasoning = (lastJson as { thought_summary?: string }).thought_summary || fullReasoning;
+                
                 finalMessage = {
-                  id: lastJson.message_id || Date.now(),
+                  id: (lastJson as { ai_message_id?: string }).ai_message_id || lastJson.message_id || Date.now(),
                   chat: Number(chatId),
                   user: 'AI',
                   content: fullContent,
@@ -538,7 +608,7 @@ const useChat = () => {
                     | string
                     | Citation
                     | undefined,
-                  reasoning: fullReasoning,
+                  reasoning: finalReasoning,
                 };
               }
             } catch {
@@ -546,8 +616,28 @@ const useChat = () => {
             }
           }
 
+          // Check for no chunks received scenario
+          if (chunksReceived === 0) {
+            const error = new Error('No response received from the server. Please try again.') as Error & {
+              retryable?: boolean;
+            };
+            error.retryable = true;
+            reject(error);
+            return;
+          }
+
           // fallback if stream ended without explicit done
           if (!finalMessage) {
+            // Check if we received chunks but no content
+            if (chunksReceived > 0 && !hasReceivedContent) {
+              const error = new Error('Stream ended without generating content. Please try again.') as Error & {
+                retryable?: boolean;
+              };
+              error.retryable = true;
+              reject(error);
+              return;
+            }
+            
             finalMessage = {
               id: Date.now(),
               chat: Number(chatId),
@@ -703,3 +793,4 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatById, useChatMessages };
+
