@@ -1,9 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 import { useClientOnly } from '@/lib/client-only';
@@ -103,11 +103,11 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const responseData = refreshResponse.data;
             const newAccess = responseData.access;
             const newRefresh = responseData.refresh;
-            
+
             if (!newAccess || !newRefresh) {
               throw new Error('Invalid refresh response format');
             }
-            
+
             // Update tokens in localStorage
             localStorage.setItem('accessToken', newAccess);
             localStorage.setItem('refreshToken', newRefresh);
@@ -136,7 +136,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.removeItem('refreshToken');
         }
       }
-      
+
       setIsValidating(false);
     };
 

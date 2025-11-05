@@ -1,13 +1,13 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
 import DocxViewer from '@/components/common/DocxViewer';
 import { NoSSR } from '@/components/common/no-ssr';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function UserAgreementPage() {
   const [agreed, setAgreed] = useState(false);
@@ -186,7 +186,6 @@ export default function UserAgreementPage() {
               'Continue'
             )}
           </Button>
-
         </div>
       </div>
     </NoSSR>
