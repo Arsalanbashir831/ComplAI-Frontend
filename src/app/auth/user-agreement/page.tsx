@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
 import DocxViewer from '@/components/common/DocxViewer';
 import { NoSSR } from '@/components/common/no-ssr';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function UserAgreementPage() {
   const [agreed, setAgreed] = useState(false);
@@ -21,7 +21,7 @@ export default function UserAgreementPage() {
 
   const email = searchParams.get('email');
   const password = searchParams.get('password');
-  const subscription = searchParams.get('subscription');
+  // const subscription = searchParams.get('subscription');
 
   // Validate required parameters on mountt
   useEffect(() => {
@@ -187,15 +187,6 @@ export default function UserAgreementPage() {
             )}
           </Button>
 
-          {/* Debug info in development */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-4 p-2 bg-gray-100 rounded text-xs text-gray-600">
-              <p>Email: {email ? '✓' : '✗'}</p>
-              <p>Password: {password ? '✓' : '✗'}</p>
-              <p>Subscription: {subscription || 'None'}</p>
-              <p>Retry Count: {retryCount}</p>
-            </div>
-          )}
         </div>
       </div>
     </NoSSR>
