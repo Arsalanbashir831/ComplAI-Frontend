@@ -1,18 +1,18 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
-import { useParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 
-import { useChat } from '@/hooks/useChat';
-import { MarkdownRenderer } from '@/lib/markdown';
-import { cn } from '@/lib/utils';
 import type { ChatMessage, Citation } from '@/types/chat';
 import { User } from '@/types/user';
+import { MarkdownRenderer } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -216,7 +216,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   // 3. string - single file URL
   const files: Array<{ id?: number; file: string | File }> =
     Array.isArray(message.files) && message.files.length > 0
-      ? (message.files as Array<{ id?: number; file: string | File } | File>).map((entry) => {
+      ? (
+          message.files as Array<{ id?: number; file: string | File } | File>
+        ).map((entry) => {
           // Handle raw File objects (temporary, right after sending)
           if (entry instanceof File) {
             return { file: entry };
@@ -715,12 +717,16 @@ export function ChatBubble({ message }: ChatBubbleProps) {
                   {files.map((entry, index) => {
                     const fileData = entry.file;
                     const key = entry.id ?? index;
-                    
+
                     // Handle both File objects (temporary) and URL strings (from API)
-                    const file = fileData instanceof File 
-                      ? fileData 
-                      : new File([fileData], fileData?.split('/')?.pop() || 'file');
-                    
+                    const file =
+                      fileData instanceof File
+                        ? fileData
+                        : new File(
+                            [fileData],
+                            fileData?.split('/')?.pop() || 'file'
+                          );
+
                     return (
                       <FileCard
                         key={key}
