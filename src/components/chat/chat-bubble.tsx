@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useParams } from 'next/navigation';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -209,10 +209,25 @@ export function ChatBubble({ message }: ChatBubbleProps) {
     : { opacity: 0, y: 10 };
   const containerAnimate = { opacity: 1, y: 0 };
 
-  // Normalize files: allow string or array of file entries
-  const files: Array<{ id?: number; file: string }> =
+  // Normalize files: allow string, File objects, or array of file entries
+  // Handles 3 cases:
+  // 1. File[] - temporary files right after sending (before API response)
+  // 2. Array<{ id?: number; file: string }> - files from API response
+  // 3. string - single file URL
+  const files: Array<{ id?: number; file: string | File }> =
     Array.isArray(message.files) && message.files.length > 0
-      ? (message.files as Array<{ id?: number; file: string }>)
+      ? (message.files as Array<{ id?: number; file: string | File } | File>).map((entry) => {
+          // Handle raw File objects (temporary, right after sending)
+          if (entry instanceof File) {
+            return { file: entry };
+          }
+          // Handle objects with file property that could be string or File
+          if (typeof entry === 'object' && 'file' in entry) {
+            return entry as { id?: number; file: string | File };
+          }
+          // Fallback
+          return { file: entry as unknown as string };
+        })
       : typeof message.files === 'string'
         ? [{ file: message.files }]
         : [];
@@ -698,12 +713,18 @@ export function ChatBubble({ message }: ChatBubbleProps) {
               <ScrollArea className="whitespace-nowrap flex w-full max-w-[600px]">
                 <div className="flex w-max h-14 gap-2">
                   {files.map((entry, index) => {
-                    const url = entry.file;
+                    const fileData = entry.file;
                     const key = entry.id ?? index;
+                    
+                    // Handle both File objects (temporary) and URL strings (from API)
+                    const file = fileData instanceof File 
+                      ? fileData 
+                      : new File([fileData], fileData?.split('/')?.pop() || 'file');
+                    
                     return (
                       <FileCard
                         key={key}
-                        file={new File([url], url?.split('/')?.pop() || 'file')}
+                        file={file}
                         showExtraInfo={false}
                         titleColor="text-gray-dark"
                         className="bg-gray-light h-10"
