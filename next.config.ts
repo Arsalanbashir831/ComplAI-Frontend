@@ -29,9 +29,6 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better error catching in development
   reactStrictMode: true,
   
-  // Improve production build performance
-  swcMinify: true,
-  
   // Add security headers
   async headers() {
     return [
@@ -80,9 +77,6 @@ const nextConfig: NextConfig = {
       'framer-motion',
     ],
   },
-  
-  // Compress responses
-  compress: true,
   
   // Improve build performance
   poweredByHeader: false,
