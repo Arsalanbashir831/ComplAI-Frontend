@@ -37,10 +37,7 @@ export function FormSkeleton() {
 
 export function CardSkeleton() {
   return (
-    <div
-      className="space-y-4 rounded-lg border p-4"
-      aria-label="Loading card"
-    >
+    <div className="space-y-4 rounded-lg border p-4" aria-label="Loading card">
       <Skeleton className="h-6 w-3/4" aria-label="Loading title" />
       <Skeleton className="h-4 w-full" aria-label="Loading content" />
       <Skeleton className="h-4 w-full" aria-label="Loading content" />
@@ -65,6 +62,7 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
 }
 
 export function AvatarSkeleton() {
-  return <Skeleton className="h-10 w-10 rounded-full" aria-label="Loading avatar" />;
+  return (
+    <Skeleton className="h-10 w-10 rounded-full" aria-label="Loading avatar" />
+  );
 }
-

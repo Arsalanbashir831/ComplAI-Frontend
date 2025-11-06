@@ -3,7 +3,6 @@
 import ReactMarkdown from 'react-markdown';
 
 import type { ActivityItem } from '@/types/dashboard';
-import { SafeDateDisplay } from '@/components/common/safe-date-display';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { SafeDateDisplay } from '@/components/common/safe-date-display';
 
 interface UserQueryModalProps {
   isOpen: boolean;

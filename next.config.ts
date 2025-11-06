@@ -25,10 +25,10 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
-  
+
   // Enable React strict mode for better error catching in development
   reactStrictMode: true,
-  
+
   // Add security headers
   async headers() {
     return [
@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  
+
   // Optimize production bundle
   experimental: {
     optimizePackageImports: [
@@ -77,7 +77,7 @@ const nextConfig: NextConfig = {
       'framer-motion',
     ],
   },
-  
+
   // Improve build performance
   poweredByHeader: false,
 };

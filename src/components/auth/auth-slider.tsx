@@ -109,8 +109,7 @@ export function AuthSlider() {
         key={currentSlideNo}
         className={cn(
           'relative w-full h-full flex flex-col items-center justify-center',
-          !prefersReducedMotion &&
-            'transition-all duration-700 ease-in-out',
+          !prefersReducedMotion && 'transition-all duration-700 ease-in-out',
           !prefersReducedMotion &&
             (entering ? 'animate-question-enter' : 'animate-question-exit'),
           !entering && 'pointer-events-none'

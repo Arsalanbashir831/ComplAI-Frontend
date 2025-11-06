@@ -1,16 +1,12 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { useSubscription } from '@/hooks/useSubscription';
+import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 
-function DashboardLayoutInner({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const subscription = searchParams.get('subscription');
   const { handleSubscription } = useSubscription();

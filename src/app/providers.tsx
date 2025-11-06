@@ -1,7 +1,6 @@
 'use client';
 
-import { PropsWithChildren, Suspense, useEffect, useState, memo } from 'react';
-
+import { memo, PropsWithChildren, Suspense, useEffect, useState } from 'react';
 import { AbortControllerProvider } from '@/contexts/abort-controller-context';
 import { ChatProvider } from '@/contexts/chat-context';
 import { LoaderProvider } from '@/contexts/loader-context';
@@ -10,9 +9,9 @@ import { UserProvider } from '@/contexts/user-context';
 import AuthProvider from '@/provider/AuthProvider';
 import QueryProvider from '@/provider/QueryClientProvider';
 
-import LoadingSpinner from '@/components/common/loading-spinner';
-import { ErrorBoundary } from '@/components/common/error-boundary';
 import { Toaster } from '@/components/ui/sonner';
+import { ErrorBoundary } from '@/components/common/error-boundary';
+import LoadingSpinner from '@/components/common/loading-spinner';
 
 // Memoize the Toaster to prevent unnecessary re-renders
 const MemoizedToaster = memo(Toaster);
@@ -60,4 +59,3 @@ export function AppProviders({ children }: PropsWithChildren) {
 }
 
 export default AppProviders;
-

@@ -1,10 +1,10 @@
-import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
 
-import AppProviders from '@/app/providers';
-import SkipToContent from '@/components/common/skip-to-content';
 import { cn } from '@/lib/utils';
+import SkipToContent from '@/components/common/skip-to-content';
+import AppProviders from '@/app/providers';
 
 import './globals.css';
 
