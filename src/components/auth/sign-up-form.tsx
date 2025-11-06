@@ -1,20 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { LockKeyhole, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import apiCaller from '@/config/apiCaller';
 
 import {
   Form,
@@ -139,7 +139,7 @@ const PasswordStrengthIndicator = ({ password }: { password: string }) => {
   );
 };
 
-export function SignUpForm() {
+function SignUpFormInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -436,6 +436,34 @@ export function SignUpForm() {
           </Button>
         </form>
       </Form>
+    </AuthFormLayout>
+  );
+}
+
+export function SignUpForm() {
+  return (
+    <Suspense fallback={<SignUpFormFallback />}>
+      <SignUpFormInner />
+    </Suspense>
+  );
+}
+
+function SignUpFormFallback() {
+  return (
+    <AuthFormLayout
+      title="Create your account"
+      subtitle="Please fill this to create an account"
+      footerText="Already have an account?"
+      footerLinkHref={ROUTES.LOGIN}
+      footerLinkText="Login"
+    >
+      <div className="space-y-4 animate-pulse">
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+      </div>
     </AuthFormLayout>
   );
 }

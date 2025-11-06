@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import DocxViewer from '@/components/common/DocxViewer';
 import { NoSSR } from '@/components/common/no-ssr';
 
-export default function UserAgreementPage() {
+function UserAgreementPageInner() {
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -189,5 +189,27 @@ export default function UserAgreementPage() {
         </div>
       </div>
     </NoSSR>
+  );
+}
+
+export default function UserAgreementPage() {
+  return (
+    <Suspense fallback={<UserAgreementPageFallback />}>
+      <UserAgreementPageInner />
+    </Suspense>
+  );
+}
+
+function UserAgreementPageFallback() {
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center justify-center">
+      <div className="w-full">
+        <div className="h-96 bg-gray-200 rounded-lg animate-pulse" />
+      </div>
+      <div className="mt-8 w-full max-w-3xl flex flex-col items-center">
+        <div className="h-6 w-64 bg-gray-200 rounded animate-pulse" />
+        <div className="mt-6 h-10 w-48 bg-gray-200 rounded animate-pulse" />
+      </div>
+    </div>
   );
 }

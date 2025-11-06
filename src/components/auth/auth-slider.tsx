@@ -3,21 +3,25 @@
 import * as React from 'react';
 import Image from 'next/image';
 
-import { cn } from '@/lib/utils'; // Assuming this utility helps with conditional class names
+import { cn } from '@/lib/utils';
 
 interface Slide {
   question: string;
+  alt: string;
 }
 
 const slides: Slide[] = [
   {
     question: '/auth-slider/new/auth-slider-1.svg',
+    alt: 'Compl-AI feature showcase slide 1 - Document analysis and compliance checking',
   },
   {
     question: '/auth-slider/new/auth-slider-2.svg',
+    alt: 'Compl-AI feature showcase slide 2 - AI-powered compliance recommendations',
   },
   {
     question: '/auth-slider/new/auth-slider-3.svg',
+    alt: 'Compl-AI feature showcase slide 3 - Automated reporting and tracking',
   },
 ];
 
@@ -25,11 +29,27 @@ export function AuthSlider() {
   const [currentSlideNo, setCurrentSlideNo] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [entering, setEntering] = React.useState(true);
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
 
   const currentSlide = slides[currentSlideNo];
 
-  // Auto-slide effect
+  // Check for reduced motion preference
   React.useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Auto-slide effect (disabled if user prefers reduced motion)
+  React.useEffect(() => {
+    if (prefersReducedMotion) return;
+
     const slideInterval = setInterval(() => {
       if (!isAnimating) {
         setEntering(false);
@@ -43,7 +63,7 @@ export function AuthSlider() {
     }, 3500);
 
     return () => clearInterval(slideInterval);
-  }, [isAnimating]);
+  }, [isAnimating, prefersReducedMotion]);
 
   // Handle enter animation completion
   React.useEffect(() => {
@@ -58,58 +78,83 @@ export function AuthSlider() {
     }
   }, [entering, currentSlideNo]);
 
+  const handleSlideChange = React.useCallback(
+    (index: number) => {
+      if (!isAnimating && index !== currentSlideNo) {
+        if (prefersReducedMotion) {
+          setCurrentSlideNo(index);
+        } else {
+          setEntering(false);
+          setIsAnimating(true);
+
+          setTimeout(() => {
+            setCurrentSlideNo(index);
+            setEntering(true);
+          }, 700);
+        }
+      }
+    },
+    [isAnimating, currentSlideNo, prefersReducedMotion]
+  );
+
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-4 sm:px-8 md:px-16 py-6 md:py-8 h-full flex flex-col justify-center bg-white rounded-2xl overflow-hidden shadow-lg min-h-[400px] md:min-h-[500px] lg:min-h-[600px]">
+    <section
+      className="relative w-full max-w-3xl mx-auto px-4 sm:px-8 md:px-16 py-6 md:py-8 h-full flex flex-col justify-center bg-white rounded-2xl overflow-hidden shadow-lg min-h-[400px] md:min-h-[500px] lg:min-h-[600px]"
+      aria-label="Product feature carousel"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       {/* Main Slide Container */}
       <div
         key={currentSlideNo}
         className={cn(
-          'relative w-full h-full flex flex-col items-center justify-center transition-all duration-700 ease-in-out',
-          entering ? 'animate-question-enter' : 'animate-question-exit',
+          'relative w-full h-full flex flex-col items-center justify-center',
+          !prefersReducedMotion &&
+            'transition-all duration-700 ease-in-out',
+          !prefersReducedMotion &&
+            (entering ? 'animate-question-enter' : 'animate-question-exit'),
           !entering && 'pointer-events-none'
         )}
-        style={{ transitionDelay: entering ? '0s' : '0s' }}
+        role="region"
+        aria-label={`Slide ${currentSlideNo + 1} of ${slides.length}`}
       >
-        {/* Question Image - Main Content */}
+        {/* Feature Image */}
         <div className="relative w-full max-w-lg aspect-[4/3] flex items-center justify-center mt-2">
           <Image
             src={currentSlide.question || '/placeholder.svg'}
-            alt="Question"
+            alt={currentSlide.alt}
             fill
             className="object-contain"
-            priority
+            priority={currentSlideNo === 0}
+            loading={currentSlideNo === 0 ? 'eager' : 'lazy'}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
       </div>
 
       {/* Navigation Dots */}
-      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
-        {slides.map((_, index) => (
+      <nav
+        className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10"
+        aria-label="Carousel navigation"
+      >
+        {slides.map((slide, index) => (
           <button
             key={index}
+            type="button"
             className={cn(
-              'h-3 w-3 md:h-4 md:w-4 rounded-full border-2 border-blue-200 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400',
+              'h-3 w-3 md:h-4 md:w-4 rounded-full border-2 border-blue-200 transition-colors duration-300',
               currentSlideNo === index
                 ? 'bg-blue-dark scale-110'
                 : 'bg-gray-300',
               isAnimating && 'pointer-events-none'
             )}
-            onClick={() => {
-              if (!isAnimating && index !== currentSlideNo) {
-                setEntering(false);
-                setIsAnimating(true);
-
-                setTimeout(() => {
-                  setCurrentSlideNo(index);
-                  setEntering(true);
-                }, 700);
-              }
-            }}
-            aria-label={`Slide ${index + 1}`}
+            onClick={() => handleSlideChange(index)}
+            aria-label={`Go to slide ${index + 1}: ${slide.alt}`}
+            aria-current={currentSlideNo === index ? 'true' : 'false'}
           />
         ))}
-      </div>
-    </div>
+      </nav>
+    </section>
   );
 }
 

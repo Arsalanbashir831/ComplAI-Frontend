@@ -1,17 +1,18 @@
 'use client';
 
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
 
 import {
   Form,
@@ -38,7 +39,7 @@ const formSchema = z.object({
   rememberMe: z.boolean().optional(),
 });
 
-export function LoginForm() {
+function LoginFormInner() {
   const { signIn, loading, error } = useAuth();
   const searchParams = useSearchParams();
   const subscription = searchParams.get('subscription');
@@ -194,6 +195,33 @@ export function LoginForm() {
           </Button>
         </form>
       </Form>
+    </AuthFormLayout>
+  );
+}
+
+export function LoginForm() {
+  return (
+    <Suspense fallback={<LoginFormFallback />}>
+      <LoginFormInner />
+    </Suspense>
+  );
+}
+
+function LoginFormFallback() {
+  return (
+    <AuthFormLayout
+      title="Login to your account"
+      subtitle="Glad to see you again! Please enter your details."
+      footerText="Don't have an account?"
+      footerLinkHref={ROUTES.SIGN_UP}
+      footerLinkText="Sign up"
+    >
+      <div className="space-y-4 animate-pulse">
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+      </div>
     </AuthFormLayout>
   );
 }

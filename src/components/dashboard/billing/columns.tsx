@@ -5,6 +5,7 @@ import { Download } from 'lucide-react';
 
 import type { Invoice } from '@/types/invoice';
 import { cn } from '@/lib/utils';
+import { SafeDateDisplay } from '@/components/common/safe-date-display';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -47,15 +48,13 @@ export const columns: ColumnDef<Invoice>[] = [
     accessorKey: 'billingDate',
     header: 'Billing Date',
     cell: ({ row }) => {
-      const date = new Date(row.getValue('billingDate'));
+      const date = row.getValue('billingDate') as string;
       return (
-        <div className="font-medium text-xs text-[#667085]">
-          {date.toLocaleDateString('en-US', {
-            month: 'numeric',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </div>
+        <SafeDateDisplay
+          date={date}
+          format="date"
+          className="font-medium text-xs text-[#667085]"
+        />
       );
     },
   },

@@ -3,6 +3,7 @@
 import ReactMarkdown from 'react-markdown';
 
 import type { ActivityItem } from '@/types/dashboard';
+import { SafeDateDisplay } from '@/components/common/safe-date-display';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -43,9 +44,11 @@ export function UserQueryModal({
           </div>
           <div>
             <p className="font-semibold">Timestamp:</p>
-            <p className="text-gray-700">
-              {new Date(activity.usage_date).toLocaleString()}
-            </p>
+            <SafeDateDisplay
+              date={activity.usage_date}
+              format="datetime"
+              className="text-gray-700"
+            />
           </div>
           <div>
             <p className="font-semibold">AI Response:</p>

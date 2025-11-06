@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
@@ -30,7 +30,7 @@ const formSchema = z.object({
   }),
 });
 
-export function IdentityVerificationForm() {
+function IdentityVerificationFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
@@ -406,6 +406,30 @@ export function IdentityVerificationForm() {
           </Button>
         </form>
       </Form>
+    </AuthFormLayout>
+  );
+}
+
+export function IdentityVerificationForm() {
+  return (
+    <Suspense fallback={<IdentityVerificationFormFallback />}>
+      <IdentityVerificationFormInner />
+    </Suspense>
+  );
+}
+
+function IdentityVerificationFormFallback() {
+  return (
+    <AuthFormLayout
+      title="Identity Verification"
+      subtitle="Enter the verification code sent to your email"
+      footerText="Didn't receive a code?"
+      footerLinkText="Resend OTP"
+    >
+      <div className="space-y-4 animate-pulse">
+        <div className="h-12 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+      </div>
     </AuthFormLayout>
   );
 }

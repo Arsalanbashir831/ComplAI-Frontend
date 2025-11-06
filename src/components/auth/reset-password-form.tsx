@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
@@ -35,7 +35,7 @@ const formSchema = z
     message: 'Passwords must match',
   });
 
-export function ResetPasswordForm() {
+function ResetPasswordFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email'); // ✅ Get email from query
@@ -164,6 +164,29 @@ export function ResetPasswordForm() {
           </Button>
         </form>
       </Form>
+    </AuthFormLayout>
+  );
+}
+
+export function ResetPasswordForm() {
+  return (
+    <Suspense fallback={<ResetPasswordFormFallback />}>
+      <ResetPasswordFormInner />
+    </Suspense>
+  );
+}
+
+function ResetPasswordFormFallback() {
+  return (
+    <AuthFormLayout
+      title="Reset Password"
+      subtitle="Enter your new password to continue"
+    >
+      <div className="space-y-4 animate-pulse">
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+      </div>
     </AuthFormLayout>
   );
 }

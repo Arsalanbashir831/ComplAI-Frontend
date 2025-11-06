@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
 
 import type { ActivityItem } from '@/types/dashboard';
+import { SafeDateRangeDisplay } from '@/components/common/safe-date-display';
 import { Button } from '@/components/ui/button';
 
 export const createColumns = (
@@ -25,21 +26,9 @@ export const createColumns = (
       header: 'Requested at',
       enableSorting: true,
       cell: ({ row }) => {
-        const date = new Date(row.getValue('usage_date'));
+        const date = row.getValue('usage_date') as string;
         return (
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">
-              {date.toLocaleDateString('en-US')}
-            </span>
-            <span className="text-xs text-[#999999]">
-              {date.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true,
-              })}
-            </span>
-          </div>
+          <SafeDateRangeDisplay date={date} className="flex flex-col" />
         );
       },
     },

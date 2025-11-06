@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
@@ -10,7 +11,7 @@ import { toast } from 'sonner';
 import apiCaller from '@/config/apiCaller';
 import { useSubscription } from '@/hooks/useSubscription'; // adjust path as needed
 
-export function OAuthButtons() {
+function OAuthButtonsInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const subscriptionParam = searchParams.get('subscription') as
@@ -67,6 +68,22 @@ export function OAuthButtons() {
         onSuccess={handleGoogleSignIn}
         onError={() => toast.error('An error occurred during Google sign-in')}
       />
+    </div>
+  );
+}
+
+export function OAuthButtons() {
+  return (
+    <Suspense fallback={<OAuthButtonsFallback />}>
+      <OAuthButtonsInner />
+    </Suspense>
+  );
+}
+
+function OAuthButtonsFallback() {
+  return (
+    <div className="flex justify-center items-center">
+      <div className="h-10 w-48 bg-gray-200 rounded animate-pulse"></div>
     </div>
   );
 }

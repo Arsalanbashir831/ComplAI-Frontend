@@ -37,7 +37,7 @@ export default function BillingPage() {
           }) => ({
             id: inv.id,
             invoiceId: inv.number || inv.id,
-            billingDate: new Date(inv.created * 1000).toLocaleDateString(),
+            billingDate: new Date(inv.created * 1000).toISOString(),
             amount: inv.amount_paid / 100,
             plan: inv.lines?.data?.[0]?.description || 'N/A',
             status: inv.status,

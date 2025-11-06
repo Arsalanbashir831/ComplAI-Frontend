@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import DashboardHeader from '@/components/dashboard/dashboard-header';
@@ -23,5 +24,26 @@ function ProfilePageClient() {
 
 // 2) Wrap that client component in a Suspense boundary
 export default function ProfilePage() {
-  return <ProfilePageClient />;
+  return (
+    <Suspense fallback={<ProfilePageFallback />}>
+      <ProfilePageClient />
+    </Suspense>
+  );
+}
+
+function ProfilePageFallback() {
+  return (
+    <div className="min-h-screen flex flex-col items-center px-6 py-8">
+      <DashboardHeader title="My Profile" />
+
+      <div className="flex flex-col justify-center flex-1 w-full rounded-xl p-6 space-y-6">
+        <div className="space-y-4 animate-pulse">
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </div>
+  );
 }

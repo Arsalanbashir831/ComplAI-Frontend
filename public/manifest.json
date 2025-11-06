@@ -1,0 +1,27 @@
+{
+  "name": "Compl-AI - AI-Powered Compliance Assistant",
+  "short_name": "Compl-AI",
+  "description": "Simplify SRA compliance for regulated law firms with AI-powered tools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity", "legal"],
+  "lang": "en-GB",
+  "dir": "ltr"
+}
+
