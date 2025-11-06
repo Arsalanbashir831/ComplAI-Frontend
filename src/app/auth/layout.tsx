@@ -15,7 +15,7 @@ export default function AuthLayout({
       <div className="flex min-h-screen bg-[#F8F8FF]">
         <div className="flex-1 md:basis-1/2 px-8 py-12">
           <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center space-y-8">
-            <Logo />
+            <Logo outsideDomain={true} href={process.env.NEXT_PUBLIC_LANDING_URL} />
             {children}
           </div>
         </div>
