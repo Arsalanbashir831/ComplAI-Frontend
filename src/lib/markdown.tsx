@@ -148,7 +148,7 @@ export const markdownComponents = {
   th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => {
     // Extract text content and check for delimiter
     const textContent = extractTextContent(props.children);
-    
+
     // Check if the text contains our delimiter
     if (textContent.includes('⟨BR⟩')) {
       const parts = textContent.split('⟨BR⟩').filter((part) => part.trim());
@@ -183,7 +183,7 @@ export const markdownComponents = {
   td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => {
     // Extract text content and check for delimiter
     const textContent = extractTextContent(props.children);
-    
+
     // Check if the text contains our delimiter
     if (textContent.includes('⟨BR⟩')) {
       const parts = textContent.split('⟨BR⟩').filter((part) => part.trim());
@@ -251,4 +251,3 @@ export function MarkdownRenderer({ content }: { content: string }) {
 }
 
 export { remarkGfm };
-
