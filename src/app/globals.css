@@ -417,4 +417,8 @@ body {
 
 .skip-to-content:not(:focus):not(:focus-visible) {
   opacity: 0;
-}
+} 
+
+
+.li-wrap { display:block; }
+.li-wrap:has(pre) { display:flex; align-items:flex-start; gap:.75rem; }
