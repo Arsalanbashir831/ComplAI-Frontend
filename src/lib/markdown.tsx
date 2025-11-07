@@ -49,6 +49,26 @@ type CodeProps = {
   children?: React.ReactNode;
 };
 
+// Helper function to extract text content from React nodes
+const extractTextContent = (node: React.ReactNode): string => {
+  if (typeof node === 'string') {
+    return node;
+  }
+  if (typeof node === 'number') {
+    return String(node);
+  }
+  if (Array.isArray(node)) {
+    return node.map(extractTextContent).join('');
+  }
+  if (React.isValidElement(node)) {
+    const props = node.props as { children?: React.ReactNode };
+    if (props.children) {
+      return extractTextContent(props.children);
+    }
+  }
+  return '';
+};
+
 export const markdownComponents = {
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h1 className="mt-6 mb-3 text-2xl font-bold text-gray-900" {...props} />
@@ -126,14 +146,19 @@ export const markdownComponents = {
     />
   ),
   th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => {
-    // Process children to handle text with ⟨BR⟩ delimiter as list items
-    const processChildren = (children: React.ReactNode): React.ReactNode => {
-      if (typeof children === 'string') {
-        // Split by our special delimiter ⟨BR⟩ and create list items if multiple parts
-        const parts = children.split('⟨BR⟩').filter((part) => part.trim());
+    // Extract text content and check for delimiter
+    const textContent = extractTextContent(props.children);
+    
+    // Check if the text contains our delimiter
+    if (textContent.includes('⟨BR⟩')) {
+      const parts = textContent.split('⟨BR⟩').filter((part) => part.trim());
 
-        if (parts.length > 1) {
-          return (
+      if (parts.length > 1) {
+        return (
+          <th
+            className="px-4 py-3 text-left font-bold text-blue-900 border-b border-blue-200 whitespace-normal text-base align-top"
+            style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
+          >
             <ul className="list-disc pl-5 space-y-1">
               {parts.map((part, index) => (
                 <li key={index} className="text-base leading-relaxed">
@@ -141,31 +166,34 @@ export const markdownComponents = {
                 </li>
               ))}
             </ul>
-          );
-        }
-        return children;
+          </th>
+        );
       }
-      return children;
-    };
+    }
 
     return (
       <th
         className="px-4 py-3 text-left font-bold text-blue-900 border-b border-blue-200 whitespace-normal text-base align-top"
         style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
       >
-        {processChildren(props.children)}
+        {props.children}
       </th>
     );
   },
   td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => {
-    // Process children to handle text with ⟨BR⟩ delimiter as list items
-    const processChildren = (children: React.ReactNode): React.ReactNode => {
-      if (typeof children === 'string') {
-        // Split by our special delimiter ⟨BR⟩ and create list items if multiple parts
-        const parts = children.split('⟨BR⟩').filter((part) => part.trim());
+    // Extract text content and check for delimiter
+    const textContent = extractTextContent(props.children);
+    
+    // Check if the text contains our delimiter
+    if (textContent.includes('⟨BR⟩')) {
+      const parts = textContent.split('⟨BR⟩').filter((part) => part.trim());
 
-        if (parts.length > 1) {
-          return (
+      if (parts.length > 1) {
+        return (
+          <td
+            className="px-4 py-3 text-blue-900 border-b border-blue-100 whitespace-normal align-top"
+            style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
+          >
             <ul className="list-disc pl-5 space-y-1">
               {parts.map((part, index) => (
                 <li key={index} className="text-base leading-relaxed">
@@ -173,19 +201,17 @@ export const markdownComponents = {
                 </li>
               ))}
             </ul>
-          );
-        }
-        return children;
+          </td>
+        );
       }
-      return children;
-    };
+    }
 
     return (
       <td
         className="px-4 py-3 text-blue-900 border-b border-blue-100 whitespace-normal align-top"
         style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
       >
-        {processChildren(props.children)}
+        {props.children}
       </td>
     );
   },
@@ -225,3 +251,4 @@ export function MarkdownRenderer({ content }: { content: string }) {
 }
 
 export { remarkGfm };
+
