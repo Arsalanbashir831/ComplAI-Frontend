@@ -51,7 +51,6 @@ export function preserveSpaces(md: string): string {
 //   processed = processed.replace(/<br\s*\/?>/gi, '');
 //   processed = processed.replace('⟨BR⟩', '');
 
-
 //   return processed;
 // }
 export function preprocessMarkdown(md: string): string {
@@ -65,7 +64,6 @@ export function preprocessMarkdown(md: string): string {
 
   return processed;
 }
-
 
 type CodeProps = {
   inline?: boolean;
