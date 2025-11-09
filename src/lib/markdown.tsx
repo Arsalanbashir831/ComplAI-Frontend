@@ -39,16 +39,33 @@ export function preserveSpaces(md: string): string {
   );
 }
 
+// export function preprocessMarkdown(md: string): string {
+//   let processed = md.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
+//   // Remove <p> and </p> tags but keep their content
+//   // This handles both opening and closing tags, including self-closing variants
+//   processed = processed.replace(/<p\s*[^>]*>/gi, '');
+//   processed = processed.replace(/<\/p\s*>/gi, '');
+//   processed = processed.replace(/<ins\s*[^>]*>/gi, '');
+//   processed = processed.replace(/<\/ins\s*>/gi, '');
+//   processed = processed.replace(/<br\s*\/?>/gi, '');
+//   processed = processed.replace('⟨BR⟩', '');
+
+
+//   return processed;
+// }
 export function preprocessMarkdown(md: string): string {
   let processed = md.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 
-  // Remove <p> and </p> tags but keep their content
-  // This handles both opening and closing tags, including self-closing variants
-  processed = processed.replace(/<p\s*[^>]*>/gi, '');
-  processed = processed.replace(/<\/p\s*>/gi, '');
+  // Remove all HTML tags
+  processed = processed.replace(/<[^>]*>/g, '');
+
+  // Remove special placeholders
+  processed = processed.replace(/⟨BR⟩/g, '');
 
   return processed;
 }
+
 
 type CodeProps = {
   inline?: boolean;
