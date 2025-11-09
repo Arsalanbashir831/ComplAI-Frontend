@@ -40,7 +40,14 @@ export function preserveSpaces(md: string): string {
 }
 
 export function preprocessMarkdown(md: string): string {
-  return md.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+  let processed = md.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
+  // Remove <p> and </p> tags but keep their content
+  // This handles both opening and closing tags, including self-closing variants
+  processed = processed.replace(/<p\s*[^>]*>/gi, '');
+  processed = processed.replace(/<\/p\s*>/gi, '');
+
+  return processed;
 }
 
 type CodeProps = {
@@ -251,3 +258,4 @@ export function MarkdownRenderer({ content }: { content: string }) {
 }
 
 export { remarkGfm };
+
