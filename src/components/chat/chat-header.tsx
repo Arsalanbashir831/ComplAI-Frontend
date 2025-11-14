@@ -8,6 +8,11 @@ import { useAuthority } from '@/contexts/authority-context';
 import { Plus, Trash2 } from 'lucide-react';
 
 import { AUTHORITY_OPTIONS } from '@/types/chat';
+import {
+  getAuthorityColor,
+  getAuthorityOptionColor,
+  getAuthorityTextColor,
+} from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
@@ -78,24 +83,32 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                   </div>
                 ) : (
                   <Select
-                    value={selectedAuthority}
-                    onValueChange={setSelectedAuthority}
+                    value={selectedAuthority || undefined}
+                    onValueChange={(value) =>
+                      setSelectedAuthority(value as 'SRA' | 'LAA' | 'AML')
+                    }
                     disabled={isAuthorityLocked}
                   >
                     <SelectTrigger
-                      className={` h-8 text-xs font-medium border-0 bg-gray-50 hover:bg-gray-100 focus:ring-0 focus:bg-white focus:shadow-sm transition-all duration-150 rounded-md px-3 ${isAuthorityLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      className={`h-8 text-xs font-medium border transition-all duration-150 rounded-md px-3 ${getAuthorityColor(selectedAuthority)} ${isAuthorityLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                      <SelectValue />
+                      <SelectValue placeholder="Select Companion" />
                     </SelectTrigger>
                     <SelectContent className="w-[350px] border border-gray-200 shadow-lg rounded-md bg-white">
                       {AUTHORITY_OPTIONS.map((option) => (
                         <SelectItem
                           key={option.value}
                           value={option.value}
-                          className="text-xs px-3 py-2 hover:bg-gray-50 focus:bg-gray-50 cursor-pointer rounded-sm"
+                          className={`text-xs px-3 py-2 cursor-pointer rounded-sm ${getAuthorityOptionColor(option.value)}`}
                         >
-                          <span className="font-medium">{option.label}</span>
-                          <span className="text-gray-500 ml-1">
+                          <span
+                            className={`font-medium ${getAuthorityTextColor(option.value)}`}
+                          >
+                            {option.label}
+                          </span>
+                          <span
+                            className={`ml-1 ${getAuthorityTextColor(option.value)}`}
+                          >
                             ({option.abbreviation})
                           </span>
                         </SelectItem>

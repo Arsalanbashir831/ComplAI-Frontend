@@ -19,6 +19,12 @@ import { UploadedFile } from '@/types/upload';
 import { cn, shortenText } from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -634,26 +640,48 @@ export function MessageInput({
               <span className="text-sm text-gray-dark">
                 {promptText.length} / {maxChars}
               </span>
-              <Button
-                size="icon"
-                className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
-                onClick={isSending ? handleStop : handleSendMessage}
-                disabled={!promptText.trim() && !isSending}
-                aria-label="Send message"
-              >
-                {isSending ? (
-                  <Image
-                    className="animate-pulse"
-                    width={10}
-                    height={10}
-                    src={'/pause.svg'}
-                    alt=""
-                  />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                <span className="sr-only">Send message</span>
-              </Button>
+              <TooltipProvider>
+                <Tooltip
+                  open={
+                    !selectedAuthority && promptText.trim() && !isSending
+                      ? undefined
+                      : false
+                  }
+                >
+                  <TooltipTrigger asChild>
+                    <span className="inline-block">
+                      <Button
+                        size="icon"
+                        className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
+                        onClick={isSending ? handleStop : handleSendMessage}
+                        disabled={
+                          (!promptText.trim() && !isSending) ||
+                          (!isSending && !selectedAuthority)
+                        }
+                        aria-label="Send message"
+                      >
+                        {isSending ? (
+                          <Image
+                            className="animate-pulse"
+                            width={10}
+                            height={10}
+                            src={'/pause.svg'}
+                            alt=""
+                          />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">Send message</span>
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!selectedAuthority && promptText.trim() && !isSending && (
+                    <TooltipContent>
+                      <p>Please select a companion first</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>
