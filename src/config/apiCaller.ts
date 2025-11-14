@@ -1,5 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
+import { getCookie } from '@/lib/cookies';
+
 type RequestData =
   | Record<string, string | number | boolean | File | Blob>
   | FormData;
@@ -23,8 +25,16 @@ const apiCaller = async (
     signal,
   };
   config.headers = {};
-  if (useAuth && typeof window !== 'undefined') {
-    const token = localStorage.getItem('accessToken');
+  if (useAuth) {
+    // Read token from cookies (works in both client and server)
+    let token: string | null = null;
+    if (typeof window !== 'undefined') {
+      // Client-side: use cookie utility
+      token = getCookie('accessToken');
+    } else {
+      // Server-side: tokens should be passed via headers or context
+      // For now, we'll handle this in the API route handlers if needed
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

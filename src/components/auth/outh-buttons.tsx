@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import { GoogleLogin } from '@react-oauth/google';
@@ -9,10 +9,10 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 import apiCaller from '@/config/apiCaller';
+import { setAuthCookies } from '@/lib/cookies';
 import { useSubscription } from '@/hooks/useSubscription'; // adjust path as needed
 
 function OAuthButtonsInner() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const subscriptionParam = searchParams.get('subscription') as
     | 'monthly'
@@ -37,22 +37,23 @@ function OAuthButtonsInner() {
 
       if (apiResponse.status === 200) {
         const { access, refresh } = apiResponse.data;
-        localStorage.setItem('accessToken', access);
-        localStorage.setItem('refreshToken', refresh);
+        setAuthCookies(access, refresh);
 
         toast.success('Google sign-in successful');
 
+        // Use window.location.href for full page reload to ensure Proxy intercepts
+        // This replaces the auth page in browser history, preventing back button issues
         // If they clicked a subscription link, process that first
         if (subscriptionParam === 'topup') {
           // Set flag in localStorage to open token modal
           localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
-          router.push(ROUTES.SUPSCRIPTION);
+          window.location.href = ROUTES.SUPSCRIPTION;
         } else if (subscriptionParam === 'monthly') {
           // For monthly subscription, use existing flow
           await handleSubscription(subscriptionParam);
         } else {
           // otherwise just go to dashboard
-          router.push(ROUTES.DASHBOARD);
+          window.location.href = ROUTES.DASHBOARD;
         }
       }
     } catch (error: unknown) {

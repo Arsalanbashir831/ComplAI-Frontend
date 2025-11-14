@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
+import { getCookie } from '@/lib/cookies';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -141,7 +142,7 @@ const useChat = () => {
             method: 'POST',
             body: formData,
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+              Authorization: `Bearer ${getCookie('accessToken')}`,
             },
             signal,
           }
@@ -376,7 +377,7 @@ const useChat = () => {
             method: 'POST',
             body: formData,
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+              Authorization: `Bearer ${getCookie('accessToken')}`,
               Accept: '*/*',
             },
             signal,

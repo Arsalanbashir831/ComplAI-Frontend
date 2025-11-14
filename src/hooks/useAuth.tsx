@@ -2,12 +2,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
 
 import apiCaller from '@/config/apiCaller';
+import { setAuthCookies } from '@/lib/cookies';
 
 import { useSubscription } from './useSubscription';
 
@@ -18,7 +19,6 @@ interface SignInData {
 }
 
 export function useAuth() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const subscription = searchParams.get('subscription') as
     | 'monthly'
@@ -49,11 +49,11 @@ export function useAuth() {
       }
 
       const { access, refresh } = response.data;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', access);
-        localStorage.setItem('refreshToken', refresh);
-      }
+      // Set tokens in cookies instead of localStorage
+      setAuthCookies(access, refresh);
 
+      // Use window.location.href for full page reload to ensure Proxy intercepts
+      // This replaces the auth page in browser history, preventing back button issues
       // 2️⃣ Otherwise, route based on new vs. old user
       if (type === 'new') {
         // 1️⃣ If they arrived via a subscription link, handle it accordingly
@@ -61,7 +61,7 @@ export function useAuth() {
           if (subscription === 'topup') {
             // Set flag in localStorage to open token modal
             localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
-            router.push(ROUTES.SUPSCRIPTION);
+            window.location.href = ROUTES.SUPSCRIPTION;
             return;
           } else {
             // For monthly subscription, use existing flow
@@ -69,7 +69,7 @@ export function useAuth() {
             return;
           }
         } else {
-          router.push(`${ROUTES.PROFILE}?type=new`);
+          window.location.href = `${ROUTES.PROFILE}?type=new`;
         }
       } else {
         // Handle subscription for existing users logging in
@@ -77,7 +77,7 @@ export function useAuth() {
           if (subscription === 'topup') {
             // Set flag in localStorage to open token modal
             localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
-            router.push(ROUTES.SUPSCRIPTION);
+            window.location.href = ROUTES.SUPSCRIPTION;
             return;
           } else if (subscription === 'monthly') {
             // For monthly subscription, use existing flow
@@ -85,7 +85,7 @@ export function useAuth() {
             return;
           }
         }
-        router.push(ROUTES.DASHBOARD);
+        window.location.href = ROUTES.DASHBOARD;
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {

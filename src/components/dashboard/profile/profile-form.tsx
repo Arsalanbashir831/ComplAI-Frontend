@@ -10,6 +10,7 @@ import { Eye, EyeOff, UserIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import apiCaller from '@/config/apiCaller';
+import { getCookie } from '@/lib/cookies';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -138,7 +139,7 @@ export default function ProfileForm({ type }: ProfileFormProps) {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            Authorization: `Bearer ${getCookie('accessToken')}`,
           },
         }
       );
