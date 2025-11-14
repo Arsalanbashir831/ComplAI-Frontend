@@ -1,19 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
+import { TokenPurchaseModal } from '@/components/dashboard/subscription/token-purchase-modal';
+import apiCaller from '@/config/apiCaller';
+import { formatDateLocal } from '@/lib/utils';
+import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -171,6 +172,7 @@ export default function SubscriptionPage() {
   // const queryClient = useQueryClient();
   // const isSubscribing = useIsMutating() > 0;
   const [autoRenew, setAutoRenew] = useState(true);
+  const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
 
   // const { data: paymentCards = [], isLoading: cardsLoading } = useQuery<
   //   PaymentCard[]
@@ -285,7 +287,7 @@ export default function SubscriptionPage() {
   });
 
   const OneTimePaymentMutation = useMutation({
-    mutationFn: async (planId: number) => {
+    mutationFn: async (cost: number) => {
       // const paymentMethodId = stripeCustomer?.default_payment_method;
       // if (!paymentMethodId) {
       //   throw new Error('Please add a payment method before subscribing.');
@@ -294,7 +296,7 @@ export default function SubscriptionPage() {
         API_ROUTES.BILLING.ONE_TIME_PAYMENT_BILLING_PROCESS,
         'POST',
         {
-          product_id: planId,
+          cost: cost,
         },
         {},
         true,
@@ -321,7 +323,7 @@ export default function SubscriptionPage() {
     if (plan.type === 'free') {
       return {
         ...plan,
-        buttonAction: () => OneTimePaymentMutation.mutate(plan.id),
+        buttonAction: () => setIsTokenModalOpen(true),
       };
     } else if (plan.type === 'subscription') {
       return {
@@ -475,6 +477,15 @@ export default function SubscriptionPage() {
           /> */}
         </div>
       </Elements>
+
+      <TokenPurchaseModal
+        isOpen={isTokenModalOpen}
+        onClose={() => setIsTokenModalOpen(false)}
+        onPurchase={(cost) => {
+          setIsTokenModalOpen(false);
+          OneTimePaymentMutation.mutate(cost);
+        }}
+      />
     </div>
   );
 }
