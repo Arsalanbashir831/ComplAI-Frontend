@@ -1,9 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 import apiCaller from '@/config/apiCaller';
-import { getCookie } from '@/lib/cookies';
+import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -75,7 +74,7 @@ const useChat = () => {
       const response = await apiCaller(
         API_ROUTES.CHAT.CREATE,
         'POST',
-        { name, chat_category },
+        { name, chat_category: chat_category || '' },
         {},
         true,
         'json'
@@ -115,7 +114,7 @@ const useChat = () => {
         const formData = new FormData();
         formData.append('content', content);
         formData.append('stream', 'true');
-        formData.append('system_prompt_category', systemPromptCategory);
+        formData.append('system_prompt_category', systemPromptCategory || '');
 
         // Append document only if it exists
         if (documents) {
@@ -142,7 +141,7 @@ const useChat = () => {
             method: 'POST',
             body: formData,
             headers: {
-              Authorization: `Bearer ${getCookie('accessToken')}`,
+              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
             },
             signal,
           }
@@ -360,7 +359,7 @@ const useChat = () => {
       const formData = new FormData();
       formData.append('content', content);
       formData.append('stream', 'true');
-      formData.append('system_prompt_category', systemPromptCategory);
+      formData.append('system_prompt_category', systemPromptCategory || '');
       if (documents) {
         if (Array.isArray(documents)) {
           documents.forEach((file) => {
@@ -377,7 +376,7 @@ const useChat = () => {
             method: 'POST',
             body: formData,
             headers: {
-              Authorization: `Bearer ${getCookie('accessToken')}`,
+              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
               Accept: '*/*',
             },
             signal,

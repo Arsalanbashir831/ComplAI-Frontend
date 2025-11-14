@@ -15,24 +15,25 @@ async function validateAccessToken(token: string): Promise<boolean> {
   try {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (!backendUrl) {
-      console.error('NEXT_PUBLIC_BACKEND_URL is not set');
+      console.error('[Proxy] NEXT_PUBLIC_BACKEND_URL is not set');
       return false;
     }
 
-    const response = await fetch(
-      `${backendUrl}${API_ROUTES.AUTH.VERIFY_TOKEN}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      }
-    );
+    const url = `${backendUrl}${API_ROUTES.AUTH.VERIFY_TOKEN}`;
+    console.log('[Proxy] Validating access token at:', url);
 
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    console.log('[Proxy] Token validation response status:', response.status);
     return response.status === 200;
   } catch (error) {
-    console.error('Error validating access token:', error);
+    console.error('[Proxy] Error validating access token:', error);
     return false;
   }
 }
@@ -47,34 +48,60 @@ async function refreshTokens(refreshToken: string): Promise<{
   try {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (!backendUrl) {
-      console.error('NEXT_PUBLIC_BACKEND_URL is not set');
+      console.error('[Proxy] NEXT_PUBLIC_BACKEND_URL is not set');
       return { accessToken: null, refreshToken: null };
     }
 
-    const response = await fetch(
-      `${backendUrl}${API_ROUTES.AUTH.REFRESH_TOKEN}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refresh: refreshToken }),
-      }
-    );
+    const url = `${backendUrl}${API_ROUTES.AUTH.REFRESH_TOKEN}`;
+    console.log('[Proxy] Attempting to refresh tokens at:', url);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+
+    console.log('[Proxy] Token refresh response status:', response.status);
 
     if (response.status === 200) {
       const data = await response.json();
+      console.log('[Proxy] Successfully refreshed tokens');
       return {
         accessToken: data.access || null,
         refreshToken: data.refresh || null,
       };
     }
 
+    console.warn('[Proxy] Token refresh failed with status:', response.status);
     return { accessToken: null, refreshToken: null };
   } catch (error) {
-    console.error('Error refreshing tokens:', error);
+    console.error('[Proxy] Error refreshing tokens:', error);
     return { accessToken: null, refreshToken: null };
   }
+}
+
+/**
+ * Get cookie domain based on environment
+ */
+function getCookieDomain(): string | undefined {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  if (isProduction) {
+    // In production, set domain to allow cookies across subdomains
+    // For app.compl-ai.co.uk, use .compl-ai.co.uk
+    const productionDomain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN;
+    if (productionDomain) {
+      return productionDomain;
+    }
+    // Fallback: extract domain from hostname
+    // This will be set to .compl-ai.co.uk in your .env
+    return '.compl-ai.co.uk';
+  }
+  
+  // Localhost - no domain needed
+  return undefined;
 }
 
 /**
@@ -87,11 +114,16 @@ function createResponseWithCookies(
 ): NextResponse {
   // Set cookies with appropriate options
   const isProduction = process.env.NODE_ENV === 'production';
+  const cookieDomain = getCookieDomain();
+  
+  const sameSiteValue: 'none' | 'lax' = isProduction ? 'none' : 'lax';
+  
   const cookieOptions = {
     httpOnly: false, // Allow client-side access for apiCaller
     secure: isProduction,
-    sameSite: 'lax' as const,
+    sameSite: sameSiteValue, // 'none' for production CORS, 'lax' for localhost
     path: '/',
+    domain: cookieDomain,
     maxAge: accessToken ? 24 * 60 * 60 : undefined, // 1 day for access token
   };
 
@@ -99,6 +131,13 @@ function createResponseWithCookies(
     ...cookieOptions,
     maxAge: refreshToken ? 7 * 24 * 60 * 60 : undefined, // 7 days for refresh token
   };
+
+  console.log('[Proxy] Setting cookies with options:', {
+    domain: cookieDomain,
+    secure: isProduction,
+    sameSite: cookieOptions.sameSite,
+    path: '/',
+  });
 
   response.cookies.set(COOKIE_NAMES.ACCESS_TOKEN, accessToken, cookieOptions);
   response.cookies.set(
@@ -114,8 +153,23 @@ function createResponseWithCookies(
  * Clear auth cookies from response
  */
 function clearAuthCookies(response: NextResponse): NextResponse {
-  response.cookies.delete(COOKIE_NAMES.ACCESS_TOKEN);
-  response.cookies.delete(COOKIE_NAMES.REFRESH_TOKEN);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieDomain = getCookieDomain();
+  const sameSiteValue: 'none' | 'lax' = isProduction ? 'none' : 'lax';
+  
+  // Must use same options as when setting to properly delete cookies
+  const deleteOptions = {
+    path: '/',
+    domain: cookieDomain,
+    secure: isProduction,
+    sameSite: sameSiteValue,
+  };
+
+  console.log('[Proxy] Clearing cookies with options:', deleteOptions);
+
+  response.cookies.set(COOKIE_NAMES.ACCESS_TOKEN, '', { ...deleteOptions, maxAge: 0 });
+  response.cookies.set(COOKIE_NAMES.REFRESH_TOKEN, '', { ...deleteOptions, maxAge: 0 });
+  
   return response;
 }
 
@@ -154,6 +208,16 @@ export async function proxy(request: NextRequest) {
   if (isStaticFile || isApiRoute) {
     return NextResponse.next();
   }
+
+  // Log authentication state for debugging production issues
+  console.log('[Proxy]', {
+    pathname,
+    isAuthPage,
+    hasAccessToken: !!accessToken,
+    hasRefreshToken: !!refreshToken,
+    environment: process.env.NODE_ENV,
+    host: request.headers.get('host'),
+  });
 
   // Handle protected routes (not auth pages)
   if (!isAuthPage) {

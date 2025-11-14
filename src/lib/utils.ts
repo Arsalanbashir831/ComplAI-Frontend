@@ -338,13 +338,13 @@ export function getAuthorityColor(authority: AuthorityValue): string {
 export function getAuthorityOptionColor(authority: AuthorityValue): string {
   switch (authority) {
     case 'SRA':
-      return 'hover:bg-yellow-50 focus:bg-yellow-50 data-[state=checked]:bg-yellow-100';
+      return 'hover:!bg-yellow-50 focus:!bg-yellow-50 data-[state=checked]:!bg-yellow-100';
     case 'LAA':
-      return 'hover:bg-green-50 focus:bg-green-50 data-[state=checked]:bg-green-100';
+      return 'hover:!bg-green-50 focus:!bg-green-50 data-[state=checked]:!bg-green-100';
     case 'AML':
-      return 'hover:bg-cyan-50 focus:bg-cyan-50 data-[state=checked]:bg-cyan-100';
+      return 'hover:!bg-cyan-50 focus:!bg-cyan-50 data-[state=checked]:!bg-cyan-100';
     default:
-      return 'hover:bg-gray-50 focus:bg-gray-50';
+      return 'hover:!bg-gray-50 focus:!bg-gray-50';
   }
 }
 

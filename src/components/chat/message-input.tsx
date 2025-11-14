@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useAuthority } from '@/contexts/authority-context';
@@ -12,19 +9,16 @@ import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
+import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
 import { AuthorityValue } from '@/types/chat';
 import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
-import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -162,6 +156,11 @@ export function MessageInput({
   const handleSendMessage = async () => {
     if (isSending) return;
     if (!promptText.trim()) return; // Don't send empty messages
+    // Prevent sending if no authority is selected
+    if (!selectedAuthority) {
+      // Focus on the authority select in the header to prompt user
+      return;
+    }
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
       return;
@@ -418,7 +417,7 @@ export function MessageInput({
     //   // You can remove or disable any Ctrl+Enter logic here if you don't want it to conflict.
     // }
 
-    // If Ctrl+Enter is pressed, insert a newline at the cursor position..
+    // If Ctrl+Enter is pressed, insert a newline at the cursor position.
     if (event.shiftKey && event.key === 'Enter') {
       event.preventDefault();
       // Get the current cursor position.
@@ -438,10 +437,10 @@ export function MessageInput({
       setMentionType(null);
     }
 
-    // If plain Enter is pressed, send the message (only if not empty).
+    // If plain Enter is pressed, send the message (only if not empty and authority is selected).
     if (event.key === 'Enter') {
       event.preventDefault();
-      if (promptText.trim()) {
+      if (promptText.trim() && selectedAuthority) {
         handleSendMessage();
       }
     }
@@ -640,48 +639,26 @@ export function MessageInput({
               <span className="text-sm text-gray-dark">
                 {promptText.length} / {maxChars}
               </span>
-              <TooltipProvider>
-                <Tooltip
-                  open={
-                    !selectedAuthority && promptText.trim() && !isSending
-                      ? undefined
-                      : false
-                  }
-                >
-                  <TooltipTrigger asChild>
-                    <span className="inline-block">
-                      <Button
-                        size="icon"
-                        className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
-                        onClick={isSending ? handleStop : handleSendMessage}
-                        disabled={
-                          (!promptText.trim() && !isSending) ||
-                          (!isSending && !selectedAuthority)
-                        }
-                        aria-label="Send message"
-                      >
-                        {isSending ? (
-                          <Image
-                            className="animate-pulse"
-                            width={10}
-                            height={10}
-                            src={'/pause.svg'}
-                            alt=""
-                          />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">Send message</span>
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  {!selectedAuthority && promptText.trim() && !isSending && (
-                    <TooltipContent>
-                      <p>Please select a companion first</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                size="icon"
+                className="bg-gradient-to-r from-[#020F26] to-[#07378C] rounded-full"
+                onClick={isSending ? handleStop : handleSendMessage}
+                disabled={!promptText.trim() && !isSending}
+                aria-label="Send message"
+              >
+                {isSending ? (
+                  <Image
+                    className="animate-pulse"
+                    width={10}
+                    height={10}
+                    src={'/pause.svg'}
+                    alt=""
+                  />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                <span className="sr-only">Send message</span>
+              </Button>
             </div>
           </div>
         </div>

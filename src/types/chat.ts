@@ -20,7 +20,8 @@ export const AUTHORITY_OPTIONS = [
 ] as const;
 
 // Type for authority values derived from configuration
-export type AuthorityValue = (typeof AUTHORITY_OPTIONS)[number]['value'];
+// Can be null when no authority is selected
+export type AuthorityValue = (typeof AUTHORITY_OPTIONS)[number]['value'] | null;
 
 export interface PromptCard {
   id: string;

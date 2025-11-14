@@ -1,19 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuthority } from '@/contexts/authority-context';
 import { Plus, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { AUTHORITY_OPTIONS } from '@/types/chat';
-import {
-  getAuthorityColor,
-  getAuthorityOptionColor,
-  getAuthorityTextColor,
-} from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -28,6 +21,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useChat } from '@/hooks/useChat';
+import {
+  cn,
+  getAuthorityColor,
+  getAuthorityOptionColor,
+  getAuthorityTextColor,
+} from '@/lib/utils';
+import { AUTHORITY_OPTIONS } from '@/types/chat';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 
@@ -99,16 +100,16 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                         <SelectItem
                           key={option.value}
                           value={option.value}
-                          className={`text-xs px-3 py-2 cursor-pointer rounded-sm ${getAuthorityOptionColor(option.value)}`}
+                          className={cn(
+                            'text-xs px-3 py-2 cursor-pointer rounded-sm',
+                            'focus:!bg-transparent focus:!text-inherit',
+                            getAuthorityOptionColor(option.value)
+                          )}
                         >
-                          <span
-                            className={`font-medium ${getAuthorityTextColor(option.value)}`}
-                          >
+                          <span className={`font-medium ${getAuthorityTextColor(option.value)}`}>
                             {option.label}
                           </span>
-                          <span
-                            className={`ml-1 ${getAuthorityTextColor(option.value)}`}
-                          >
+                          <span className={`ml-1 ${getAuthorityTextColor(option.value)}`}>
                             ({option.abbreviation})
                           </span>
                         </SelectItem>

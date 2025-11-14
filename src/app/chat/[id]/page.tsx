@@ -8,7 +8,6 @@ import { useAuthority } from '@/contexts/authority-context';
 import { useChatContext } from '@/contexts/chat-context';
 
 import { useClientOnly } from '@/lib/client-only';
-import { getCookie } from '@/lib/cookies';
 import { useChatById, useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
@@ -88,7 +87,7 @@ export default function SpecificChatPage() {
 
       const response = await fetch(url.toString(), {
         headers: {
-          Authorization: `Bearer ${getCookie('accessToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
 
