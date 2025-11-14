@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -12,7 +14,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
 
 interface TokenPurchaseModalProps {
   isOpen: boolean;
@@ -72,13 +73,17 @@ export function TokenPurchaseModal({
             Purchase Tokens
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            Enter the amount you want to spend. Minimum purchase is £{MIN_AMOUNT}.
+            Enter the amount you want to spend. Minimum purchase is £
+            {MIN_AMOUNT}.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="amount"
+              className="text-sm font-medium text-gray-700"
+            >
               Amount (£)
             </Label>
             <Input
@@ -94,9 +99,7 @@ export function TokenPurchaseModal({
                 error && 'border-red-500 focus-visible:ring-red-500'
               )}
             />
-            {error && (
-              <p className="text-sm text-red-500">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-500">{error}</p>}
             <p className="text-xs text-gray-500">
               Minimum purchase: £{MIN_AMOUNT}
             </p>
@@ -112,7 +115,8 @@ export function TokenPurchaseModal({
               </span>
             </div>
             <p className="text-xs text-gray-600 mt-2">
-              Calculation: £{numericAmount || 0} × {CREDITS_PER_POUND} = {credits.toFixed(1)} credits
+              Calculation: £{numericAmount || 0} × {CREDITS_PER_POUND} ={' '}
+              {credits.toFixed(1)} credits
             </p>
           </div>
         </div>
@@ -133,4 +137,3 @@ export function TokenPurchaseModal({
     </Dialog>
   );
 }
-
