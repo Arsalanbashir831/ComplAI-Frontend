@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { User } from '@/types/user';
 import apiCaller from '@/config/apiCaller';
+import { getCookie } from '@/lib/cookies';
 
 const fetchUserData = async (): Promise<User> => {
   const response = await apiCaller(
@@ -25,10 +26,10 @@ const useUserData = () => {
   // Don't fetch user data on auth pages or if no valid token exists
   const isAuthPage = pathname?.startsWith('/auth') ?? false;
 
-  // Check if access token exists (only check, don't validate - validation happens in AuthProvider)
+  // Check if access token exists (only check, don't validate - validation happens in Proxy)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = getCookie('accessToken');
       setHasValidToken(!!accessToken);
     }
   }, [pathname]);

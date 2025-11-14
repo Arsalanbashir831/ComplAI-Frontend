@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { LogOut } from 'lucide-react';
 
+import { clearAuthCookies } from '@/lib/cookies';
 import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
@@ -11,9 +12,8 @@ import { ConfirmationModal } from './confirmation-modal';
 export default function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
   const handleLogout = () => {
+    clearAuthCookies();
     router.push(ROUTES.LOGIN);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (

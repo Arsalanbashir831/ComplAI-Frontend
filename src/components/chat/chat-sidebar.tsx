@@ -8,6 +8,7 @@ import { useAuthority } from '@/contexts/authority-context';
 import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
 
 import type { Chat } from '@/types/chat';
+import { getCookie } from '@/lib/cookies';
 import { cn } from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
@@ -86,7 +87,7 @@ export function ChatSidebar() {
 
       const response = await fetch(url.toString(), {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getCookie('accessToken')}`,
         },
       });
 

@@ -6,6 +6,7 @@ import { useUserContext } from '@/contexts/user-context';
 
 import type { ChatMessage } from '@/types/chat';
 import { useClientOnly } from '@/lib/client-only';
+import { getCookie } from '@/lib/cookies';
 
 import { ChatBubble } from './chat-bubble';
 
@@ -75,9 +76,10 @@ export function ChatMessages({
       url.searchParams.set('direction', pagination.direction);
       url.searchParams.set('page_size', pagination.page_size.toString());
 
+      const token = getCookie('accessToken');
       const response = await fetch(url.toString(), {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 

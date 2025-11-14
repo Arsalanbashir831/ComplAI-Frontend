@@ -1,158 +1,102 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
-import { ROUTES } from '@/constants/routes';
+import axios from 'axios';
 
 import apiCaller from '@/config/apiCaller';
-import { useClientOnly } from '@/lib/client-only';
+import {
+  clearAuthCookies,
+  getAuthCookies,
+  setAuthCookies,
+} from '@/lib/cookies';
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
+/**
+ * Lightweight AuthProvider that only handles token refresh on 401 errors
+ * Route protection and redirects are handled by Next.js Proxy (src/proxy.ts)
+ */
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const subscription = searchParams.get('subscription');
-  const isClient = useClientOnly();
-  const [isValidating, setIsValidating] = useState(true);
-
-  const logoutUser = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    }
-
-    const redirectTo = subscription
-      ? `/auth?subscription=${encodeURIComponent(subscription)}`
-      : '/auth';
-
-    router.push(redirectTo);
-  };
+  const isRefreshingRef = useRef(false);
 
   useEffect(() => {
-    // Only run on client side to prevent hydration issues
-    if (!isClient) {
-      setIsValidating(false);
-      return;
-    }
+    // Set up axios interceptor for automatic token refresh on 401 errors
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
 
-    const validateTokensAndRedirect = async () => {
-      setIsValidating(true);
+        // If error is 401 and we haven't tried refreshing yet
+        if (
+          error.response?.status === 401 &&
+          !originalRequest._retry &&
+          !isRefreshingRef.current
+        ) {
+          originalRequest._retry = true;
+          isRefreshingRef.current = true;
 
-      const accessToken = localStorage.getItem('accessToken');
-      const refreshToken = localStorage.getItem('refreshToken');
+          try {
+            const { refreshToken } = getAuthCookies();
 
-      // If no tokens exist and we're on auth page, allow access
-      if (!accessToken && !refreshToken) {
-        if (!pathname?.startsWith('/auth')) {
-          logoutUser();
-        }
-        setIsValidating(false);
-        return;
-      }
-
-      // If on auth page and tokens exist, validate and redirect to dashboard
-      const isAuthPage = pathname?.startsWith('/auth') ?? false;
-
-      // Step 1: Validate access token if it exists
-      if (accessToken) {
-        try {
-          const verifyResponse = await apiCaller(
-            API_ROUTES.AUTH.VERIFY_TOKEN,
-            'POST',
-            { token: accessToken },
-            {},
-            false,
-            'json'
-          );
-
-          // Access token is valid
-          if (verifyResponse.status === 200) {
-            // If on auth page, redirect to dashboard
-            if (isAuthPage) {
-              router.push(ROUTES.DASHBOARD);
+            if (!refreshToken) {
+              // No refresh token - clear cookies and redirect to login
+              clearAuthCookies();
+              window.location.href = '/auth';
+              return Promise.reject(error);
             }
-            setIsValidating(false);
-            return;
+
+            // Try to refresh tokens
+            const refreshResponse = await apiCaller(
+              API_ROUTES.AUTH.REFRESH_TOKEN,
+              'POST',
+              { refresh: refreshToken },
+              {},
+              false,
+              'json'
+            );
+
+            if (refreshResponse.status === 200 && refreshResponse.data) {
+              const { access, refresh } = refreshResponse.data;
+
+              if (!access || !refresh) {
+                throw new Error('Invalid refresh response format');
+              }
+
+              // Update cookies with new tokens
+              setAuthCookies(access, refresh);
+
+              // Retry original request with new access token
+              originalRequest.headers.Authorization = `Bearer ${access}`;
+              isRefreshingRef.current = false;
+
+              // Retry the original request using axios directly
+              return axios(originalRequest);
+            } else {
+              throw new Error('Token refresh failed');
+            }
+          } catch (refreshError) {
+            // Refresh failed - clear cookies and redirect to login
+            clearAuthCookies();
+            isRefreshingRef.current = false;
+            window.location.href = '/auth';
+            return Promise.reject(refreshError);
           }
-        } catch {
-          // Access token is invalid, try refresh token
-          console.warn('Access token validation failed. Attempting refresh...');
         }
+
+        return Promise.reject(error);
       }
-
-      // Step 2: Try refresh token if access token doesn't exist or is invalid
-      if (refreshToken) {
-        try {
-          // Django REST Framework JWT uses "refresh" not "refresh_token"
-          const refreshResponse = await apiCaller(
-            API_ROUTES.AUTH.REFRESH_TOKEN,
-            'POST',
-            { refresh: refreshToken }, // Django JWT format: { refresh: "..." }
-            {},
-            false,
-            'json'
-          );
-
-          if (refreshResponse.status === 200 && refreshResponse.data) {
-            // Django JWT returns: { access: "...", refresh: "..." }
-            const responseData = refreshResponse.data;
-            const newAccess = responseData.access;
-            const newRefresh = responseData.refresh;
-
-            if (!newAccess || !newRefresh) {
-              throw new Error('Invalid refresh response format');
-            }
-
-            // Update tokens in localStorage
-            localStorage.setItem('accessToken', newAccess);
-            localStorage.setItem('refreshToken', newRefresh);
-
-            // If on auth page, redirect to dashboard
-            if (isAuthPage) {
-              router.push(ROUTES.DASHBOARD);
-            }
-            setIsValidating(false);
-            return;
-          }
-        } catch {
-          // Refresh token also failed
-          console.error('Refresh token validation failed');
-        }
-      }
-
-      // Step 3: Both tokens failed or don't exist - remove them and redirect to auth
-      if (!isAuthPage) {
-        // On protected page without valid tokens - redirect to auth
-        logoutUser();
-      } else {
-        // Already on auth page, just remove invalid tokens (don't redirect)
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-        }
-      }
-
-      setIsValidating(false);
-    };
-
-    validateTokensAndRedirect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, subscription, router, isClient]);
-
-  // Show loading state while validating tokens
-  if (isValidating) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
     );
-  }
 
+    // Cleanup interceptor on unmount
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []);
+
+  // No loading state or validation - Proxy handles that
   return <>{children}</>;
 };
 

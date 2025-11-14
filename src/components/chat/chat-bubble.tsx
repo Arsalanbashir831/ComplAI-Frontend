@@ -299,7 +299,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             uploadedFiles.length > 0
               ? (uploadedFiles as File[])
               : undefined,
-          systemPromptCategory: chatCategory, // Use the correct chat category
+          systemPromptCategory: chatCategory as 'SRA' | 'LAA' | 'AML', // Use the correct chat category
           signal,
           onChunkUpdate: (chunk) => {
             setMessages((prev) => {
@@ -347,7 +347,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
               ? (uploadedFiles as File[])
               : undefined,
           return_type: mentionType as 'docx' | 'pdf' | null | undefined,
-          systemPromptCategory: chatCategory, // Use the correct chat category
+          systemPromptCategory: chatCategory as 'SRA' | 'LAA' | 'AML', // Use the correct chat category
           signal,
         });
         const rawContent = response.content;

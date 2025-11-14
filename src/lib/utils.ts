@@ -318,3 +318,45 @@ export function processStreamingMarkdownChunk(
   // If not valid, return the previous valid content
   return previousValid;
 }
+
+// Authority color utilities
+export type AuthorityValue = 'SRA' | 'LAA' | 'AML' | null;
+
+export function getAuthorityColor(authority: AuthorityValue): string {
+  switch (authority) {
+    case 'SRA':
+      return 'text-yellow-700 bg-yellow-50 hover:bg-yellow-100 focus:bg-yellow-100 border-yellow-300';
+    case 'LAA':
+      return 'text-green-700 bg-green-50 hover:bg-green-100 focus:bg-green-100 border-green-300';
+    case 'AML':
+      return 'text-cyan-700 bg-cyan-50 hover:bg-cyan-100 focus:bg-cyan-100 border-cyan-300';
+    default:
+      return 'text-gray-600 bg-gray-200 hover:bg-gray-300 focus:bg-gray-100 border-gray-300';
+  }
+}
+
+export function getAuthorityOptionColor(authority: AuthorityValue): string {
+  switch (authority) {
+    case 'SRA':
+      return 'hover:bg-yellow-50 focus:bg-yellow-50 data-[state=checked]:bg-yellow-100';
+    case 'LAA':
+      return 'hover:bg-green-50 focus:bg-green-50 data-[state=checked]:bg-green-100';
+    case 'AML':
+      return 'hover:bg-cyan-50 focus:bg-cyan-50 data-[state=checked]:bg-cyan-100';
+    default:
+      return 'hover:bg-gray-50 focus:bg-gray-50';
+  }
+}
+
+export function getAuthorityTextColor(authority: AuthorityValue): string {
+  switch (authority) {
+    case 'SRA':
+      return 'text-yellow-700';
+    case 'LAA':
+      return 'text-green-700';
+    case 'AML':
+      return 'text-cyan-700';
+    default:
+      return 'text-blue-800';
+  }
+}

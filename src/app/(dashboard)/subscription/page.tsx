@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
@@ -173,6 +173,8 @@ export default function SubscriptionPage() {
   // const isSubscribing = useIsMutating() > 0;
   const [autoRenew, setAutoRenew] = useState(true);
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
+  const shouldOpenTokenModalRef = useRef(false);
+  const hasOpenedModalRef = useRef(false);
 
   // const { data: paymentCards = [], isLoading: cardsLoading } = useQuery<
   //   PaymentCard[]
@@ -192,6 +194,38 @@ export default function SubscriptionPage() {
       refetchOnMount: false, // Don't refetch on component mount if data exists
     }
   );
+
+  // Check localStorage for modal open intent on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !shouldOpenTokenModalRef.current) {
+      const shouldOpen = localStorage.getItem(
+        'openTokenModalOnSubscriptionPage'
+      );
+      if (shouldOpen === 'true') {
+        shouldOpenTokenModalRef.current = true;
+        // Clear the flag immediately to prevent reopening on refresh
+        localStorage.removeItem('openTokenModalOnSubscriptionPage');
+        console.log('Token modal will open after plans load');
+      }
+    }
+  }, []); // Only run once on mount
+
+  // Open modal when plans are ready
+  useEffect(() => {
+    if (
+      shouldOpenTokenModalRef.current &&
+      !hasOpenedModalRef.current &&
+      !plansLoading &&
+      fetchedPlans.length > 0
+    ) {
+      // Plans are loaded, now open the modal
+      hasOpenedModalRef.current = true;
+      setTimeout(() => {
+        console.log('Opening token modal');
+        setIsTokenModalOpen(true);
+      }, 100);
+    }
+  }, [plansLoading, fetchedPlans]);
 
   // Query to fetch the stripe customer info
   // const { data: stripeCustomer, } = useQuery({
