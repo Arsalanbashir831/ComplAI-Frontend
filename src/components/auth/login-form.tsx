@@ -1,17 +1,17 @@
 'use client';
 
+import { Suspense } from 'react';
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail } from 'lucide-react';
-import Link from 'next/link';
-import { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
 
 import {
   Form,
