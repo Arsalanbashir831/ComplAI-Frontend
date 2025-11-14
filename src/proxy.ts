@@ -87,7 +87,7 @@ async function refreshTokens(refreshToken: string): Promise<{
  */
 function getCookieDomain(): string | undefined {
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   if (isProduction) {
     // In production, set domain to allow cookies across subdomains
     // For app.compl-ai.co.uk, use .compl-ai.co.uk
@@ -99,7 +99,7 @@ function getCookieDomain(): string | undefined {
     // This will be set to .compl-ai.co.uk in your .env
     return '.compl-ai.co.uk';
   }
-  
+
   // Localhost - no domain needed
   return undefined;
 }
@@ -115,9 +115,9 @@ function createResponseWithCookies(
   // Set cookies with appropriate options
   const isProduction = process.env.NODE_ENV === 'production';
   const cookieDomain = getCookieDomain();
-  
+
   const sameSiteValue: 'none' | 'lax' = isProduction ? 'none' : 'lax';
-  
+
   const cookieOptions = {
     httpOnly: false, // Allow client-side access for apiCaller
     secure: isProduction,
@@ -156,7 +156,7 @@ function clearAuthCookies(response: NextResponse): NextResponse {
   const isProduction = process.env.NODE_ENV === 'production';
   const cookieDomain = getCookieDomain();
   const sameSiteValue: 'none' | 'lax' = isProduction ? 'none' : 'lax';
-  
+
   // Must use same options as when setting to properly delete cookies
   const deleteOptions = {
     path: '/',
@@ -167,9 +167,15 @@ function clearAuthCookies(response: NextResponse): NextResponse {
 
   console.log('[Proxy] Clearing cookies with options:', deleteOptions);
 
-  response.cookies.set(COOKIE_NAMES.ACCESS_TOKEN, '', { ...deleteOptions, maxAge: 0 });
-  response.cookies.set(COOKIE_NAMES.REFRESH_TOKEN, '', { ...deleteOptions, maxAge: 0 });
-  
+  response.cookies.set(COOKIE_NAMES.ACCESS_TOKEN, '', {
+    ...deleteOptions,
+    maxAge: 0,
+  });
+  response.cookies.set(COOKIE_NAMES.REFRESH_TOKEN, '', {
+    ...deleteOptions,
+    maxAge: 0,
+  });
+
   return response;
 }
 

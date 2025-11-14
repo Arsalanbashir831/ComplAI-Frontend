@@ -1,12 +1,19 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useAuthority } from '@/contexts/authority-context';
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
-import { MessageInput } from '@/components/chat/message-input';
-import { PromptCard } from '@/components/chat/prompt-card';
-import DisplayUsername from '@/components/common/display-username';
+import {
+  AUTHORITY_OPTIONS,
+  AuthorityValue,
+  PromptCard as PromptCardType,
+} from '@/types/chat';
+import {
+  getAuthorityColor,
+  getAuthorityOptionColor,
+  getAuthorityTextColor,
+} from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
@@ -15,16 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  getAuthorityColor,
-  getAuthorityOptionColor,
-  getAuthorityTextColor,
-} from '@/lib/utils';
-import {
-  AUTHORITY_OPTIONS,
-  AuthorityValue,
-  PromptCard as PromptCardType,
-} from '@/types/chat';
+import { MessageInput } from '@/components/chat/message-input';
+import { PromptCard } from '@/components/chat/prompt-card';
+import DisplayUsername from '@/components/common/display-username';
 
 const promptCards: PromptCardType[] = [
   {
@@ -77,7 +77,11 @@ export default function ChatPage() {
             className={`h-8 text-md font-medium border transition-all duration-150 rounded-md px-3 outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 ${getAuthorityColor(selectedAuthority)}`}
           >
             <SelectValue placeholder="Select Framework">
-              {selectedAuthority === null ? 'Select Framework' : AUTHORITY_OPTIONS.find(opt => opt.value === selectedAuthority)?.label}
+              {selectedAuthority === null
+                ? 'Select Framework'
+                : AUTHORITY_OPTIONS.find(
+                    (opt) => opt.value === selectedAuthority
+                  )?.label}
             </SelectValue>
           </SelectTrigger>
           <SelectContent className="w-[350px] border border-gray-200 rounded-md bg-white outline-none focus:outline-none focus:ring-0 focus:ring-offset-0">
@@ -87,7 +91,9 @@ export default function ChatPage() {
                 value={option.value}
                 className={`text-xs px-3 py-2 cursor-pointer rounded-sm outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 ${getAuthorityOptionColor(option.value)}`}
               >
-                <span className={`font-medium ${getAuthorityTextColor(option.value)}`}>
+                <span
+                  className={`font-medium ${getAuthorityTextColor(option.value)}`}
+                >
                   {option.label}
                 </span>
                 <span className={`ml-1 ${getAuthorityTextColor(option.value)}`}>
