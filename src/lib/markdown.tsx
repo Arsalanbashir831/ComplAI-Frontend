@@ -135,14 +135,14 @@ export const markdownComponents = {
     const match = /language-(\w+)/.exec(className || '');
     return !inline ? (
       <pre
-        className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono shadow-inner my-4"
+        className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono shadow-inner my-4 "
         {...props}
       >
         <code className={match ? `language-${match[1]}` : ''}>{children}</code>
       </pre>
     ) : (
       <code
-        className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded font-mono text-sm"
+        className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded font-mono text-sm "
         {...props}
       >
         {children}
@@ -273,3 +273,4 @@ export function MarkdownRenderer({ content }: { content: string }) {
 }
 
 export { remarkGfm };
+
