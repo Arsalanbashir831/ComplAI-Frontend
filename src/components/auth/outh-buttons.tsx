@@ -43,7 +43,12 @@ function OAuthButtonsInner() {
         toast.success('Google sign-in successful');
 
         // If they clicked a subscription link, process that first
-        if (subscriptionParam === 'monthly' || subscriptionParam === 'topup') {
+        if (subscriptionParam === 'topup') {
+          // Set flag in localStorage to open token modal
+          localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
+          router.push(ROUTES.SUPSCRIPTION);
+        } else if (subscriptionParam === 'monthly') {
+          // For monthly subscription, use existing flow
           await handleSubscription(subscriptionParam);
         } else {
           // otherwise just go to dashboard

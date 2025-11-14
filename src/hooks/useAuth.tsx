@@ -56,14 +56,35 @@ export function useAuth() {
 
       // 2️⃣ Otherwise, route based on new vs. old user
       if (type === 'new') {
-        // 1️⃣ If they arrived via a subscription link, trigger it and stop.
+        // 1️⃣ If they arrived via a subscription link, handle it accordingly
         if (subscription) {
-          await handleSubscription(subscription);
-          return;
+          if (subscription === 'topup') {
+            // Set flag in localStorage to open token modal
+            localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
+            router.push(ROUTES.SUPSCRIPTION);
+            return;
+          } else {
+            // For monthly subscription, use existing flow
+            await handleSubscription(subscription);
+            return;
+          }
         } else {
           router.push(`${ROUTES.PROFILE}?type=new`);
         }
       } else {
+        // Handle subscription for existing users logging in
+        if (subscription) {
+          if (subscription === 'topup') {
+            // Set flag in localStorage to open token modal
+            localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
+            router.push(ROUTES.SUPSCRIPTION);
+            return;
+          } else if (subscription === 'monthly') {
+            // For monthly subscription, use existing flow
+            await handleSubscription(subscription);
+            return;
+          }
+        }
         router.push(ROUTES.DASHBOARD);
       }
     } catch (err: unknown) {

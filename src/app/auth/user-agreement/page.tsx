@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -15,13 +15,11 @@ function UserAgreementPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const { signIn } = useAuth();
-  const router = useRouter();
 
   const searchParams = useSearchParams();
 
   const email = searchParams.get('email');
   const password = searchParams.get('password');
-  // const subscription = searchParams.get('subscription');
 
   // Validate required parameters on mountt
   useEffect(() => {
@@ -72,9 +70,6 @@ function UserAgreementPageInner() {
 
       toast.success('Successfully signed in!');
       console.log('Sign in successful, redirecting...');
-
-      // Redirect to dashboard after successful sign in
-      router.push('/');
     } catch (err) {
       console.error('Sign in error:', err);
 
