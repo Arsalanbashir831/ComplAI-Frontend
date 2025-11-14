@@ -2,18 +2,18 @@
 
 import { useEffect, useState } from 'react';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 
 interface TokenPurchaseModalProps {
   isOpen: boolean;
@@ -32,18 +32,22 @@ export function TokenPurchaseModal({
   const [amount, setAmount] = useState<string>('50');
   const [error, setError] = useState<string | null>(null);
 
-  // Calculate credits based on amount
-  const numericAmount = parseFloat(amount) || 0;
-  const credits = numericAmount * CREDITS_PER_POUND;
-  const isValid = numericAmount >= MIN_AMOUNT;
-
   // Set default value when modal opens
   useEffect(() => {
     if (isOpen) {
+      // Force set the amount to ensure it's always '50' when modal opens
       setAmount('50');
       setError(null);
     }
   }, [isOpen]);
+
+  // Use amount directly, but ensure it's never empty when modal is open
+  const displayAmount = amount || (isOpen ? '50' : '');
+
+  // Calculate credits based on display amount
+  const numericAmount = parseFloat(displayAmount) || 0;
+  const credits = numericAmount * CREDITS_PER_POUND;
+  const isValid = numericAmount >= MIN_AMOUNT;
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -57,7 +61,7 @@ export function TokenPurchaseModal({
   };
 
   const handlePurchase = () => {
-    const numAmount = parseFloat(amount);
+    const numAmount = parseFloat(displayAmount);
     if (isNaN(numAmount) || numAmount < MIN_AMOUNT) {
       setError(`Minimum purchase amount is £${MIN_AMOUNT}`);
       return;
@@ -92,7 +96,7 @@ export function TokenPurchaseModal({
               min={MIN_AMOUNT}
               step="0.01"
               placeholder={`Minimum £${MIN_AMOUNT}`}
-              value={amount || '50'}
+              value={displayAmount}
               onChange={handleAmountChange}
               className={cn(
                 'w-full',
@@ -127,7 +131,7 @@ export function TokenPurchaseModal({
           </Button>
           <Button
             onClick={handlePurchase}
-            disabled={!isValid || !amount}
+            disabled={!isValid || !displayAmount}
             className="bg-blue-600 text-white hover:bg-blue-700"
           >
             Purchase
