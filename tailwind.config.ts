@@ -8,6 +8,55 @@ export default {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    // Authority SelectTrigger colors (SRA, LAA, AML, default)
+    '!text-yellow-700',
+    '!bg-yellow-50',
+    'hover:!bg-yellow-100',
+    'focus:!bg-yellow-100',
+    '!border-yellow-300',
+    '!text-green-700',
+    '!bg-green-50',
+    'hover:!bg-green-100',
+    'focus:!bg-green-100',
+    '!border-green-300',
+    '!text-cyan-700',
+    '!bg-cyan-50',
+    'hover:!bg-cyan-100',
+    'focus:!bg-cyan-100',
+    '!border-cyan-300',
+    '!text-gray-600',
+    '!bg-gray-200',
+    'hover:!bg-gray-300',
+    'focus:!bg-gray-100',
+    '!border-gray-300',
+    // Authority SelectItem hover/focus/checked states (SRA)
+    'hover:!bg-yellow-50',
+    'focus:!bg-yellow-50',
+    'focus:!text-yellow-700',
+    'data-[state=checked]:!bg-yellow-100',
+    'data-[state=checked]:!text-yellow-700',
+    // Authority SelectItem hover/focus/checked states (LAA)
+    'hover:!bg-green-50',
+    'focus:!bg-green-50',
+    'focus:!text-green-700',
+    'data-[state=checked]:!bg-green-100',
+    'data-[state=checked]:!text-green-700',
+    // Authority SelectItem hover/focus/checked states (AML)
+    'hover:!bg-cyan-50',
+    'focus:!bg-cyan-50',
+    'focus:!text-cyan-700',
+    'data-[state=checked]:!bg-cyan-100',
+    'data-[state=checked]:!text-cyan-700',
+    // Authority SelectItem hover/focus states (default)
+    'hover:!bg-gray-50',
+    'focus:!bg-gray-50',
+    // Authority text colors
+    'text-yellow-700',
+    'text-green-700',
+    'text-cyan-700',
+    'text-blue-800',
+  ],
   theme: {
     extend: {
       colors: {

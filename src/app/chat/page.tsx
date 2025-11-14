@@ -10,6 +10,7 @@ import {
   PromptCard as PromptCardType,
 } from '@/types/chat';
 import {
+  cn,
   getAuthorityColor,
   getAuthorityOptionColor,
   getAuthorityTextColor,
@@ -74,7 +75,10 @@ export default function ChatPage() {
           onOpenChange={setIsDropdownOpen}
         >
           <SelectTrigger
-            className={`h-8 text-md font-medium border transition-all duration-150 rounded-md px-3 outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 ${getAuthorityColor(selectedAuthority)}`}
+            className={cn(
+              'h-8 text-md font-medium border transition-all duration-150 rounded-md px-3 outline-none focus:outline-none focus:ring-0 focus:ring-offset-0',
+              getAuthorityColor(selectedAuthority)
+            )}
           >
             <SelectValue placeholder="Select Framework">
               {selectedAuthority === null
@@ -89,7 +93,10 @@ export default function ChatPage() {
               <SelectItem
                 key={option.value}
                 value={option.value}
-                className={`text-xs px-3 py-2 cursor-pointer rounded-sm outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 ${getAuthorityOptionColor(option.value)}`}
+                className={cn(
+                  'text-xs px-3 py-2 cursor-pointer rounded-sm outline-none focus:outline-none focus:ring-0 focus:ring-offset-0',
+                  getAuthorityOptionColor(option.value)
+                )}
               >
                 <span
                   className={`font-medium ${getAuthorityTextColor(option.value)}`}

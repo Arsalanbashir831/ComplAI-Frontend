@@ -102,7 +102,6 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                           value={option.value}
                           className={cn(
                             'text-xs px-3 py-2 cursor-pointer rounded-sm',
-                            'focus:!bg-transparent focus:!text-inherit',
                             getAuthorityOptionColor(option.value)
                           )}
                         >
