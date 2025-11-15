@@ -96,7 +96,7 @@ export function SubscriptionInfo({
                   : 'Your subscription is not currently active.'}
             </p>
           </div>
-          
+
           {isActive ? (
             <Button
               variant="destructive"

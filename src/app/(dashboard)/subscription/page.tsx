@@ -1,21 +1,21 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import type { Plan, Subscription } from '@/types/subscription';
+import apiCaller from '@/config/apiCaller';
+import { formatDateLocal } from '@/lib/utils';
+import { useSubscription } from '@/hooks/useSubscription';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
 import { TokenPurchaseModal } from '@/components/dashboard/subscription/token-purchase-modal';
-import apiCaller from '@/config/apiCaller';
-import { useSubscription } from '@/hooks/useSubscription';
-import { formatDateLocal } from '@/lib/utils';
-import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -172,9 +172,13 @@ export default function SubscriptionPage() {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
   const { cancelSubscription, renewSubscription } = useSubscription();
-  
-  console.log('SubscriptionPage - renewSubscription:', typeof renewSubscription, renewSubscription);
-  
+
+  console.log(
+    'SubscriptionPage - renewSubscription:',
+    typeof renewSubscription,
+    renewSubscription
+  );
+
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const shouldOpenTokenModalRef = useRef(false);
   const hasOpenedModalRef = useRef(false);
@@ -423,13 +427,16 @@ export default function SubscriptionPage() {
   });
 
   const handleRenewSubscription = () => {
-    console.log('handleRenewSubscription called, mutation:', renewSubscriptionMutation.isPending);
+    console.log(
+      'handleRenewSubscription called, mutation:',
+      renewSubscriptionMutation.isPending
+    );
     console.log('renewSubscription type:', typeof renewSubscription);
     renewSubscriptionMutation.mutate();
   };
 
   const isLoading = plansLoading || subscriptionsLoading;
-  
+
   // Get the latest subscription data
   const latestSubscription = userSubscriptions?.slice(-1)[0];
 
@@ -511,7 +518,9 @@ export default function SubscriptionPage() {
                   : 'N/A'
             }
             status={latestSubscription?.status || 'inactive'}
-            cancelAtPeriodEnd={latestSubscription?.cancel_at_period_end || false}
+            cancelAtPeriodEnd={
+              latestSubscription?.cancel_at_period_end || false
+            }
             onCancelSubscription={() => cancelSubscriptionMutation.mutate()}
             onRenewSubscription={handleRenewSubscription}
             isCancelling={cancelSubscriptionMutation.isPending}

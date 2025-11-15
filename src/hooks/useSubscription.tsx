@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react';
-
-import apiCaller from '@/config/apiCaller';
 import { API_ROUTES } from '@/constants/apiRoutes';
 
+import apiCaller from '@/config/apiCaller';
 
 type SubscriptionType = 'monthly' | 'topup';
 
@@ -68,20 +67,19 @@ export const useSubscription = (): UseSubscriptionReturn => {
 
     try {
       const response = await apiCaller(
-        API_ROUTES.BILLING.CANCEL_SUBSCRIPTION ||'/api/billing/cancel-subscription/',
+        API_ROUTES.BILLING.CANCEL_SUBSCRIPTION ||
+          '/api/billing/cancel-subscription/',
         'POST',
         {},
         {},
         true,
         'json'
       );
-      
+
       return response.data;
     } catch (err) {
       const error =
-        err instanceof Error
-          ? err
-          : new Error('Failed to cancel subscription');
+        err instanceof Error ? err : new Error('Failed to cancel subscription');
       setError(error);
       console.error('Cancel subscription API error:', err);
       throw error;
@@ -98,7 +96,8 @@ export const useSubscription = (): UseSubscriptionReturn => {
     try {
       console.log('Calling API:', API_ROUTES.BILLING.RENEW_SUBSCRIPTION);
       const response = await apiCaller(
-        API_ROUTES.BILLING.RENEW_SUBSCRIPTION ||'/api/billing/renew-subscription/',
+        API_ROUTES.BILLING.RENEW_SUBSCRIPTION ||
+          '/api/billing/renew-subscription/',
         'POST',
         {},
         {},
@@ -106,13 +105,11 @@ export const useSubscription = (): UseSubscriptionReturn => {
         'json'
       );
       console.log('Renew API response:', response.data);
-      
+
       return response.data;
     } catch (err) {
       const error =
-        err instanceof Error
-          ? err
-          : new Error('Failed to renew subscription');
+        err instanceof Error ? err : new Error('Failed to renew subscription');
       setError(error);
       console.error('Renew subscription API error:', err);
       throw error;
