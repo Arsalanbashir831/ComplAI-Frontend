@@ -6,10 +6,10 @@ import { ChatSidebar } from '@/components/chat/chat-sidebar';
 
 /**
  * Chat Layout
- * 
+ *
  * Provides the layout structure for all chat-related pages.
  * Includes the sidebar navigation and message trigger context.
- * 
+ *
  * Note: Authority state is now managed by Zustand store (no provider needed)
  */
 export default function ChatLayout({

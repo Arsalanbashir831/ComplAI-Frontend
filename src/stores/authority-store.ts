@@ -11,13 +11,13 @@ import type { AuthorityValue } from '@/types/chat';
 interface AuthorityState {
   /** Currently selected authority (null when no selection) */
   selectedAuthority: AuthorityValue;
-  
+
   /** Indicates if the authority selection is locked (e.g., in existing chats) */
   isAuthorityLocked: boolean;
-  
+
   /** Loading state for authority-related operations */
   isAuthorityLoading: boolean;
-  
+
   /** Trigger to open the dropdown (for UX prompts) */
   shouldOpenDropdown: boolean;
 }
@@ -29,22 +29,22 @@ interface AuthorityState {
 interface AuthorityActions {
   /** Set the selected authority */
   setSelectedAuthority: (authority: AuthorityValue) => void;
-  
+
   /** Set the locked state of authority selection */
   setIsAuthorityLocked: (locked: boolean) => void;
-  
+
   /** Set the loading state */
   setIsAuthorityLoading: (loading: boolean) => void;
-  
+
   /** Set authority from chat data and lock it */
   setAuthorityFromChat: (chatCategory: AuthorityValue) => void;
-  
+
   /** Reset authority state to default (null, unlocked) */
   resetAuthority: () => void;
-  
+
   /** Trigger dropdown to open (for UX prompts) */
   triggerDropdownOpen: () => void;
-  
+
   /** Clear dropdown trigger */
   clearDropdownTrigger: () => void;
 }
@@ -66,17 +66,17 @@ const initialState: AuthorityState = {
 
 /**
  * Authority Store
- * 
+ *
  * Manages the state of regulatory authority/framework selection across the application.
  * Uses Zustand for efficient state management with DevTools support in development.
- * 
+ *
  * @example
  * ```tsx
  * const { selectedAuthority, setSelectedAuthority, resetAuthority } = useAuthorityStore();
- * 
+ *
  * // Set authority
  * setSelectedAuthority('SRA');
- * 
+ *
  * // Reset to default
  * resetAuthority();
  * ```
@@ -121,11 +121,7 @@ export const useAuthorityStore = create<AuthorityStore>()(
         ),
 
       resetAuthority: () =>
-        set(
-          initialState,
-          false,
-          'authority/resetAuthority'
-        ),
+        set(initialState, false, 'authority/resetAuthority'),
 
       triggerDropdownOpen: () =>
         set(
@@ -169,7 +165,7 @@ export const useIsAuthorityLoading = () =>
 export const useShouldOpenDropdown = () =>
   useAuthorityStore((state) => state.shouldOpenDropdown);
 
-/** 
+/**
  * Get all authority actions
  * Uses useShallow to prevent infinite loops by maintaining stable references
  */
@@ -185,4 +181,3 @@ export const useAuthorityActions = () =>
       clearDropdownTrigger: state.clearDropdownTrigger,
     }))
   );
-

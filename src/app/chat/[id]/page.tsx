@@ -4,8 +4,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useAuthorityActions } from '@/stores/authority-store';
 import { useChatContext } from '@/contexts/chat-context';
+import { useAuthorityActions } from '@/stores/authority-store';
 
 import { useClientOnly } from '@/lib/client-only';
 import { useChatById, useChatMessages } from '@/hooks/useChat';

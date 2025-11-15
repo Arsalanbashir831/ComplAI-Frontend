@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import apiCaller from '@/config/apiCaller';
 import type { AuthorityValue, Chat, ChatMessage, Citation } from '@/types/chat';
+import apiCaller from '@/config/apiCaller';
 
 // Types for paginated chats response
 interface PaginatedChatsResponse {
@@ -74,7 +74,7 @@ const useChat = () => {
       const response = await apiCaller(
         API_ROUTES.CHAT.CREATE,
         'POST',
-        { name, chat_category:chat_category? chat_category : '' },
+        { name, chat_category: chat_category ? chat_category : '' },
         {},
         true,
         'json'
@@ -362,7 +362,7 @@ const useChat = () => {
       formData.append('content', content);
       formData.append('stream', 'true');
       if (systemPromptCategory) {
-      formData.append('system_prompt_category', systemPromptCategory);
+        formData.append('system_prompt_category', systemPromptCategory);
       }
       if (documents) {
         if (Array.isArray(documents)) {
@@ -816,4 +816,3 @@ const useChatMessages = (chatId: string) => {
 };
 
 export { useChat, useChatById, useChatMessages };
-

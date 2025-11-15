@@ -1,11 +1,14 @@
 'use client';
 
-import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import {
+  useAuthorityActions,
+  useSelectedAuthority,
+  useShouldOpenDropdown,
+} from '@/stores/authority-store';
+import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
 
-import { MessageInput } from '@/components/chat/message-input';
-import { PromptCard } from '@/components/chat/prompt-card';
-import DisplayUsername from '@/components/common/display-username';
+import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +16,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  useAuthorityActions,
-  useSelectedAuthority,
-  useShouldOpenDropdown,
-} from '@/stores/authority-store';
-import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
+import { MessageInput } from '@/components/chat/message-input';
+import { PromptCard } from '@/components/chat/prompt-card';
+import DisplayUsername from '@/components/common/display-username';
 
 const promptCards: PromptCardType[] = [
   {
@@ -61,17 +61,22 @@ export default function ChatPage() {
 
   // Watch for trigger to open dropdown (e.g., when user tries to send without selecting)
   useEffect(() => {
-    console.log('👀 [ChatPage] shouldOpenDropdown changed:', shouldOpenDropdown);
+    console.log(
+      '👀 [ChatPage] shouldOpenDropdown changed:',
+      shouldOpenDropdown
+    );
     console.log('📊 [ChatPage] Current dropdown state:', isDropdownOpen);
-    
+
     if (shouldOpenDropdown) {
-      console.log('✅ [ChatPage] Trigger detected! Opening dropdown with pulse effect...');
+      console.log(
+        '✅ [ChatPage] Trigger detected! Opening dropdown with pulse effect...'
+      );
       setIsDropdownOpen(true);
       setShouldPulse(true);
       clearDropdownTrigger();
-      
+
       console.log('💫 [ChatPage] Dropdown opened, pulse animation started');
-      
+
       // Remove pulse animation after it completes
       setTimeout(() => {
         setShouldPulse(false);
@@ -92,7 +97,9 @@ export default function ChatPage() {
 
   // Handle dropdown open/close state changes
   const handleDropdownOpenChange = (open: boolean) => {
-    console.log(`🔀 [ChatPage] Dropdown state changing: ${isDropdownOpen} → ${open}`);
+    console.log(
+      `🔀 [ChatPage] Dropdown state changing: ${isDropdownOpen} → ${open}`
+    );
     setIsDropdownOpen(open);
     // Clear pulse when user manually interacts with dropdown
     if (open && shouldPulse) {
@@ -103,7 +110,7 @@ export default function ChatPage() {
 
   const handleSelectAuthority = (value: string) => {
     console.log('🎯 [ChatPage] Authority selected:', value);
-    setSelectedAuthority(value as typeof AUTHORITY_OPTIONS[number]['value']);
+    setSelectedAuthority(value as (typeof AUTHORITY_OPTIONS)[number]['value']);
     // Keep the dropdown open after selection
     setTimeout(() => {
       console.log('🔓 [ChatPage] Keeping dropdown open after selection');
@@ -115,7 +122,10 @@ export default function ChatPage() {
     <div className="relative h-full">
       {/* Authority Selection - Top Left Corner */}
       <div className="absolute top-4 left-4 z-10">
-        <DropdownMenu open={isDropdownOpen} onOpenChange={handleDropdownOpenChange}>
+        <DropdownMenu
+          open={isDropdownOpen}
+          onOpenChange={handleDropdownOpenChange}
+        >
           <DropdownMenuTrigger
             className={`h-9 text-sm font-medium text-blue-800 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-100 transition-all duration-150 rounded-lg px-4 border border-gray-300 shadow-sm min-w-[280px] text-left flex items-center justify-between ${
               shouldPulse ? 'animate-pulse ring-2 ring-blue-400' : ''
@@ -123,8 +133,9 @@ export default function ChatPage() {
           >
             <span className={selectedAuthority ? '' : 'text-gray-500'}>
               {selectedAuthority
-                ? AUTHORITY_OPTIONS.find((opt) => opt.value === selectedAuthority)
-                    ?.label
+                ? AUTHORITY_OPTIONS.find(
+                    (opt) => opt.value === selectedAuthority
+                  )?.label
                 : 'Select Framework'}
             </span>
             <svg

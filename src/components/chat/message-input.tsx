@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAbortController } from '@/contexts/abort-controller-context';
 import { useChatContext } from '@/contexts/chat-context';
@@ -12,16 +15,13 @@ import {
 } from '@/stores/authority-store';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { Button } from '@/components/ui/button';
-import { useChat } from '@/hooks/useChat';
-import { cn, shortenText } from '@/lib/utils';
 import { AuthorityValue } from '@/types/chat';
 import { UploadedFile } from '@/types/upload';
+import { cn, shortenText } from '@/lib/utils';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -164,25 +164,27 @@ export function MessageInput({
       promptText: promptText.trim(),
       selectedAuthority,
     });
-    
+
     if (isSending) {
       console.log('⏸️ [MessageInput] Already sending, ignoring click');
       return;
     }
-    
+
     if (!promptText.trim()) {
       console.log('⚠️ [MessageInput] Empty message, ignoring');
       return;
     }
-    
+
     if (!selectedAuthority) {
-      console.log('🚨 [MessageInput] No authority selected! Triggering dropdown...');
+      console.log(
+        '🚨 [MessageInput] No authority selected! Triggering dropdown...'
+      );
       // Trigger dropdown to open instead of showing alert - better UX
       triggerDropdownOpen();
       console.log('✅ [MessageInput] Dropdown trigger sent to store');
       return;
     }
-    
+
     console.log('✅ [MessageInput] All checks passed, sending message...');
     if ((user?.tokens ?? 0) <= 0) {
       setIsUpgradeModalOpen(true);
@@ -663,15 +665,19 @@ export function MessageInput({
                 {promptText.length} / {maxChars}
               </span>
               <Button
-              variant={promptText.trim() === '' || !selectedAuthority ? 'ghost' : 'default'}
+                variant={
+                  promptText.trim() === '' || !selectedAuthority
+                    ? 'ghost'
+                    : 'default'
+                }
                 size="icon"
                 className={cn(
                   'rounded-full transition-all duration-200',
-                  promptText.trim() === '' || !selectedAuthority ?   'bg-transparent border border-gray-300 cursor-default' : 'bg-gradient-to-r from-[#020F26] to-[#07378C]',
-               
+                  promptText.trim() === '' || !selectedAuthority
+                    ? 'bg-transparent border border-gray-300 cursor-default'
+                    : 'bg-gradient-to-r from-[#020F26] to-[#07378C]'
                 )}
                 onClick={isSending ? handleStop : handleSendMessage}
-           
                 aria-label="Send message"
               >
                 {isSending ? (
@@ -683,7 +689,14 @@ export function MessageInput({
                     alt=""
                   />
                 ) : (
-                  <Send className="h-4 w-4" color={promptText.trim() === '' || !selectedAuthority ? 'gray' : 'white'} />
+                  <Send
+                    className="h-4 w-4"
+                    color={
+                      promptText.trim() === '' || !selectedAuthority
+                        ? 'gray'
+                        : 'white'
+                    }
+                  />
                 )}
                 <span className="sr-only">Send message</span>
               </Button>

@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useAbortController } from '@/contexts/abort-controller-context';
-import { useSelectedAuthority } from '@/stores/authority-store';
 import { useChatContext } from '@/contexts/chat-context';
+import { useSelectedAuthority } from '@/stores/authority-store';
 import { motion } from 'framer-motion';
 
 import type { ChatMessage, Citation } from '@/types/chat';
