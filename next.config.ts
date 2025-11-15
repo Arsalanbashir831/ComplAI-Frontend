@@ -125,6 +125,11 @@ const nextConfig: NextConfig = {
 
   // Compress output for better performance
   compress: true,
+
+  // Set Turbopack root directory to prevent workspace root inference issues
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 export default nextConfig;
