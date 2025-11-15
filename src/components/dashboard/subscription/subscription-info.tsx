@@ -1,22 +1,39 @@
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 
 interface SubscriptionInfoProps {
   plan: string;
   startDate: string;
-  renewalDate: string;
-  autoRenew: boolean;
-  onAutoRenewChange: () => void;
+  endDate: string;
+  status: string;
+  cancelAtPeriodEnd: boolean;
+  onCancelSubscription: () => void;
+  onRenewSubscription: () => void;
+  isCancelling: boolean;
+  isRenewing: boolean;
 }
 
 export function SubscriptionInfo({
   plan,
   startDate,
-  renewalDate,
-  autoRenew,
-  onAutoRenewChange,
+  endDate,
+  status,
+  cancelAtPeriodEnd,
+  onCancelSubscription,
+  onRenewSubscription,
+  isCancelling,
+  isRenewing,
 }: SubscriptionInfoProps) {
   const isFree = plan === 'free';
+  const isActive = status === 'active' && !cancelAtPeriodEnd;
+  const isCancelled = cancelAtPeriodEnd || status === 'cancel_pending';
+
+  console.log('SubscriptionInfo render:', {
+    status,
+    cancelAtPeriodEnd,
+    isActive,
+    isCancelled,
+    isFree,
+  });
 
   return (
     <section className="w-full bg-white px-8 py-10">
@@ -39,34 +56,74 @@ export function SubscriptionInfo({
 
         {!isFree && (
           <div>
-            <dt className="text-sm font-medium text-gray-600">Renewal Date</dt>
-            <dd className="mt-1 text-lg text-gray-900">{renewalDate}</dd>
+            <dt className="text-sm font-medium text-gray-600">End Date</dt>
+            <dd className="mt-1 text-lg text-gray-900">{endDate}</dd>
+          </div>
+        )}
+
+        {!isFree && (
+          <div>
+            <dt className="text-sm font-medium text-gray-600">Status</dt>
+            <dd className="mt-1 text-lg text-gray-900 capitalize">
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  isActive
+                    ? 'bg-green-500 text-white'
+                    : isCancelled
+                      ? 'bg-yellow-500 text-white'
+                      : 'bg-red-500 text-white'
+                }`}
+              >
+                {isActive
+                  ? 'Active'
+                  : isCancelled
+                    ? 'Cancellation Pending'
+                    : 'Inactive'}
+              </span>
+            </dd>
           </div>
         )}
       </dl>
 
-      <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Label
-            htmlFor="auto-renew"
-            className="text-lg font-medium text-gray-700"
-          >
-            Auto Renew
-          </Label>
-          <Switch
-            id="auto-renew"
-            checked={autoRenew}
-            onCheckedChange={isFree ? undefined : onAutoRenewChange}
-            className="h-6 w-11 data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-300"
-          />
+      {!isFree && (
+        <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-sm text-gray-600">
+              {isActive
+                ? 'Cancel your subscription at any time. Your access will continue until the end of the current billing period.'
+                : isCancelled
+                  ? 'Your subscription is cancelled and will end at the end of the current billing period. You can undo this action.'
+                  : 'Your subscription is not currently active.'}
+            </p>
+          </div>
+          
+          {isActive ? (
+            <Button
+              variant="destructive"
+              onClick={() => {
+                console.log('Cancel button clicked');
+                onCancelSubscription();
+              }}
+              disabled={isCancelling}
+              className="min-w-[160px]"
+            >
+              {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
+            </Button>
+          ) : isCancelled ? (
+            <Button
+              variant="outline"
+              className="text-white bg-blue-600 hover:bg-blue-700 min-w-[160px]"
+              onClick={() => {
+                console.log('Undo cancellation button clicked');
+                onRenewSubscription();
+              }}
+              disabled={isRenewing}
+            >
+              {isRenewing ? 'Renewing...' : 'Undo Cancellation'}
+            </Button>
+          ) : null}
         </div>
-
-        <p className="text-sm text-gray-600">
-          {isFree
-            ? 'Upgrade to premium to enable auto-renew and ensure uninterrupted service.'
-            : `Your subscription will automatically renew on ${renewalDate}.`}
-        </p>
-      </div>
+      )}
     </section>
   );
 }

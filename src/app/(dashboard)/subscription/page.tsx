@@ -1,20 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
 import { TokenPurchaseModal } from '@/components/dashboard/subscription/token-purchase-modal';
+import apiCaller from '@/config/apiCaller';
+import { useSubscription } from '@/hooks/useSubscription';
+import { formatDateLocal } from '@/lib/utils';
+import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -168,10 +169,12 @@ async function fetchUserSubscriptions(): Promise<Subscription[]> {
 }
 
 export default function SubscriptionPage() {
-  const { user, refresh } = useUserContext();
-  // const queryClient = useQueryClient();
-  // const isSubscribing = useIsMutating() > 0;
-  const [autoRenew, setAutoRenew] = useState(true);
+  const { user } = useUserContext();
+  const queryClient = useQueryClient();
+  const { cancelSubscription, renewSubscription } = useSubscription();
+  
+  console.log('SubscriptionPage - renewSubscription:', typeof renewSubscription, renewSubscription);
+  
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const shouldOpenTokenModalRef = useRef(false);
   const hasOpenedModalRef = useRef(false);
@@ -378,41 +381,57 @@ export default function SubscriptionPage() {
     }
   });
 
-  const handleAutoRenewChange = useMutation({
+  const cancelSubscriptionMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiCaller(
-        API_ROUTES.BILLING.CANCEL_AUTO_RENEW,
-        'POST',
-        {},
-        {},
-        true,
-        'json'
-      );
-      return response.data;
+      await cancelSubscription();
     },
     onSuccess: () => {
-      setAutoRenew(!autoRenew);
-      toast.success('Auto-renewal settings updated successfully.');
-      refresh();
+      toast.success('Subscription cancelled successfully.');
+      queryClient.invalidateQueries({ queryKey: ['userSubscriptions'] });
     },
-    onError: () => {
-      toast.error('Unable to disable renew until the Contract Period is over');
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to cancel subscription. Please try again.'
+      );
     },
   });
 
-  // const handleAddCard = () => {
-  //   queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
-  // };
+  const renewSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      console.log('Renew mutation starting...', typeof renewSubscription);
+      if (!renewSubscription) {
+        throw new Error('renewSubscription function is not available');
+      }
+      await renewSubscription();
+      console.log('Renew mutation completed');
+    },
+    onSuccess: () => {
+      console.log('Renew subscription success');
+      toast.success('Subscription renewed successfully.');
+      queryClient.invalidateQueries({ queryKey: ['userSubscriptions'] });
+    },
+    onError: (error) => {
+      console.error('Renew subscription error:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to renew subscription. Please try again.'
+      );
+    },
+  });
 
-  // const handleUpdateCard = () => {
-  //   queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
-  // };
-
-  // const handleRemoveCard = () => {
-  //   queryClient.invalidateQueries({ queryKey: ['paymentCards'] });
-  // };
+  const handleRenewSubscription = () => {
+    console.log('handleRenewSubscription called, mutation:', renewSubscriptionMutation.isPending);
+    console.log('renewSubscription type:', typeof renewSubscription);
+    renewSubscriptionMutation.mutate();
+  };
 
   const isLoading = plansLoading || subscriptionsLoading;
+  
+  // Get the latest subscription data
+  const latestSubscription = userSubscriptions?.slice(-1)[0];
 
   // Early-return a full-screen skeleton overlay:
   if (isLoading) {
@@ -478,27 +497,25 @@ export default function SubscriptionPage() {
           </div>
 
           <SubscriptionInfo
-            plan={user?.subscription_type || 'Free'}
+            plan={user?.subscription_type || 'free'}
             startDate={
-              userSubscriptions?.slice(-1)[0]?.start_date
-                ? formatDateLocal(userSubscriptions.slice(-1)[0].start_date)
+              latestSubscription?.start_date
+                ? formatDateLocal(latestSubscription.start_date)
                 : 'N/A'
             }
-            renewalDate={
-              userSubscriptions?.slice(-1)[0]?.start_date
-                ? formatDateLocal(
-                    new Date(
-                      userSubscriptions.slice(-1)[0].start_date
-                    ).setFullYear(
-                      new Date(
-                        userSubscriptions.slice(-1)[0].start_date
-                      ).getFullYear() + 1
-                    ) as unknown as string
-                  )
-                : 'N/A'
+            endDate={
+              latestSubscription?.end_date
+                ? formatDateLocal(latestSubscription.end_date)
+                : latestSubscription?.current_period_end
+                  ? formatDateLocal(latestSubscription.current_period_end)
+                  : 'N/A'
             }
-            autoRenew={autoRenew && user?.subscription_type === 'subscription'}
-            onAutoRenewChange={handleAutoRenewChange.mutate}
+            status={latestSubscription?.status || 'inactive'}
+            cancelAtPeriodEnd={latestSubscription?.cancel_at_period_end || false}
+            onCancelSubscription={() => cancelSubscriptionMutation.mutate()}
+            onRenewSubscription={handleRenewSubscription}
+            isCancelling={cancelSubscriptionMutation.isPending}
+            isRenewing={renewSubscriptionMutation.isPending}
           />
           {/* <PaymentMethod
             stripeCustomer={stripeCustomer}

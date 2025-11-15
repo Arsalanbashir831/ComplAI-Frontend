@@ -46,7 +46,8 @@ export const API_ROUTES = {
     CREATE_ONE_TIME_PAYMENT_INTENT:
       '/api/billing/create-one-time-payment-intent/',
     INVOICES: '/api/billing/invoices/',
-    CANCEL_AUTO_RENEW: '/api/billing/cancel-subscription/',
+    CANCEL_SUBSCRIPTION: '/api/billing/cancel-subscription/',
+    RENEW_SUBSCRIPTION: '/api/billing/renew-subscription/',
     USER_SUBSCRIPTIONS: '/api/billing/detailed-subscription/',
     MONTHLY_BILLING_PROCESS: '/api/billing/create-subscription-checkout/',
     ONE_TIME_PAYMENT_BILLING_PROCESS: '/api/billing/create-onetime-checkout/',
