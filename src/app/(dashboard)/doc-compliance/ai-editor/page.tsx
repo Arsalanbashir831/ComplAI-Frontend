@@ -1,14 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useDocComplianceStore } from '@/stores/use-doc-compliance-store';
+import { useEditorStore } from '@/stores/use-editor-store';
 import { useRouter } from 'next/navigation';
-import { useDocComplianceStore } from '@/store/use-doc-compliance-store';
-import { useEditorStore } from '@/store/use-editor-store';
+import { useCallback, useEffect, useState } from 'react';
 
-import { ComplianceResult } from '@/types/doc-compliance';
-import { applySuggestionAcross } from '@/lib/resolve-issues'; // Ensure this path is correct
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { applySuggestionAcross } from '@/lib/resolve-issues'; // Ensure this path is correct
+import { ComplianceResult } from '@/types/doc-compliance';
 // --- Import necessary types and components ---
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { Editor } from '@/components/dashboard/doc-compliance/editor/editor';

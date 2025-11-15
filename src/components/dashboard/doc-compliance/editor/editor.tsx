@@ -1,10 +1,9 @@
 'use client';
 
 // import { Import } from "@tiptap-pro/extension-import";
-import { useEffect } from 'react';
 import { FontSizeExtension } from '@/extensions/font-size';
 import { LineHeightExtension } from '@/extensions/line-height';
-import { useEditorStore } from '@/store/use-editor-store';
+import { useEditorStore } from '@/stores/use-editor-store';
 import { Color } from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
 import Highlight from '@tiptap/extension-highlight';
@@ -21,6 +20,7 @@ import TextStyle from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useEffect } from 'react';
 import ImageResize from 'tiptap-extension-resize-image';
 
 import { ComplianceResult } from '@/types/doc-compliance';
