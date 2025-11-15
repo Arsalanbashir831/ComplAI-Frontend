@@ -4,7 +4,12 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
-import { useAuthority } from '@/contexts/authority-context';
+import {
+  useAuthorityActions,
+  useIsAuthorityLoading,
+  useIsAuthorityLocked,
+  useSelectedAuthority,
+} from '@/stores/authority-store';
 import { Plus, Trash2 } from 'lucide-react';
 
 import { AUTHORITY_OPTIONS } from '@/types/chat';
@@ -32,12 +37,10 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ currentChatId }: ChatHeaderProps) {
   const { deleteChat } = useChat();
-  const {
-    selectedAuthority,
-    setSelectedAuthority,
-    isAuthorityLocked,
-    isAuthorityLoading,
-  } = useAuthority();
+  const selectedAuthority = useSelectedAuthority();
+  const isAuthorityLocked = useIsAuthorityLocked();
+  const isAuthorityLoading = useIsAuthorityLoading();
+  const { setSelectedAuthority } = useAuthorityActions();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -78,14 +81,14 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                   </div>
                 ) : (
                   <Select
-                    value={selectedAuthority}
+                    value={selectedAuthority || undefined}
                     onValueChange={setSelectedAuthority}
                     disabled={isAuthorityLocked}
                   >
                     <SelectTrigger
                       className={` h-8 text-xs font-medium border-0 bg-gray-50 hover:bg-gray-100 focus:ring-0 focus:bg-white focus:shadow-sm transition-all duration-150 rounded-md px-3 ${isAuthorityLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                      <SelectValue />
+                      <SelectValue placeholder="Select Framework" />
                     </SelectTrigger>
                     <SelectContent className="w-[350px] border border-gray-200 shadow-lg rounded-md bg-white">
                       {AUTHORITY_OPTIONS.map((option) => (

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useAbortController } from '@/contexts/abort-controller-context';
-import { useAuthority } from '@/contexts/authority-context';
+import { useSelectedAuthority } from '@/stores/authority-store';
 import { useChatContext } from '@/contexts/chat-context';
 import { motion } from 'framer-motion';
 
@@ -69,7 +69,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   const [isReasoningExpanded, setIsReasoningExpanded] = useState(false);
 
   const { setMessages } = useChatContext();
-  const { selectedAuthority } = useAuthority();
+  const selectedAuthority = useSelectedAuthority();
   const { abortControllerRef } = useAbortController();
   const { sendMessage, addMessageNoStream } = useChat();
 
@@ -249,6 +249,11 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
     // Get the correct authority from the authority context
     const chatCategory = selectedAuthority;
+
+    if (!chatCategory) {
+      console.error('No authority selected for retry');
+      return;
+    }
 
     // Remove the error message
     setMessages((prev) => prev.filter((msg) => msg.id !== message.id));

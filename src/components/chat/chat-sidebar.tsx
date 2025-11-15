@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
-import { useAuthority } from '@/contexts/authority-context';
+import { useAuthorityActions } from '@/stores/authority-store';
 import { LayoutDashboard, MessageSquareText, Search } from 'lucide-react';
 
 import type { Chat } from '@/types/chat';
@@ -19,7 +19,7 @@ import { Input } from '../ui/input';
 
 export function ChatSidebar() {
   const { chats, isLoading, error } = useChat();
-  const { setAuthorityFromChat } = useAuthority();
+  const { setAuthorityFromChat } = useAuthorityActions();
   const [isOpen, setIsOpen] = useState(false);
 
   // For client-side filtering

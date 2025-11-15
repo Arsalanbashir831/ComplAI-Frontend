@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useAuthority } from '@/contexts/authority-context';
+import { useAuthorityActions } from '@/stores/authority-store';
 import { useChatContext } from '@/contexts/chat-context';
 
 import { useClientOnly } from '@/lib/client-only';
@@ -29,7 +29,7 @@ export default function SpecificChatPage() {
   const isClient = useClientOnly();
 
   const { messages, setMessages } = useChatContext();
-  const { setAuthorityFromChat, setIsAuthorityLoading } = useAuthority();
+  const { setAuthorityFromChat, setIsAuthorityLoading } = useAuthorityActions();
   const { data: chatMessagesData, isLoading } = useChatMessages(chatId);
   const { data: chatData, isLoading: isChatLoading } = useChatById(chatId);
 
