@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   useAuthorityActions,
   useSelectedAuthority,
   useShouldOpenDropdown,
 } from '@/stores/authority-store';
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
+import { MessageInput } from '@/components/chat/message-input';
+import { PromptCard } from '@/components/chat/prompt-card';
+import DisplayUsername from '@/components/common/display-username';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +18,39 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageInput } from '@/components/chat/message-input';
-import { PromptCard } from '@/components/chat/prompt-card';
-import DisplayUsername from '@/components/common/display-username';
+import { cn } from '@/lib/utils';
+import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
+
+// Authority color schemes
+const AUTHORITY_COLORS = {
+  SRA: {
+    bg: 'bg-yellow-50',
+    text: 'text-yellow-700',
+    border: 'border-yellow-300',
+    hover: 'hover:bg-yellow-100',
+    selectedBg: 'bg-yellow-100',
+    selectedText: 'text-yellow-800',
+    selectedBorder: 'border-yellow-400',
+  },
+  LAA: {
+    bg: 'bg-green-50',
+    text: 'text-green-700',
+    border: 'border-green-300',
+    hover: 'hover:bg-green-100',
+    selectedBg: 'bg-green-100',
+    selectedText: 'text-green-800',
+    selectedBorder: 'border-green-400',
+  },
+  AML: {
+    bg: 'bg-blue-50',
+    text: 'text-blue-700',
+    border: 'border-blue-300',
+    hover: 'hover:bg-blue-100',
+    selectedBg: 'bg-blue-100',
+    selectedText: 'text-blue-800',
+    selectedBorder: 'border-blue-400',
+  },
+} as const;
 
 const promptCards: PromptCardType[] = [
   {
@@ -127,11 +159,15 @@ export default function ChatPage() {
           onOpenChange={handleDropdownOpenChange}
         >
           <DropdownMenuTrigger
-            className={`h-9 text-sm font-medium text-blue-800 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-100 transition-all duration-150 rounded-lg px-4 border border-gray-300 shadow-sm min-w-[280px] text-left flex items-center justify-between ${
-              shouldPulse ? 'animate-pulse ring-2 ring-blue-400' : ''
-            }`}
+            className={cn(
+              'h-9 text-sm font-medium transition-all duration-150 rounded-lg px-4 border shadow-sm min-w-[280px] text-left flex items-center justify-between outline-none focus:outline-none focus:ring-0',
+              selectedAuthority && AUTHORITY_COLORS[selectedAuthority]
+                ? `${AUTHORITY_COLORS[selectedAuthority].selectedBg} ${AUTHORITY_COLORS[selectedAuthority].selectedText} ${AUTHORITY_COLORS[selectedAuthority].selectedBorder} hover:opacity-90`
+                : `bg-white text-gray-700 border-gray-300 hover:bg-gray-100`,
+              shouldPulse && 'animate-pulse ring-2 ring-blue-400'
+            )}
           >
-            <span className={selectedAuthority ? '' : 'text-gray-500'}>
+            <span className={selectedAuthority ? 'font-semibold' : 'text-gray-500'}>
               {selectedAuthority
                 ? AUTHORITY_OPTIONS.find(
                     (opt) => opt.value === selectedAuthority
@@ -152,23 +188,33 @@ export default function ChatPage() {
               />
             </svg>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[350px] border border-gray-200 rounded-lg bg-white shadow-lg">
-            {AUTHORITY_OPTIONS.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onClick={() => handleSelectAuthority(option.value)}
-                className="text-sm px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 cursor-pointer rounded-md transition-colors"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span className="font-medium text-blue-800">
-                    {option.label}
-                  </span>
-                  <span className="text-gray-500 text-xs ml-3">
-                    ({option.abbreviation})
-                  </span>
-                </div>
-              </DropdownMenuItem>
-            ))}
+          <DropdownMenuContent className="w-[350px] border border-gray-200 rounded-lg bg-white shadow-lg p-2 outline-none focus:outline-none">
+            {AUTHORITY_OPTIONS.map((option) => {
+              const colors = AUTHORITY_COLORS[option.value];
+              const isSelected = selectedAuthority === option.value;
+              
+              return (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() => handleSelectAuthority(option.value)}
+                  className={cn(
+                    'text-sm px-4 py-3 cursor-pointer rounded-md transition-all duration-200 mb-1 outline-none focus:outline-none focus:ring-0',
+                    isSelected
+                      ? `${colors.selectedBg} ${colors.selectedText} ${colors.border} border-2 ${colors.hover}`
+                      : `border border-transparent hover:shadow-sm `
+                  )}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className={cn('font-medium', isSelected && 'font-semibold')}>
+                      {option.label}
+                    </span>
+                    <span className={cn('text-xs ml-3', isSelected ? colors.selectedText : 'text-gray-500')}>
+                      ({option.abbreviation})
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

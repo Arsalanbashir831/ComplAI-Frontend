@@ -15,6 +15,38 @@ import { Plus, Trash2 } from 'lucide-react';
 import { AUTHORITY_OPTIONS } from '@/types/chat';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+// Authority color schemes
+const AUTHORITY_COLORS = {
+  SRA: {
+    bg: 'bg-yellow-50',
+    text: 'text-yellow-700',
+    border: 'border-yellow-300',
+    hover: 'hover:bg-yellow-100',
+    selectedBg: 'bg-yellow-100',
+    selectedText: 'text-yellow-800',
+    selectedBorder: 'border-yellow-400',
+  },
+  LAA: {
+    bg: 'bg-green-50',
+    text: 'text-green-700',
+    border: 'border-green-300',
+    hover: 'hover:bg-green-100',
+    selectedBg: 'bg-green-100',
+    selectedText: 'text-green-800',
+    selectedBorder: 'border-green-400',
+  },
+  AML: {
+    bg: 'bg-blue-50',
+    text: 'text-blue-700',
+    border: 'border-blue-300',
+    hover: 'hover:bg-blue-100',
+    selectedBg: 'bg-blue-100',
+    selectedText: 'text-blue-800',
+    selectedBorder: 'border-blue-400',
+  },
+} as const;
 import {
   Select,
   SelectContent,
@@ -86,23 +118,42 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                     disabled={isAuthorityLocked}
                   >
                     <SelectTrigger
-                      className={` h-8 text-xs font-medium border-0 bg-gray-50 hover:bg-gray-100 focus:ring-0 focus:bg-white focus:shadow-sm transition-all duration-150 rounded-md px-3 ${isAuthorityLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      className={cn(
+                        'h-8 text-xs font-medium border transition-all duration-150 rounded-md px-3',
+                        selectedAuthority && AUTHORITY_COLORS[selectedAuthority]
+                          ? `${AUTHORITY_COLORS[selectedAuthority].selectedBg} ${AUTHORITY_COLORS[selectedAuthority].selectedText} ${AUTHORITY_COLORS[selectedAuthority].selectedBorder} hover:opacity-90`
+                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100',
+                        isAuthorityLocked && 'opacity-60 cursor-not-allowed',
+                        'focus:ring-0 focus:bg-white focus:shadow-sm'
+                      )}
                     >
                       <SelectValue placeholder="Select Framework" />
                     </SelectTrigger>
-                    <SelectContent className="w-[350px] border border-gray-200 shadow-lg rounded-md bg-white">
-                      {AUTHORITY_OPTIONS.map((option) => (
-                        <SelectItem
-                          key={option.value}
-                          value={option.value}
-                          className="text-xs px-3 py-2 hover:bg-gray-50 focus:bg-gray-50 cursor-pointer rounded-sm"
-                        >
-                          <span className="font-medium">{option.label}</span>
-                          <span className="text-gray-500 ml-1">
-                            ({option.abbreviation})
-                          </span>
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="w-[350px] border border-gray-200 shadow-lg rounded-md bg-white p-2">
+                      {AUTHORITY_OPTIONS.map((option) => {
+                        const colors = AUTHORITY_COLORS[option.value];
+                        const isSelected = selectedAuthority === option.value;
+                        
+                        return (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            className={cn(
+                              'text-xs px-3 py-2 cursor-pointer rounded-md transition-all duration-200 mb-1',
+                              isSelected
+                                ? `${colors.selectedBg} ${colors.selectedText} ${colors.border} border-2`
+                                : `${colors.bg} ${colors.text} ${colors.hover} border border-transparent`
+                            )}
+                          >
+                            <span className={cn('font-medium', isSelected && 'font-semibold')}>
+                              {option.label}
+                            </span>
+                            <span className={cn('ml-1 text-xs', isSelected ? colors.selectedText : 'text-gray-500')}>
+                              ({option.abbreviation})
+                            </span>
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 )}
