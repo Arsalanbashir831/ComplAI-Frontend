@@ -1,16 +1,15 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   useAuthorityActions,
   useSelectedAuthority,
   useShouldOpenDropdown,
 } from '@/stores/authority-store';
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
-import { MessageInput } from '@/components/chat/message-input';
-import { PromptCard } from '@/components/chat/prompt-card';
-import DisplayUsername from '@/components/common/display-username';
+import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,8 +17,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
-import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
+import { MessageInput } from '@/components/chat/message-input';
+import { PromptCard } from '@/components/chat/prompt-card';
+import DisplayUsername from '@/components/common/display-username';
 
 // Authority color schemes
 const AUTHORITY_COLORS = {
