@@ -2,10 +2,10 @@ import { BriefcaseBusiness, Building, Mail, User2 } from 'lucide-react';
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
-import { DatePicker } from '@/components/common/date-picker';
-import { PhoneInput } from '@/components/dashboard/profile/phone-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/common/date-picker';
+import { PhoneInput } from '@/components/dashboard/profile/phone-input';
 
 export const profileSchema = z.object({
   id: z.string(),

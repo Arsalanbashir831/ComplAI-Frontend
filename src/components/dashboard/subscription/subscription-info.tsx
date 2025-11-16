@@ -32,12 +32,12 @@ export function SubscriptionInfo({
   // Calculate renewal date (1 year from start date) when subscription is active
   const getRenewalDate = () => {
     if (!rawStartDate) return endDate;
-    
+
     try {
       const start = new Date(rawStartDate);
       const renewal = new Date(start);
       renewal.setFullYear(renewal.getFullYear() + 1);
-      
+
       return renewal.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',

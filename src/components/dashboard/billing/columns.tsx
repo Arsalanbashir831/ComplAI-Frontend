@@ -3,11 +3,11 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Download } from 'lucide-react';
 
-import { SafeDateDisplay } from '@/components/common/safe-date-display';
+import type { Invoice } from '@/types/invoice';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import type { Invoice } from '@/types/invoice';
+import { SafeDateDisplay } from '@/components/common/safe-date-display';
 
 export const columns: ColumnDef<Invoice>[] = [
   {
