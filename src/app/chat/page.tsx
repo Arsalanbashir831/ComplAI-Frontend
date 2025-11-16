@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   useAuthorityActions,
   useSelectedAuthority,
   useShouldOpenDropdown,
 } from '@/stores/authority-store';
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
-import { cn } from '@/lib/utils';
+import { MessageInput } from '@/components/chat/message-input';
+import { PromptCard } from '@/components/chat/prompt-card';
+import DisplayUsername from '@/components/common/display-username';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,9 +18,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageInput } from '@/components/chat/message-input';
-import { PromptCard } from '@/components/chat/prompt-card';
-import DisplayUsername from '@/components/common/display-username';
+import { cn } from '@/lib/utils';
+import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
 
 // Authority color schemes
 const AUTHORITY_COLORS = {
@@ -56,22 +56,22 @@ const promptCards: PromptCardType[] = [
   {
     id: '1',
     icon: <ClipboardList className="h-5 w-5" />,
-    title: 'Write me a checklist for opening a new LAA Office',
+    title: 'Create a compliance checklist for onboarding new clients.',
   },
   {
     id: '2',
     icon: <Mail className="h-5 w-5" />,
-    title: 'Generate an email to the Solicitors Regulation Authority',
+    title: 'Draft a letter to a client about returning unclaimed funds.',
   },
   {
     id: '3',
-    icon: <ShieldCheck className="h-5 w-5" />,
-    title: 'What are the key principles of Anti-money laundering?',
+    icon: <UserRound className="h-5 w-5" />,
+    title: 'Review my client care letter for SRA compliance.',
   },
   {
     id: '4',
-    icon: <UserRound className="h-5 w-5" />,
-    title: 'Generate a client care letter for our firm',
+    icon: <ShieldCheck className="h-5 w-5" />,
+    title: 'Prepare a risk assessment for this conveyancing transaction.',
   },
 ];
 
