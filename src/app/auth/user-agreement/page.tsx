@@ -75,7 +75,9 @@ function UserAgreementPageInner() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
         }
-        console.log('Top-up flow: localStorage flag set, will redirect to subscription page');
+        console.log(
+          'Top-up flow: localStorage flag set, will redirect to subscription page'
+        );
       }
 
       toast.success('Successfully signed in!');

@@ -169,8 +169,6 @@ function IdentityVerificationFormInner() {
     return baseUrl;
   };
 
-
-
   // Helper function to handle verification errors
   const handleVerificationError = (error: unknown): void => {
     if (axios.isAxiosError(error) && error.response) {
