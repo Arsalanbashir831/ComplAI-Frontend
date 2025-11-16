@@ -1,18 +1,19 @@
 'use client';
 
-import { Suspense } from 'react';
-import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
 
+import { useSearchParams } from 'next/navigation';
 import {
   Form,
   FormControl,
@@ -23,6 +24,7 @@ import {
 } from '../ui/form';
 import { Separator } from '../ui/separator';
 import AuthFormLayout from './form-layout';
+import { OAuthButtons } from './outh-buttons';
 
 // import { useSearchParams } from 'next/navigation';
 // import { useSubscription } from '@/hooks/useSubscription';
@@ -39,8 +41,8 @@ const formSchema = z.object({
 
 function LoginFormInner() {
   const { signIn, loading, error } = useAuth();
-  // const searchParams = useSearchParams();
-  // const subscription = searchParams.get('subscription');
+  const searchParams = useSearchParams();
+  const subscription = searchParams.get('subscription');
   // const {handleSubscription} = useSubscription()
   //   useEffect(() => {
   //     if (!subscription) return;
@@ -99,19 +101,19 @@ function LoginFormInner() {
     <AuthFormLayout
       title="Login to your account"
       subtitle="Glad to see you again! Please enter your details."
-      // footerText="Don't have an account?"
-      // footerLinkHref={
-      //   subscription
-      //     ? subscription === 'topup'
-      //       ? `${ROUTES.SIGN_UP}?subscription=topup`
-      //       : `${ROUTES.SIGN_UP}?subscription=monthly`
-      //     : ROUTES.SIGN_UP
-      // }
-      // footerLinkText="Sign up"
+      footerText="Don't have an account?"
+      footerLinkHref={
+        subscription
+          ? subscription === 'topup'
+            ? `${ROUTES.SIGN_UP}?subscription=topup`
+            : `${ROUTES.SIGN_UP}?subscription=monthly`
+          : ROUTES.SIGN_UP
+      }
+      footerLinkText="Sign up"
     >
-      {/* <div className="className='flex justify-center items-center'">
+      <div className="className='flex justify-center items-center'">
         <OAuthButtons />
-      </div> */}
+      </div>
 
       <div className="flex gap-2 items-center justify-center overflow-hidden">
         <Separator className="bg-[#BABABA]" />
@@ -210,9 +212,9 @@ function LoginFormFallback() {
     <AuthFormLayout
       title="Login to your account"
       subtitle="Glad to see you again! Please enter your details."
-      // footerText="Don't have an account?"
-      // footerLinkHref={ROUTES.SIGN_UP}
-      // footerLinkText="Sign up"
+      footerText="Don't have an account?"
+      footerLinkHref={ROUTES.SIGN_UP}
+      footerLinkText="Sign up"
     >
       <div className="space-y-4 animate-pulse">
         <div className="h-10 bg-gray-200 rounded"></div>
