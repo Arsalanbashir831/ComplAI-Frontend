@@ -158,6 +158,9 @@ function IdentityVerificationFormInner() {
     const baseUrl = `${ROUTES.USER_AGGREMENT}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password || '')}`;
 
     if (subscription === 'topup') {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
+      }
       return `${baseUrl}&subscription=topup`;
     } else if (subscription === 'monthly') {
       return `${baseUrl}&subscription=monthly`;
@@ -165,6 +168,8 @@ function IdentityVerificationFormInner() {
 
     return baseUrl;
   };
+
+
 
   // Helper function to handle verification errors
   const handleVerificationError = (error: unknown): void => {

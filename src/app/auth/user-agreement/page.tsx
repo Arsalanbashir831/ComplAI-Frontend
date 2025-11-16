@@ -20,6 +20,7 @@ function UserAgreementPageInner() {
 
   const email = searchParams.get('email');
   const password = searchParams.get('password');
+  const subscription = searchParams.get('subscription');
 
   // Validate required parameters on mountt
   useEffect(() => {
@@ -67,6 +68,15 @@ function UserAgreementPageInner() {
       const signInPromise = signIn({ email, password, type: 'new' });
 
       await Promise.race([signInPromise, timeoutPromise]);
+
+      // Handle subscription-based redirection
+      if (subscription === 'topup') {
+        // Set localStorage flag for opening token modal
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('openTokenModalOnSubscriptionPage', 'true');
+        }
+        console.log('Top-up flow: localStorage flag set, will redirect to subscription page');
+      }
 
       toast.success('Successfully signed in!');
       console.log('Sign in successful, redirecting...');

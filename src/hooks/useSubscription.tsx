@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
+import { useCallback, useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 
@@ -33,7 +33,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
         : API_ROUTES.BILLING.ONE_TIME_PAYMENT_BILLING_PROCESS;
 
       const payload: Record<string, number> = isMonthly
-        ? { subscription_plan_id: 2 }
+        ? { subscription_plan_id: 3 }
         : { product_id: 2 };
 
       try {

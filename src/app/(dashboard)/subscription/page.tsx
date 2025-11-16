@@ -182,6 +182,7 @@ export default function SubscriptionPage() {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const shouldOpenTokenModalRef = useRef(false);
   const hasOpenedModalRef = useRef(false);
+  const [shouldOpenModal, setShouldOpenModal] = useState(false);
 
   // const { data: paymentCards = [], isLoading: cardsLoading } = useQuery<
   //   PaymentCard[]
@@ -204,35 +205,37 @@ export default function SubscriptionPage() {
 
   // Check localStorage for modal open intent on mount
   useEffect(() => {
-    if (typeof window !== 'undefined' && !shouldOpenTokenModalRef.current) {
+    if (typeof window !== 'undefined') {
       const shouldOpen = localStorage.getItem(
         'openTokenModalOnSubscriptionPage'
       );
-      if (shouldOpen === 'true') {
+      if (shouldOpen === 'true' && !shouldOpenTokenModalRef.current) {
+        console.log('🔔 Found localStorage flag to open token modal');
         shouldOpenTokenModalRef.current = true;
+        setShouldOpenModal(true);
         // Clear the flag immediately to prevent reopening on refresh
         localStorage.removeItem('openTokenModalOnSubscriptionPage');
-        console.log('Token modal will open after plans load');
       }
     }
   }, []); // Only run once on mount
 
-  // Open modal when plans are ready
+  // Open modal when plans are ready and flag is set
   useEffect(() => {
     if (
-      shouldOpenTokenModalRef.current &&
+      shouldOpenModal &&
       !hasOpenedModalRef.current &&
       !plansLoading &&
       fetchedPlans.length > 0
     ) {
       // Plans are loaded, now open the modal
+      console.log('✅ Opening token purchase modal');
       hasOpenedModalRef.current = true;
+      // Small delay to ensure everything is rendered
       setTimeout(() => {
-        console.log('Opening token modal');
         setIsTokenModalOpen(true);
-      }, 100);
+      }, 300);
     }
-  }, [plansLoading, fetchedPlans]);
+  }, [shouldOpenModal, plansLoading, fetchedPlans]);
 
   // Query to fetch the stripe customer info
   // const { data: stripeCustomer, } = useQuery({
@@ -540,9 +543,15 @@ export default function SubscriptionPage() {
 
       <TokenPurchaseModal
         isOpen={isTokenModalOpen}
-        onClose={() => setIsTokenModalOpen(false)}
-        onPurchase={(cost) => {
+        onClose={() => {
+          console.log('🔴 Token modal closed');
           setIsTokenModalOpen(false);
+          setShouldOpenModal(false);
+        }}
+        onPurchase={(cost) => {
+          console.log('💰 Token purchase initiated with cost:', cost);
+          setIsTokenModalOpen(false);
+          setShouldOpenModal(false);
           OneTimePaymentMutation.mutate(cost);
         }}
       />
