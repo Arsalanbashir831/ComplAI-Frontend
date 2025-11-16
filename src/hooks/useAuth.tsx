@@ -1,11 +1,11 @@
 // hooks/useAuth.ts
 'use client';
 
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 
@@ -75,11 +75,13 @@ export function useAuth() {
 
       // Check if email is verified
       if (!userProfile.email_verified) {
-        console.log('⚠️ [useAuth] Email not verified, redirecting to verification page');
-        
+        console.log(
+          '⚠️ [useAuth] Email not verified, redirecting to verification page'
+        );
+
         // Stop loading state before redirect
         setLoading(false);
-        
+
         // Trigger resend OTP for the user (non-blocking)
         apiCaller(
           API_ROUTES.AUTH.RESEND_VERIFICATION,
@@ -97,11 +99,14 @@ export function useAuth() {
           });
 
         // Immediately redirect to verify-identity page with email
-        console.log('🔀 [useAuth] Redirecting to:', `${ROUTES.VERIFY_IDENTITY}?email=${encodeURIComponent(email)}&type=login`);
+        console.log(
+          '🔀 [useAuth] Redirecting to:',
+          `${ROUTES.VERIFY_IDENTITY}?email=${encodeURIComponent(email)}&type=login`
+        );
         router.push(
           `${ROUTES.VERIFY_IDENTITY}?email=${encodeURIComponent(email)}&type=login`
         );
-        
+
         // Exit function immediately
         return;
       }

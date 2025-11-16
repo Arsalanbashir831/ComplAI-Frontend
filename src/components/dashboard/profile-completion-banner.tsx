@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, X } from 'lucide-react';
 import Link from 'next/link';
-
 import { ROUTES } from '@/constants/routes';
-import useUserData from '@/hooks/useUserData';
+import { AlertCircle, X } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
+import useUserData from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 
 export function ProfileCompletionBanner() {
@@ -34,7 +34,8 @@ export function ProfileCompletionBanner() {
 
   // Get missing fields for display
   const missingFields: string[] = [];
-  if (!user.username || user.username.length < 3) missingFields.push('Username');
+  if (!user.username || user.username.length < 3)
+    missingFields.push('Username');
   if (!user.phone_number || user.phone_number.length === 0)
     missingFields.push('Phone Number');
   if (!user.job_title || user.job_title.length < 2)
@@ -91,4 +92,3 @@ export function ProfileCompletionBanner() {
     </div>
   );
 }
-

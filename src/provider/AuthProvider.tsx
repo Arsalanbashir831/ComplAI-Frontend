@@ -68,9 +68,10 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const isAuthPage = pathname?.startsWith('/auth') ?? false;
       // Don't redirect if user is on verify-identity page for email verification after login
       // Check both searchParams AND localStorage (userEmail exists means they just logged in with unverified email)
-      const isVerifyIdentityForLogin = 
-        pathname === '/auth/verify-identity' && 
-        (searchParams.get('type') === 'login' || (userEmail && searchParams.get('email')));
+      const isVerifyIdentityForLogin =
+        pathname === '/auth/verify-identity' &&
+        (searchParams.get('type') === 'login' ||
+          (userEmail && searchParams.get('email')));
 
       console.log('🔍 [AuthProvider] Check results:', {
         isAuthPage,
@@ -137,10 +138,14 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             // If on auth page, redirect to dashboard (except for email verification)
             if (isAuthPage && !isVerifyIdentityForLogin) {
-              console.log('🚀 [AuthProvider] Redirecting to dashboard after token refresh...');
+              console.log(
+                '🚀 [AuthProvider] Redirecting to dashboard after token refresh...'
+              );
               router.push(ROUTES.DASHBOARD);
             } else if (isVerifyIdentityForLogin) {
-              console.log('✋ [AuthProvider] Staying on verify-identity page after token refresh');
+              console.log(
+                '✋ [AuthProvider] Staying on verify-identity page after token refresh'
+              );
             }
             setIsValidating(false);
             return;

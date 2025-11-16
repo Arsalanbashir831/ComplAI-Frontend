@@ -118,7 +118,7 @@ function IdentityVerificationFormInner() {
           if (typeof window !== 'undefined') {
             localStorage.removeItem('userEmail');
           }
-          
+
           // After successful verification, redirect to dashboard
           setTimeout(() => {
             router.push(ROUTES.DASHBOARD);

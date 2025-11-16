@@ -3,11 +3,11 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Download } from 'lucide-react';
 
-import { SafeDateDisplay } from '@/components/common/safe-date-display';
+import type { Invoice } from '@/types/invoice';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import type { Invoice } from '@/types/invoice';
+import { SafeDateDisplay } from '@/components/common/safe-date-display';
 
 export const columns: ColumnDef<Invoice>[] = [
   {
@@ -17,11 +17,7 @@ export const columns: ColumnDef<Invoice>[] = [
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       const srNo = pageIndex * pageSize + row.index + 1;
-      return (
-        <div className="font-medium text-xs text-[#667085]">
-          {srNo}
-        </div>
-      );
+      return <div className="font-medium text-xs text-[#667085]">{srNo}</div>;
     },
     enableSorting: false,
   },

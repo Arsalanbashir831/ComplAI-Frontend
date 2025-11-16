@@ -2,8 +2,9 @@ import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 
-const nextPlugin = require('@next/eslint-plugin-next');
+// Flat config-friendly packages
 const tseslint = require('typescript-eslint');
+const nextPlugin = require('@next/eslint-plugin-next');
 const reactHooks = require('eslint-plugin-react-hooks');
 
 const eslintConfig = [
@@ -18,9 +19,17 @@ const eslintConfig = [
       'logs/**',
     ],
   },
+  // TypeScript + ESLint recommended config
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
     plugins: {
       '@next/next': nextPlugin,
       'react-hooks': reactHooks,
@@ -28,10 +37,6 @@ const eslintConfig = [
     rules: {
       ...nextPlugin.configs['core-web-vitals'].rules,
       ...reactHooks.configs.recommended.rules,
-      // Disable overly strict React Compiler rules that flag common patterns
-      'react-hooks/set-state-in-effect': 'off',
-      'react-hooks/refs': 'warn', // Downgrade to warning instead of error
-      'react-hooks/incompatible-library': 'warn', // Already a warning, but ensure it doesn't block commits
     },
   },
 ];

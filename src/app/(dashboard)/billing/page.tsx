@@ -1,18 +1,18 @@
 'use client';
 
-import { API_ROUTES } from '@/constants/apiRoutes';
 import { useEffect, useState } from 'react';
+import { API_ROUTES } from '@/constants/apiRoutes';
 
+import type { Invoice } from '@/types/invoice';
+import apiCaller from '@/config/apiCaller';
+import { Card, CardHeader } from '@/components/ui/card';
 import InvoiceTable from '@/components/dashboard/billing/invoice-table';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
-import { Card, CardHeader } from '@/components/ui/card';
-import apiCaller from '@/config/apiCaller';
-import type { Invoice } from '@/types/invoice';
 
 export default function BillingPage() {
   const [billingData, setBillingData] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     const fetchBillingData = async () => {
       try {
@@ -24,16 +24,16 @@ export default function BillingPage() {
           true,
           'json'
         );
-        
+
         // API returns an object with "invoices" and "charges" properties
         const apiInvoices = response.data.invoices || [];
         const apiCharges = response.data.charges || [];
-        
+
         console.log('📊 [Billing] Fetched data:', {
           invoicesCount: apiInvoices.length,
           chargesCount: apiCharges.length,
         });
-        
+
         // Transform invoices
         const transformedInvoices: Invoice[] = apiInvoices.map(
           (inv: {
@@ -55,7 +55,7 @@ export default function BillingPage() {
             type: 'invoice' as const,
           })
         );
-        
+
         // Transform charges
         const transformedCharges: Invoice[] = apiCharges.map(
           (charge: {
@@ -71,25 +71,30 @@ export default function BillingPage() {
             invoiceId: charge.id,
             billingDate: new Date(charge.created * 1000).toISOString(),
             amount: charge.amount / 100,
-            plan: charge.description || 
-                  (charge.metadata?.tokens ? `${charge.metadata.tokens} Tokens` : 'One-time Payment'),
+            plan:
+              charge.description ||
+              (charge.metadata?.tokens
+                ? `${charge.metadata.tokens} Tokens`
+                : 'One-time Payment'),
             status: charge.status === 'succeeded' ? 'paid' : charge.status,
             downloadLink: charge.receipt_url || '',
             type: 'charge' as const,
             receiptUrl: charge.receipt_url,
           })
         );
-        
+
         // Combine both arrays and sort by billing date (newest first)
         const combined = [...transformedInvoices, ...transformedCharges].sort(
-          (a, b) => new Date(b.billingDate).getTime() - new Date(a.billingDate).getTime()
+          (a, b) =>
+            new Date(b.billingDate).getTime() -
+            new Date(a.billingDate).getTime()
         );
-        
+
         console.log('✅ [Billing] Combined and sorted:', {
           total: combined.length,
           sample: combined.slice(0, 3),
         });
-        
+
         setBillingData(combined);
       } catch (error) {
         console.error('Failed to fetch billing data:', error);
