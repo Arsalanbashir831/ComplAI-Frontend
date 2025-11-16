@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,7 +14,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 
 interface TokenPurchaseModalProps {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export function TokenPurchaseModal({
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
+
     // Allow empty input or valid decimal numbers
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
       setAmount(value);
