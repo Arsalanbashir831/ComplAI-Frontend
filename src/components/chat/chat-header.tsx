@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   useAuthorityActions,
@@ -11,10 +8,10 @@ import {
   useSelectedAuthority,
 } from '@/stores/authority-store';
 import { Plus, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { AUTHORITY_OPTIONS } from '@/types/chat';
-import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -29,6 +26,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useChat } from '@/hooks/useChat';
+import { cn } from '@/lib/utils';
+import { AUTHORITY_OPTIONS } from '@/types/chat';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 
@@ -114,7 +114,8 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                 ) : (
                   <Select
                     value={selectedAuthority || undefined}
-                    onValueChange={setSelectedAuthority}
+                    onValueChange={(value) => setSelectedAuthority(value as (typeof AUTHORITY_OPTIONS)[number]['value'] 
+                    || null)}
                     disabled={isAuthorityLocked}
                   >
                     <SelectTrigger
