@@ -2,10 +2,10 @@ import { BriefcaseBusiness, Building, Mail, User2 } from 'lucide-react';
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/common/date-picker';
 import { PhoneInput } from '@/components/dashboard/profile/phone-input';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export const profileSchema = z.object({
   id: z.string(),
@@ -19,7 +19,7 @@ export const profileSchema = z.object({
   creationDate: z.date(),
   organization_name: z
     .string()
-    .min(3, 'Organization name must be at least 3 characters'),
+    .min(3, 'Organisation Name must be at least 3 characters'),
   // notificationsEnabled: z.boolean(),
   // emailUpdates: z.boolean(),
 });
@@ -58,8 +58,8 @@ export function ProfileFormFields({
     },
     {
       name: 'organization_name' as const,
-      label: 'Organization',
-      placeholder: 'Orgaganization Name',
+      label: 'Organisation',
+      placeholder: 'Organisation Name',
       icon: <Building size={16} />,
     },
   ];

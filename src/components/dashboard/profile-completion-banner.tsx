@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { AlertCircle, X } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-import { cn } from '@/lib/utils';
-import useUserData from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
+import useUserData from '@/hooks/useUserData';
+import { cn } from '@/lib/utils';
 
 export function ProfileCompletionBanner() {
   const { data: user, isLoading } = useUserData();

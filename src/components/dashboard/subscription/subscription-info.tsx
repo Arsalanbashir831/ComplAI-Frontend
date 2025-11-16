@@ -10,6 +10,7 @@ interface SubscriptionInfoProps {
   onRenewSubscription: () => void;
   isCancelling: boolean;
   isRenewing: boolean;
+  rawStartDate?: string; // ISO date from API
 }
 
 export function SubscriptionInfo({
@@ -22,10 +23,33 @@ export function SubscriptionInfo({
   onRenewSubscription,
   isCancelling,
   isRenewing,
+  rawStartDate,
 }: SubscriptionInfoProps) {
   const isFree = plan === 'free';
   const isActive = status === 'active' && !cancelAtPeriodEnd;
   const isCancelled = cancelAtPeriodEnd || status === 'cancel_pending';
+
+  // Calculate renewal date (1 year from start date) when subscription is active
+  const getRenewalDate = () => {
+    if (!rawStartDate) return endDate;
+    
+    try {
+      const start = new Date(rawStartDate);
+      const renewal = new Date(start);
+      renewal.setFullYear(renewal.getFullYear() + 1);
+      
+      return renewal.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch (error) {
+      console.error('Error calculating renewal date:', error);
+      return endDate;
+    }
+  };
+
+  const displayDate = isActive ? getRenewalDate() : endDate;
 
   console.log('SubscriptionInfo render:', {
     status,
@@ -33,6 +57,8 @@ export function SubscriptionInfo({
     isActive,
     isCancelled,
     isFree,
+    rawStartDate,
+    displayDate,
   });
 
   return (
@@ -45,7 +71,7 @@ export function SubscriptionInfo({
         <div>
           <dt className="text-sm font-medium text-gray-600">Subscription</dt>
           <dd className="mt-1 text-lg font-semibold text-gray-900 capitalize">
-            {isFree ? 'Free' : 'Premium Plan'}
+            {isFree ? 'Top-Up and Go' : 'Professional'}
           </dd>
         </div>
 
@@ -56,8 +82,10 @@ export function SubscriptionInfo({
 
         {!isFree && (
           <div>
-            <dt className="text-sm font-medium text-gray-600">End Date</dt>
-            <dd className="mt-1 text-lg text-gray-900">{endDate}</dd>
+            <dt className="text-sm font-medium text-gray-600">
+              {isActive ? 'Renewal Date' : 'End Date'}
+            </dt>
+            <dd className="mt-1 text-lg text-gray-900">{displayDate}</dd>
           </div>
         )}
 

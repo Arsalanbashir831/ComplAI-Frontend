@@ -3,11 +3,11 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Download } from 'lucide-react';
 
-import type { Invoice } from '@/types/invoice';
-import { cn } from '@/lib/utils';
+import { SafeDateDisplay } from '@/components/common/safe-date-display';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { SafeDateDisplay } from '@/components/common/safe-date-display';
+import { cn } from '@/lib/utils';
+import type { Invoice } from '@/types/invoice';
 
 export const columns: ColumnDef<Invoice>[] = [
   {
@@ -51,9 +51,9 @@ export const columns: ColumnDef<Invoice>[] = [
     header: 'Amount',
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('amount'));
-      const formatted = new Intl.NumberFormat('en-US', {
+      const formatted = new Intl.NumberFormat('en-GB', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'GBP',
       }).format(amount);
       return (
         <div className="font-medium text-xs text-[#667085]">{formatted}</div>
