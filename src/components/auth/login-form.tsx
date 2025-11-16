@@ -1,18 +1,18 @@
 'use client';
 
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockKeyhole, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
 
 import {
   Form,
@@ -63,38 +63,16 @@ function LoginFormInner() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await signIn({
-      email: values.email,
-      password: values.password,
-      type: 'old',
-    });
-    // try {
-    //   const response = await apiCaller(
-    //     API_ROUTES.AUTH.LOGIN,
-    //     'POST',
-    //     { email: values.email, password: values.password },
-    //     {},
-    //     false,
-    //     'json'
-    //   );
-
-    //   if (response.status === 200) {
-    //     const { access, refresh } = response.data;
-    //     localStorage.setItem('accessToken', access);
-    //     localStorage.setItem('refreshToken', refresh);
-    //     router.push(ROUTES.DASHBOARD);
-    //   }
-    // } catch (error: unknown) {
-    //   if (axios.isAxiosError(error) && error.response) {
-    //     setErrorMessage(
-    //       error.response.data?.message || 'Invalid email or password.'
-    //     );
-    //   } else {
-    //     setErrorMessage('A network error occurred. Please try again.');
-    //   }
-    // } finally {
-    //   setLoading(false);
-    // }
+    try {
+      await signIn({
+        email: values.email,
+        password: values.password,
+        type: 'old',
+      });
+    } catch (error) {
+      // Error handling is done in useAuth hook
+      console.error('Login error:', error);
+    }
   };
 
   return (

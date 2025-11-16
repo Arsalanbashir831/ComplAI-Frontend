@@ -3,39 +3,31 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Download } from 'lucide-react';
 
-import type { Invoice } from '@/types/invoice';
-import { cn } from '@/lib/utils';
+import { SafeDateDisplay } from '@/components/common/safe-date-display';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { SafeDateDisplay } from '@/components/common/safe-date-display';
+import { cn } from '@/lib/utils';
+import type { Invoice } from '@/types/invoice';
 
 export const columns: ColumnDef<Invoice>[] = [
-  // {
-  // id: 'select',
-  // header: ({ table }) => (
-  //   <Checkbox
-  //     checked={
-  //       table.getIsAllPageRowsSelected() ||
-  //       (table.getIsSomePageRowsSelected() && 'indeterminate')
-  //     }
-  //     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //     aria-label="Select all"
-  //   />
-  // ),
-  // cell: ({ row }) => (
-  //   <Checkbox
-  //     checked={row.getIsSelected()}
-  //     onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //     aria-label="Select row"
-  //     className="border-[#B6C2E2] ml-8"
-  //   />
-  // ),
-  // enableSorting: false,
-  // enableHiding: false,
-  // },
+  {
+    id: 'srNo',
+    header: 'Sr No',
+    cell: ({ row, table }) => {
+      const pageIndex = table.getState().pagination.pageIndex;
+      const pageSize = table.getState().pagination.pageSize;
+      const srNo = pageIndex * pageSize + row.index + 1;
+      return (
+        <div className="font-medium text-xs text-[#667085]">
+          {srNo}
+        </div>
+      );
+    },
+    enableSorting: false,
+  },
   {
     accessorKey: 'invoiceId',
-    header: 'Invoice',
+    header: 'Invoice Number',
     cell: ({ row }) => {
       return (
         <div className="font-medium text-xs text-[#667085]">

@@ -104,6 +104,26 @@ function IdentityVerificationFormInner() {
           );
           router.push(redirectUrl);
         }
+      } else if (type === 'login') {
+        // ✅ Handle email verification after login
+        const response = await verifyEmailWithRetry(email, value.code, 3);
+
+        if (
+          handleResponse(
+            response.status,
+            'Email verified successfully! Redirecting to dashboard...'
+          )
+        ) {
+          // Clean up the userEmail flag from localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('userEmail');
+          }
+          
+          // After successful verification, redirect to dashboard
+          setTimeout(() => {
+            router.push(ROUTES.DASHBOARD);
+          }, 1000);
+        }
       } else {
         // ✅ Directly route to reset password with email & OTP
         const resetUrl = `${ROUTES.RESET_PASSWORD}?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(value.code)}`;

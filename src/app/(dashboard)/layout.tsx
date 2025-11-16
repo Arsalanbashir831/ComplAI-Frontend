@@ -3,12 +3,16 @@
 import React, { Suspense } from 'react';
 
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
+import { ProfileCompletionBanner } from '@/components/dashboard/profile-completion-banner';
 
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <DashboardSidebar />
-      <main className="flex-1 overflow-auto bg-[#F9F9FC]">{children}</main>
+      <main className="flex-1 overflow-auto bg-[#F9F9FC]">
+        <ProfileCompletionBanner />
+        {children}
+      </main>
     </div>
   );
 }

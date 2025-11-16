@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   useAuthorityActions,
   useSelectedAuthority,
   useShouldOpenDropdown,
 } from '@/stores/authority-store';
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
-import { cn } from '@/lib/utils';
+import { MessageInput } from '@/components/chat/message-input';
+import { PromptCard } from '@/components/chat/prompt-card';
+import DisplayUsername from '@/components/common/display-username';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,9 +18,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageInput } from '@/components/chat/message-input';
-import { PromptCard } from '@/components/chat/prompt-card';
-import DisplayUsername from '@/components/common/display-username';
+import { cn } from '@/lib/utils';
+import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
 
 // Authority color schemes
 const AUTHORITY_COLORS = {
@@ -143,11 +143,9 @@ export default function ChatPage() {
   const handleSelectAuthority = (value: string) => {
     console.log('🎯 [ChatPage] Authority selected:', value);
     setSelectedAuthority(value as (typeof AUTHORITY_OPTIONS)[number]['value']);
-    // Keep the dropdown open after selection
-    setTimeout(() => {
-      console.log('🔓 [ChatPage] Keeping dropdown open after selection');
-      setIsDropdownOpen(true);
-    }, 0);
+    // Close the dropdown after selection
+    setIsDropdownOpen(false);
+    console.log('🔒 [ChatPage] Dropdown closed after selection');
   };
 
   return (
@@ -203,7 +201,10 @@ export default function ChatPage() {
                     'text-sm px-4 py-3 cursor-pointer rounded-md transition-all duration-200 mb-1 outline-none focus:outline-none focus:ring-0',
                     isSelected
                       ? `${colors.selectedBg} ${colors.selectedText} ${colors.border} border-2 ${colors.hover}`
-                      : `border border-transparent hover:shadow-sm `
+                      : `border border-transparent hover:shadow-sm ${colors.hover}`,
+                    !isSelected && option.value === 'SRA' && 'hover:text-yellow-700',
+                    !isSelected && option.value === 'LAA' && 'hover:text-green-700',
+                    !isSelected && option.value === 'AML' && 'hover:text-blue-700'
                   )}
                 >
                   <div className="flex items-center justify-between w-full">

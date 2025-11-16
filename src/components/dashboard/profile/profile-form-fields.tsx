@@ -2,14 +2,15 @@ import { BriefcaseBusiness, Building, Mail, User2 } from 'lucide-react';
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/common/date-picker';
 import { PhoneInput } from '@/components/dashboard/profile/phone-input';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export const profileSchema = z.object({
   id: z.string(),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
+  // Still send as `username` in the payload, but treat it as Full Name in the UI
+  username: z.string().min(3, 'Full name must be at least 3 characters'),
   email: z.string().email('Invalid email address'),
 
   phoneNumber: z.string().regex(/^\+\d+\s*\d+$/, 'Invalid phone number'),
@@ -18,7 +19,7 @@ export const profileSchema = z.object({
   creationDate: z.date(),
   organization_name: z
     .string()
-    .min(3, 'Username must be at least 3 characters'),
+    .min(3, 'Organization name must be at least 3 characters'),
   // notificationsEnabled: z.boolean(),
   // emailUpdates: z.boolean(),
 });
@@ -37,8 +38,8 @@ export function ProfileFormFields({
   const inputFields = [
     {
       name: 'username' as const,
-      label: 'Username',
-      placeholder: 'Username',
+      label: 'Full Name',
+      placeholder: 'Full Name',
       icon: <User2 size={16} />,
     },
     {

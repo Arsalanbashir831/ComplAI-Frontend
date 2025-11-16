@@ -1,11 +1,11 @@
 // hooks/useAuth.ts
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 import apiCaller from '@/config/apiCaller';
 
@@ -52,7 +52,61 @@ export function useAuth() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', access);
         localStorage.setItem('refreshToken', refresh);
+        // Store email temporarily for verification purposes
+        localStorage.setItem('userEmail', email);
       }
+
+      // Fetch user profile to check email verification status
+      const profileResponse = await apiCaller(
+        API_ROUTES.USER.GET_USER_DATA,
+        'GET',
+        {},
+        {},
+        true,
+        'json'
+      );
+
+      if (profileResponse.status !== 200 || !profileResponse.data) {
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const userProfile = profileResponse.data;
+      console.log('👤 [useAuth] User profile:', userProfile);
+
+      // Check if email is verified
+      if (!userProfile.email_verified) {
+        console.log('⚠️ [useAuth] Email not verified, redirecting to verification page');
+        
+        // Stop loading state before redirect
+        setLoading(false);
+        
+        // Trigger resend OTP for the user (non-blocking)
+        apiCaller(
+          API_ROUTES.AUTH.RESEND_VERIFICATION,
+          'POST',
+          { email },
+          {},
+          true,
+          'json'
+        )
+          .then(() => {
+            console.log('📧 [useAuth] OTP resent to email');
+          })
+          .catch((resendError) => {
+            console.error('Failed to resend OTP:', resendError);
+          });
+
+        // Immediately redirect to verify-identity page with email
+        console.log('🔀 [useAuth] Redirecting to:', `${ROUTES.VERIFY_IDENTITY}?email=${encodeURIComponent(email)}&type=login`);
+        router.push(
+          `${ROUTES.VERIFY_IDENTITY}?email=${encodeURIComponent(email)}&type=login`
+        );
+        
+        // Exit function immediately
+        return;
+      }
+
+      console.log('✅ [useAuth] Email verified, proceeding with normal flow');
 
       // 2️⃣ Otherwise, route based on new vs. old user
       if (type === 'new') {

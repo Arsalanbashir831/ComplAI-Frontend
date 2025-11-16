@@ -4,6 +4,8 @@ export interface User {
   username: string;
   profile_picture: string | null;
   phone_number: string;
+  job_title: string;
+  organization_name: string;
   created_at: string;
   credits_used_today: number;
   total_credits_used: number;

@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { Eye, EyeOff, UserIcon } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import apiCaller from '@/config/apiCaller';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -17,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import apiCaller from '@/config/apiCaller';
 
 import {
   ProfileFormFields,
@@ -215,7 +215,7 @@ export default function ProfileForm({ type }: ProfileFormProps) {
 
         <div className="relative">
           <h1 className="text-xl md:text-3xl font-bold">
-            {user?.username || 'User Name'}
+            {user?.username || 'Full Name'}
           </h1>
         </div>
 

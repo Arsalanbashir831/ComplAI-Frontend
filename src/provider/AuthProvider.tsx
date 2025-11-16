@@ -16,7 +16,6 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const subscription = searchParams.get('subscription');
   const isClient = useClientOnly();
   const [isValidating, setIsValidating] = useState(true);
 
@@ -26,6 +25,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('refreshToken');
     }
 
+    const subscription = searchParams.get('subscription');
     const redirectTo = subscription
       ? `/auth?subscription=${encodeURIComponent(subscription)}`
       : '/auth';
@@ -45,6 +45,15 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = localStorage.getItem('refreshToken');
+      const userEmail = localStorage.getItem('userEmail');
+
+      console.log('🔒 [AuthProvider] Validating tokens...', {
+        pathname,
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken,
+        hasUserEmail: !!userEmail,
+        searchParamsType: searchParams.get('type'),
+      });
 
       // If no tokens exist and we're on auth page, allow access
       if (!accessToken && !refreshToken) {
@@ -57,6 +66,17 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // If on auth page and tokens exist, validate and redirect to dashboard
       const isAuthPage = pathname?.startsWith('/auth') ?? false;
+      // Don't redirect if user is on verify-identity page for email verification after login
+      // Check both searchParams AND localStorage (userEmail exists means they just logged in with unverified email)
+      const isVerifyIdentityForLogin = 
+        pathname === '/auth/verify-identity' && 
+        (searchParams.get('type') === 'login' || (userEmail && searchParams.get('email')));
+
+      console.log('🔍 [AuthProvider] Check results:', {
+        isAuthPage,
+        isVerifyIdentityForLogin,
+        willRedirectToDashboard: isAuthPage && !isVerifyIdentityForLogin,
+      });
 
       // Step 1: Validate access token if it exists
       if (accessToken) {
@@ -72,9 +92,12 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           // Access token is valid
           if (verifyResponse.status === 200) {
-            // If on auth page, redirect to dashboard
-            if (isAuthPage) {
+            // If on auth page, redirect to dashboard (except for email verification)
+            if (isAuthPage && !isVerifyIdentityForLogin) {
+              console.log('🚀 [AuthProvider] Redirecting to dashboard...');
               router.push(ROUTES.DASHBOARD);
+            } else if (isVerifyIdentityForLogin) {
+              console.log('✋ [AuthProvider] Staying on verify-identity page');
             }
             setIsValidating(false);
             return;
@@ -112,9 +135,12 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             localStorage.setItem('accessToken', newAccess);
             localStorage.setItem('refreshToken', newRefresh);
 
-            // If on auth page, redirect to dashboard
-            if (isAuthPage) {
+            // If on auth page, redirect to dashboard (except for email verification)
+            if (isAuthPage && !isVerifyIdentityForLogin) {
+              console.log('🚀 [AuthProvider] Redirecting to dashboard after token refresh...');
               router.push(ROUTES.DASHBOARD);
+            } else if (isVerifyIdentityForLogin) {
+              console.log('✋ [AuthProvider] Staying on verify-identity page after token refresh');
             }
             setIsValidating(false);
             return;
@@ -142,7 +168,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     validateTokensAndRedirect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, subscription, router, isClient]);
+  }, [pathname, searchParams, router, isClient]);
 
   // Show loading state while validating tokens
   if (isValidating) {
