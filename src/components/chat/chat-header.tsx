@@ -13,9 +13,24 @@ import {
 import { Plus, Trash2 } from 'lucide-react';
 
 import { AUTHORITY_OPTIONS } from '@/types/chat';
+import { cn } from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+import { ConfirmationModal } from '../common/confirmation-modal';
 
 // Authority color schemes
 const AUTHORITY_COLORS = {
@@ -47,21 +62,6 @@ const AUTHORITY_COLORS = {
     selectedBorder: 'border-blue-400',
   },
 } as const;
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-
-import { ConfirmationModal } from '../common/confirmation-modal';
 
 interface ChatHeaderProps {
   currentChatId: string;
@@ -133,7 +133,7 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                       {AUTHORITY_OPTIONS.map((option) => {
                         const colors = AUTHORITY_COLORS[option.value];
                         const isSelected = selectedAuthority === option.value;
-                        
+
                         return (
                           <SelectItem
                             key={option.value}
@@ -145,10 +145,22 @@ export function ChatHeader({ currentChatId }: ChatHeaderProps) {
                                 : `${colors.bg} ${colors.text} ${colors.hover} border border-transparent`
                             )}
                           >
-                            <span className={cn('font-medium', isSelected && 'font-semibold')}>
+                            <span
+                              className={cn(
+                                'font-medium',
+                                isSelected && 'font-semibold'
+                              )}
+                            >
                               {option.label}
                             </span>
-                            <span className={cn('ml-1 text-xs', isSelected ? colors.selectedText : 'text-gray-500')}>
+                            <span
+                              className={cn(
+                                'ml-1 text-xs',
+                                isSelected
+                                  ? colors.selectedText
+                                  : 'text-gray-500'
+                              )}
+                            >
                               ({option.abbreviation})
                             </span>
                           </SelectItem>

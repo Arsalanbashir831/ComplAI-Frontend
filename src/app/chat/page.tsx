@@ -1,16 +1,15 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   useAuthorityActions,
   useSelectedAuthority,
   useShouldOpenDropdown,
 } from '@/stores/authority-store';
 import { ClipboardList, Mail, ShieldCheck, UserRound } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
-import { MessageInput } from '@/components/chat/message-input';
-import { PromptCard } from '@/components/chat/prompt-card';
-import DisplayUsername from '@/components/common/display-username';
+import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,8 +17,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
-import { AUTHORITY_OPTIONS, PromptCard as PromptCardType } from '@/types/chat';
+import { MessageInput } from '@/components/chat/message-input';
+import { PromptCard } from '@/components/chat/prompt-card';
+import DisplayUsername from '@/components/common/display-username';
 
 // Authority color schemes
 const AUTHORITY_COLORS = {
@@ -167,7 +167,9 @@ export default function ChatPage() {
               shouldPulse && 'animate-pulse ring-2 ring-blue-400'
             )}
           >
-            <span className={selectedAuthority ? 'font-semibold' : 'text-gray-500'}>
+            <span
+              className={selectedAuthority ? 'font-semibold' : 'text-gray-500'}
+            >
               {selectedAuthority
                 ? AUTHORITY_OPTIONS.find(
                     (opt) => opt.value === selectedAuthority
@@ -192,7 +194,7 @@ export default function ChatPage() {
             {AUTHORITY_OPTIONS.map((option) => {
               const colors = AUTHORITY_COLORS[option.value];
               const isSelected = selectedAuthority === option.value;
-              
+
               return (
                 <DropdownMenuItem
                   key={option.value}
@@ -205,10 +207,20 @@ export default function ChatPage() {
                   )}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className={cn('font-medium', isSelected && 'font-semibold')}>
+                    <span
+                      className={cn(
+                        'font-medium',
+                        isSelected && 'font-semibold'
+                      )}
+                    >
                       {option.label}
                     </span>
-                    <span className={cn('text-xs ml-3', isSelected ? colors.selectedText : 'text-gray-500')}>
+                    <span
+                      className={cn(
+                        'text-xs ml-3',
+                        isSelected ? colors.selectedText : 'text-gray-500'
+                      )}
+                    >
                       ({option.abbreviation})
                     </span>
                   </div>
