@@ -1,7 +1,6 @@
 // Markdown helpers and components for chat rendering
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-
 import remarkGfm from 'remark-gfm';
 
 export function normalizeTables(md: string): string {
@@ -267,11 +266,10 @@ export function MarkdownRenderer({ content }: { content: string }) {
   }
 
   return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]}  components={markdownComponents}>
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
       {processed}
     </ReactMarkdown>
   );
 }
 
 export { remarkGfm };
-
