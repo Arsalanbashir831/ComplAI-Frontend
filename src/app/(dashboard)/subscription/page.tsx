@@ -1,21 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { Plan, Subscription } from '@/types/subscription';
-import apiCaller from '@/config/apiCaller';
-import { formatDateLocal } from '@/lib/utils';
-import { useSubscription } from '@/hooks/useSubscription';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
 import { TokenPurchaseModal } from '@/components/dashboard/subscription/token-purchase-modal';
+import apiCaller from '@/config/apiCaller';
+import { useSubscription } from '@/hooks/useSubscription';
+import { formatDateLocal } from '@/lib/utils';
+import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -90,7 +90,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       price: `£${(subPlan.price / 100).toFixed(0)}`,
       interval: subPlan.interval,
       description: [
-        { text: '500 credits per month with no rollover.' },
+        { text: '1000 credits per month with no rollover.' },
         {
           text: 'Access to Resolve, our AI-powered tool for efficient complaint handling.',
         },

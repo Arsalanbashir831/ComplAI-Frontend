@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 interface TokenPurchaseModalProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ interface TokenPurchaseModalProps {
 }
 
 const MIN_AMOUNT = 50;
-const CREDITS_PER_POUND = 1.4;
+const CREDITS_PER_POUND = 3;
 
 export function TokenPurchaseModal({
   isOpen,
