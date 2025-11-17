@@ -1,11 +1,19 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { ProfileCompletionBanner } from '@/components/dashboard/profile-completion-banner';
 
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
+  // Clean up userEmail from localStorage when dashboard is accessed
+  useEffect(() => {
+    const userEmail = localStorage.getItem('userEmail');
+    if (userEmail) {
+      localStorage.removeItem('userEmail');
+    }
+  }, []);
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <DashboardSidebar />
