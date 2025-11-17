@@ -38,6 +38,7 @@ export default function ProfileForm({ type }: ProfileFormProps) {
 
   const { control, handleSubmit, reset, watch } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
+    mode: 'onChange',
     defaultValues: {
       id: '',
       username: '',
@@ -68,15 +69,18 @@ export default function ProfileForm({ type }: ProfileFormProps) {
           ? new Date()
           : fetchedDate;
 
-        reset({
-          id: data.id.toString(),
-          username: data.username,
-          email: data.email,
-          phoneNumber: data.phone_number,
-          jobTitle: data.job_title,
-          creationDate: validDate,
-          organization_name: data.organization_name,
-        });
+        reset(
+          {
+            id: String(data.id || ''),
+            username: data.username || '',
+            email: data.email || '',
+            phoneNumber: data.phone_number || '',
+            jobTitle: data.job_title || '',
+            creationDate: validDate,
+            organization_name: data.organization_name || '',
+          },
+          { keepDefaultValues: false }
+        );
         setProfileImage(data.profile_picture);
       } catch (error) {
         console.error('Failed to fetch profile:', error);

@@ -2,10 +2,10 @@ import { BriefcaseBusiness, Building, Mail, User2 } from 'lucide-react';
 import { Controller, type Control } from 'react-hook-form';
 import * as z from 'zod';
 
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/common/date-picker';
 import { PhoneInput } from '@/components/dashboard/profile/phone-input';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export const profileSchema = z.object({
   id: z.string(),
@@ -72,47 +72,53 @@ export function ProfileFormFields({
             key={field.name}
             name={field.name}
             control={control}
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <div className="flex flex-col gap-2">
-                <Label htmlFor={field.name} className="text-[#000] font-bold">
-                  {field.label}
-                </Label>
+            render={({ field: { onChange, value }, fieldState: { error } }) => {
+              const safeValue = value ?? '';
+              return (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor={field.name} className="text-[#000] font-bold">
+                    {field.label}
+                  </Label>
 
-                <Input
-                  id={field.name}
-                  className="border-[#D1D5DB] disabled:bg-gray-light"
-                  disabled={!isEditable || field.disabled}
-                  value={value}
-                  onChange={onChange}
-                  placeholder={field.placeholder}
-                  type={field.type}
-                  startIcon={field.icon}
-                />
+                  <Input
+                    id={field.name}
+                    className="border-[#D1D5DB] disabled:bg-gray-light"
+                    disabled={!isEditable || field.disabled}
+                    value={safeValue}
+                    onChange={onChange}
+                    placeholder={field.placeholder}
+                    type={field.type}
+                    startIcon={field.icon}
+                  />
 
-                {error && (
-                  <p className="text-red-500 text-sm">{error.message}</p>
-                )}
-              </div>
-            )}
+                  {error && (
+                    <p className="text-red-500 text-sm">{error.message}</p>
+                  )}
+                </div>
+              );
+            }}
           />
         ))}
 
         <Controller
           name="phoneNumber"
           control={control}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="phoneNumber" className="text-[#000] font-bold">
-                Phone Number
-              </Label>
-              <PhoneInput
-                value={value}
-                onChange={onChange}
-                disabled={!isEditable}
-              />
-              {error && <p className="text-red-500 text-sm">{error.message}</p>}
-            </div>
-          )}
+          render={({ field: { onChange, value }, fieldState: { error } }) => {
+            const safeValue = value ?? '';
+            return (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="phoneNumber" className="text-[#000] font-bold">
+                  Phone Number
+                </Label>
+                <PhoneInput
+                  value={safeValue}
+                  onChange={onChange}
+                  disabled={!isEditable}
+                />
+                {error && <p className="text-red-500 text-sm">{error.message}</p>}
+              </div>
+            );
+          }}
         />
 
         <Controller
