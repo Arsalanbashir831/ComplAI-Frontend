@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@/constants/apiRoutes';
 import { useCallback, useState } from 'react';
+import { API_ROUTES } from '@/constants/apiRoutes';
 
 import apiCaller from '@/config/apiCaller';
 
