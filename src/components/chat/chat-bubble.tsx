@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useAbortController } from '@/contexts/abort-controller-context';
+import { useSelectedAuthority } from '@/stores/authority-store';
+import { useSetMessages } from '@/stores/chat-store';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { useAbortController } from '@/contexts/abort-controller-context';
-import { useChatContext } from '@/contexts/chat-context';
-import { useSelectedAuthority } from '@/stores/authority-store';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage, Citation } from '@/types/chat';
-import { User } from '@/types/user';
+import { useChat } from '@/hooks/useChat';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
+import type { ChatMessage, Citation } from '@/types/chat';
+import { User } from '@/types/user';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -68,7 +68,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   // State for reasoning accordion
   const [isReasoningExpanded, setIsReasoningExpanded] = useState(false);
 
-  const { setMessages } = useChatContext();
+  const setMessages = useSetMessages();
   const selectedAuthority = useSelectedAuthority();
   const { abortControllerRef } = useAbortController();
   const { sendMessage, addMessageNoStream } = useChat();

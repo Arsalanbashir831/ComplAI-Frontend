@@ -1,11 +1,11 @@
 // src/components/chat/chat-messages.tsx
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
+import { useSendMessageTrigger } from '@/stores/chat-store';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { ChatMessage } from '@/types/chat';
 import { useClientOnly } from '@/lib/client-only';
+import type { ChatMessage } from '@/types/chat';
 
 import { ChatBubble } from './chat-bubble';
 
@@ -31,7 +31,7 @@ export function ChatMessages({
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
   const { user } = useUserContext();
-  const { trigger } = useSendMessageTrigger();
+  const trigger = useSendMessageTrigger();
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [pagination, setPagination] = useState<{
     page_size: number;

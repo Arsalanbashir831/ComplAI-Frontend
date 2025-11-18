@@ -1,16 +1,14 @@
 'use client';
 
-import { SendMessageTriggerProvider } from '@/contexts/send-message-trigger-context';
-
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 
 /**
  * Chat Layout
  *
  * Provides the layout structure for all chat-related pages.
- * Includes the sidebar navigation and message trigger context.
+ * Includes the sidebar navigation.
  *
- * Note: Authority state is now managed by Zustand store (no provider needed)
+ * Note: Authority and chat state are now managed by Zustand stores (no providers needed)
  */
 export default function ChatLayout({
   children,
@@ -20,9 +18,7 @@ export default function ChatLayout({
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <ChatSidebar />
-      <SendMessageTriggerProvider>
-        <main className="flex-1 overflow-auto">{children}</main>
-      </SendMessageTriggerProvider>
+      <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );
 }

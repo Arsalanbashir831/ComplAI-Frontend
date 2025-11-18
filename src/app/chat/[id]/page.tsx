@@ -2,16 +2,16 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { useChatContext } from '@/contexts/chat-context';
 import { useAuthorityActions } from '@/stores/authority-store';
+import { useChatMessages, useSetMessages } from '@/stores/chat-store';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-import { useClientOnly } from '@/lib/client-only';
-import { useChatById, useChatMessages } from '@/hooks/useChat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { MessageInput } from '@/components/chat/message-input';
+import { useChatById, useChatMessages as useChatMessagesQuery } from '@/hooks/useChat';
+import { useClientOnly } from '@/lib/client-only';
 
 export default function SpecificChatPage() {
   const { id } = useParams();
@@ -28,9 +28,10 @@ export default function SpecificChatPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isClient = useClientOnly();
 
-  const { messages, setMessages } = useChatContext();
+  const messages = useChatMessages();
+  const setMessages = useSetMessages();
   const { setAuthorityFromChat, setIsAuthorityLoading } = useAuthorityActions();
-  const { data: chatMessagesData, isLoading } = useChatMessages(chatId);
+  const { data: chatMessagesData, isLoading } = useChatMessagesQuery(chatId);
   const { data: chatData, isLoading: isChatLoading } = useChatById(chatId);
 
   // Set authority based on chat category and lock it for existing chats

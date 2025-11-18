@@ -1,27 +1,26 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAbortController } from '@/contexts/abort-controller-context';
-import { useChatContext } from '@/contexts/chat-context';
 import { usePrompt } from '@/contexts/prompt-context';
-import { useSendMessageTrigger } from '@/contexts/send-message-trigger-context';
 import { useUserContext } from '@/contexts/user-context';
 import {
   useAuthorityActions,
   useSelectedAuthority,
 } from '@/stores/authority-store';
+import { useSetMessages, useSetSendMessageTrigger } from '@/stores/chat-store';
 import { useIsMutating } from '@tanstack/react-query';
 import { ArrowDown, Plus, PlusCircle, Send } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
+import { Button } from '@/components/ui/button';
+import { useChat } from '@/hooks/useChat';
+import { cn, shortenText } from '@/lib/utils';
 import { AuthorityValue } from '@/types/chat';
 import { UploadedFile } from '@/types/upload';
-import { cn, shortenText } from '@/lib/utils';
-import { useChat } from '@/hooks/useChat';
-import { Button } from '@/components/ui/button';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
@@ -51,9 +50,9 @@ export function MessageInput({
   const selectedAuthority = useSelectedAuthority();
   const { triggerDropdownOpen } = useAuthorityActions();
   //  const { refetch } = useChatMessages(currentChatId || '');
-  const { setTrigger } = useSendMessageTrigger();
-  // Import chat messages context.
-  const { setMessages } = useChatContext();
+  const setTrigger = useSetSendMessageTrigger();
+  // Import chat messages from Zustand store.
+  const setMessages = useSetMessages();
   // Import global abort controller
   const { abortControllerRef, abortCurrentRequest } = useAbortController();
 
