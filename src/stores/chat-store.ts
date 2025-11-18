@@ -25,7 +25,9 @@ interface ChatState {
  */
 interface ChatActions {
   /** Set the entire messages array */
-  setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
+  setMessages: (
+    messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])
+  ) => void;
 
   /** Add a single message to the messages array */
   addMessage: (message: ChatMessage) => void;
@@ -37,7 +39,10 @@ interface ChatActions {
   clearMessages: () => void;
 
   /** Update a specific message by ID */
-  updateMessage: (messageId: number | string, updates: Partial<ChatMessage>) => void;
+  updateMessage: (
+    messageId: number | string,
+    updates: Partial<ChatMessage>
+  ) => void;
 
   /** Set the focus message ID */
   setFocusMessageId: (id: number | string | null) => void;
@@ -90,7 +95,10 @@ export const useChatStore = create<ChatStore>()(
       setMessages: (messages) =>
         set(
           (state) => ({
-            messages: typeof messages === 'function' ? messages(state.messages) : messages,
+            messages:
+              typeof messages === 'function'
+                ? messages(state.messages)
+                : messages,
           }),
           false,
           'chat/setMessages'
@@ -110,12 +118,7 @@ export const useChatStore = create<ChatStore>()(
           'chat/addMessages'
         ),
 
-      clearMessages: () =>
-        set(
-          { messages: [] },
-          false,
-          'chat/clearMessages'
-        ),
+      clearMessages: () => set({ messages: [] }, false, 'chat/clearMessages'),
 
       updateMessage: (messageId, updates) =>
         set(
@@ -129,11 +132,7 @@ export const useChatStore = create<ChatStore>()(
         ),
 
       setFocusMessageId: (id) =>
-        set(
-          { focusMessageId: id },
-          false,
-          'chat/setFocusMessageId'
-        ),
+        set({ focusMessageId: id }, false, 'chat/setFocusMessageId'),
 
       setSendMessageTrigger: (trigger) =>
         set(
@@ -142,8 +141,7 @@ export const useChatStore = create<ChatStore>()(
           'chat/setSendMessageTrigger'
         ),
 
-      resetChatState: () =>
-        set(initialState, false, 'chat/resetChatState'),
+      resetChatState: () => set(initialState, false, 'chat/resetChatState'),
     }),
     {
       name: 'chat-store',
@@ -158,8 +156,7 @@ export const useChatStore = create<ChatStore>()(
  */
 
 /** Get only the messages array */
-export const useChatMessages = () =>
-  useChatStore((state) => state.messages);
+export const useChatMessages = () => useChatStore((state) => state.messages);
 
 /** Get only the focus message ID */
 export const useFocusMessageId = () =>
@@ -190,12 +187,10 @@ export const useChatActions = () =>
 /**
  * Get only the setMessages action
  */
-export const useSetMessages = () =>
-  useChatStore((state) => state.setMessages);
+export const useSetMessages = () => useChatStore((state) => state.setMessages);
 
 /**
  * Get only the setSendMessageTrigger action
  */
 export const useSetSendMessageTrigger = () =>
   useChatStore((state) => state.setSendMessageTrigger);
-
