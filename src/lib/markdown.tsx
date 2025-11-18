@@ -1,6 +1,7 @@
 // Markdown helpers and components for chat rendering
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 
 export function normalizeTables(md: string): string {
@@ -16,7 +17,7 @@ export function normalizeTables(md: string): string {
       if (!line.endsWith('|')) line = line + '|';
 
       // Convert <br> tags to special delimiter ⟨BR⟩ that we'll process later
-      line = line.replace(/<br\s*\/?>/gi, '⟨BR⟩');
+      // line = line.replace(/<br\s*\/?>/gi, '⟨BR⟩');
 
       result.push(line);
       inTable = true;
@@ -53,43 +54,23 @@ export function preserveSpaces(md: string): string {
 
 //   return processed;
 // }
-export function preprocessMarkdown(md: string): string {
-  let processed = md.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+// export function preprocessMarkdown(md: string): string {
+//   let processed = md.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 
-  // Remove all HTML tags
-  processed = processed.replace(/<[^>]*>/g, '');
+//   // Remove all HTML tags
+//   processed = processed.replace(/<[^>]*>/g, '');
 
-  // Remove special placeholders
-  processed = processed.replace(/⟨BR⟩/g, '');
+//   // Remove special placeholders
+//   processed = processed.replace(/⟨BR⟩/g, '');
 
-  return processed;
-}
+//   return processed;
+// }
 
-type CodeProps = {
-  inline?: boolean;
-  className?: string;
-  children?: React.ReactNode;
-};
-
-// Helper function to extract text content from React nodes
-const extractTextContent = (node: React.ReactNode): string => {
-  if (typeof node === 'string') {
-    return node;
-  }
-  if (typeof node === 'number') {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map(extractTextContent).join('');
-  }
-  if (React.isValidElement(node)) {
-    const props = node.props as { children?: React.ReactNode };
-    if (props.children) {
-      return extractTextContent(props.children);
-    }
-  }
-  return '';
-};
+// type CodeProps = {
+//   inline?: boolean;
+//   className?: string;
+//   children?: React.ReactNode;
+// };
 
 export const markdownComponents = {
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -131,24 +112,6 @@ export const markdownComponents = {
       {...props}
     />
   ),
-  code: ({ inline, className, children, ...props }: CodeProps) => {
-    const match = /language-(\w+)/.exec(className || '');
-    return !inline ? (
-      <pre
-        className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono shadow-inner my-4 "
-        {...props}
-      >
-        <code className={match ? `language-${match[1]}` : ''}>{children}</code>
-      </pre>
-    ) : (
-      <code
-        className="bg-gray-200 text-gray-900 px-1 py-0.5 rounded font-mono text-sm "
-        {...props}
-      >
-        {children}
-      </code>
-    );
-  },
   table: (props: React.HTMLAttributes<HTMLTableElement>) => (
     <div className="overflow-x-auto w-full max-w-[800px] mx-auto my-4 rounded-lg border border-gray-200 bg-white shadow-sm">
       <table
@@ -167,76 +130,22 @@ export const markdownComponents = {
       {...props}
     />
   ),
-  th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => {
-    // Extract text content and check for delimiter
-    const textContent = extractTextContent(props.children);
-
-    // Check if the text contains our delimiter
-    if (textContent.includes('⟨BR⟩')) {
-      const parts = textContent.split('⟨BR⟩').filter((part) => part.trim());
-
-      if (parts.length > 1) {
-        return (
-          <th
-            className="px-4 py-3 text-left font-bold text-blue-900 border-b border-blue-200 whitespace-normal text-base align-top"
-            style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
-          >
-            <ul className="list-disc pl-5 space-y-1">
-              {parts.map((part, index) => (
-                <li key={index} className="text-base leading-relaxed">
-                  {part.trim()}
-                </li>
-              ))}
-            </ul>
-          </th>
-        );
-      }
-    }
-
-    return (
-      <th
-        className="px-4 py-3 text-left font-bold text-blue-900 border-b border-blue-200 whitespace-normal text-base align-top"
-        style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
-      >
-        {props.children}
-      </th>
-    );
-  },
-  td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => {
-    // Extract text content and check for delimiter
-    const textContent = extractTextContent(props.children);
-
-    // Check if the text contains our delimiter
-    if (textContent.includes('⟨BR⟩')) {
-      const parts = textContent.split('⟨BR⟩').filter((part) => part.trim());
-
-      if (parts.length > 1) {
-        return (
-          <td
-            className="px-4 py-3 text-blue-900 border-b border-blue-100 whitespace-normal align-top"
-            style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
-          >
-            <ul className="list-disc pl-5 space-y-1">
-              {parts.map((part, index) => (
-                <li key={index} className="text-base leading-relaxed">
-                  {part.trim()}
-                </li>
-              ))}
-            </ul>
-          </td>
-        );
-      }
-    }
-
-    return (
-      <td
-        className="px-4 py-3 text-blue-900 border-b border-blue-100 whitespace-normal align-top"
-        style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
-      >
-        {props.children}
-      </td>
-    );
-  },
+  th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => (
+    <th
+      className="px-4 py-3 text-left font-bold text-blue-900 border-b border-blue-200 whitespace-normal text-base align-top"
+      style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
+    >
+      {props.children}
+    </th>
+  ),
+  td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => (
+    <td
+      className="px-4 py-3 text-blue-900 border-b border-blue-100 whitespace-normal align-top"
+      style={{ minWidth: 160, maxWidth: 320, wordBreak: 'break-word' }}
+    >
+      {props.children}
+    </td>
+  ),
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
       className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
@@ -255,7 +164,8 @@ export const markdownComponents = {
 export function MarkdownRenderer({ content }: { content: string }) {
   // Detect if content contains a table
   const containsTable = /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(content);
-  let processed = preprocessMarkdown(content).replace(/\\n/g, '\n'); // keep only this
+  // let processed = preprocessMarkdown(content).replace(/\\n/g, '\n'); // keep only this
+  let processed = content;
 
   if (containsTable) {
     // For tables, don't convert <br> tags - let table cell components handle them
@@ -266,7 +176,11 @@ export function MarkdownRenderer({ content }: { content: string }) {
   }
 
   return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeRaw]}
+      components={markdownComponents}
+    >
       {processed}
     </ReactMarkdown>
   );
