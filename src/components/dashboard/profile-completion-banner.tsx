@@ -41,7 +41,7 @@ export function ProfileCompletionBanner() {
   if (!user.job_title || user.job_title.length < 2)
     missingFields.push('Job Title');
   if (!user.organization_name || user.organization_name.length < 3)
-    missingFields.push('Organization');
+    missingFields.push('Organisation');
 
   // Don't show banner if profile is complete or dismissed
   if (isProfileComplete || isDismissed) return null;

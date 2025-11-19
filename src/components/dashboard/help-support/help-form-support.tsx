@@ -122,9 +122,9 @@ export default function SupportForm() {
                 <SelectValue placeholder="Version" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="compl-ai-v1">Compl-AI v1</SelectItem>
-                <SelectItem value="compl-ai-v2">Compl-AI v2</SelectItem>
-                <SelectItem value="compl-ai-v3">Compl-AI v3</SelectItem>
+                <SelectItem value="compl-ai-v1">Companion SRA</SelectItem>
+                <SelectItem value="compl-ai-v2">Companion AML</SelectItem>
+                <SelectItem value="compl-ai-v3">Companion LAA</SelectItem>
               </SelectContent>
             </Select>
           </div>

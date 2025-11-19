@@ -65,6 +65,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       type: 'free',
       title: product.name,
       price: `£${(product.price / 100).toFixed(0)}`,
+     
       description: [
         { text: ' Buy credits as needed, with a minimum top-up of £50.' },
         {
@@ -89,6 +90,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       title: 'Professional',
       price: `£${(subPlan.price / 100).toFixed(0)}`,
       interval: subPlan.interval,
+      minimumTerm: '12 Months',
       description: [
         { text: '1000 credits per month with no rollover.' },
         {
