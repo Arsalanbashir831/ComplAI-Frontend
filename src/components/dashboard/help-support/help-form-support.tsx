@@ -3,7 +3,6 @@
 import { FormEvent, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 
-import apiCaller from '@/config/apiCaller';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,16 +37,17 @@ export default function SupportForm() {
         version: selectedVersion,
         description,
       };
-      const response = await apiCaller(
-        API_ROUTES.SUPPORT.HELP,
-        'POST',
-        data,
-        {},
-        true,
-        'json',
-        false
-      );
-      if (response.status === 200 || response.status === 201) {
+      const response = await fetch(API_ROUTES.SUPPORT.HELP, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
         // Reset fields
         setFullName('');
         setEmail('');
@@ -56,7 +56,7 @@ export default function SupportForm() {
         // Show success modal
         setShowSuccessModal(true);
       } else {
-        setError('Failed to submit. Please try again later.');
+        setError(result.error || 'Failed to submit. Please try again later.');
       }
     } catch (err: unknown) {
       console.error(err);

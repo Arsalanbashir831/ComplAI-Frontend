@@ -56,6 +56,6 @@ export const API_ROUTES = {
     GET: '/api/videos/',
   },
   SUPPORT: {
-    HELP: '/api/feedback/support-requests/',
+    HELP: '/api/support',
   },
 } as const;
