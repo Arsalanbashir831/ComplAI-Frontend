@@ -115,7 +115,9 @@ export function ProfileFormFields({
                   onChange={onChange}
                   disabled={!isEditable}
                 />
-                {error && <p className="text-red-500 text-sm">{error.message}</p>}
+                {error && (
+                  <p className="text-red-500 text-sm">{error.message}</p>
+                )}
               </div>
             );
           }}
