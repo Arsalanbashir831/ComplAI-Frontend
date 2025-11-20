@@ -33,10 +33,10 @@ export function SafeDateDisplay({
   let formattedDate = '';
   switch (format) {
     case 'date':
-      formattedDate = dateObj.toLocaleDateString('en-US');
+      formattedDate = dateObj.toLocaleDateString('en-GB');
       break;
     case 'time':
-      formattedDate = dateObj.toLocaleTimeString('en-US', {
+      formattedDate = dateObj.toLocaleTimeString('en-GB', {
         hour: 'numeric',
         minute: '2-digit',
         second: '2-digit',
@@ -44,10 +44,10 @@ export function SafeDateDisplay({
       });
       break;
     case 'datetime':
-      formattedDate = dateObj.toLocaleString('en-US');
+      formattedDate = dateObj.toLocaleString('en-GB');
       break;
     case 'full':
-      formattedDate = dateObj.toLocaleString('en-US', {
+      formattedDate = dateObj.toLocaleString('en-GB', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -95,10 +95,10 @@ export function SafeDateRangeDisplay({
   return (
     <div className={className}>
       <span className="text-sm font-medium">
-        {dateObj.toLocaleDateString('en-US')}
+        {dateObj.toLocaleDateString('en-GB')}
       </span>
       <span className="text-xs text-[#999999]">
-        {dateObj.toLocaleTimeString('en-US', {
+        {dateObj.toLocaleTimeString('en-GB', {
           hour: 'numeric',
           minute: '2-digit',
           second: '2-digit',

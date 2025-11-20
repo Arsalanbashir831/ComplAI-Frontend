@@ -4,13 +4,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
-import { useTokenStatistics } from '@/hooks/useTokensHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
 } from '@/components/ui/chart';
+import { useTokenStatistics } from '@/hooks/useTokensHistory';
 
 type ChartData = {
   date: string;
@@ -45,14 +45,24 @@ export function TokenChart() {
   const chartData: ChartData[] = useMemo(() => {
     if (!statistics?.statistics) return [];
 
-    return statistics.statistics.map((stat) => ({
-      date: stat.date,
-      tokens: Math.round(stat.tokens_used / 1000), // Convert to thousands
-      input_tokens: Math.round(stat.input_tokens / 1000),
-      output_tokens: Math.round(stat.output_tokens / 1000),
-      request_count: stat.request_count,
-      avg_tokens_per_request: Math.round(stat.avg_tokens_per_request / 1000),
-    }));
+    return statistics.statistics.map((stat) => {
+      // Format date to UK format (DD/MM/YYYY)
+      const dateObj = new Date(stat.date);
+      const formattedDate = dateObj.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
+      return {
+        date: formattedDate,
+        tokens: Math.round(stat.tokens_used / 1000), // Convert to thousands
+        input_tokens: Math.round(stat.input_tokens / 1000),
+        output_tokens: Math.round(stat.output_tokens / 1000),
+        request_count: stat.request_count,
+        avg_tokens_per_request: Math.round(stat.avg_tokens_per_request / 1000),
+      };
+    });
   }, [statistics]);
 
   // Memoize chart configuration

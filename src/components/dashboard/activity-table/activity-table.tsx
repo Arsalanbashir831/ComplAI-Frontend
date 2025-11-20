@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
-import type { ActivityItem } from '@/types/dashboard';
-import { cn } from '@/lib/utils';
-import { useCreditsHistory } from '@/hooks/useTokensHistory';
+import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
+import { useCreditsHistory } from '@/hooks/useTokensHistory';
+import { cn } from '@/lib/utils';
+import type { ActivityItem } from '@/types/dashboard';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
@@ -133,7 +133,7 @@ export function ActivityTable({
               <CardTitle className="flex items-center gap-2 text-[#1D1F2C]">
                 Credits Usage Activity
                 <Badge className="bg-[#E9FAF7] text-[#09B975]">
-                  {tableData?.length} days
+                  {tableData?.length} Activities
                 </Badge>
               </CardTitle>
               <div className="flex flex-wrap gap-4 text-sm text-[#667085]">
