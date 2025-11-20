@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
-import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
+import type { ActivityItem } from '@/types/dashboard';
+import { cn } from '@/lib/utils';
+import { useCreditsHistory } from '@/hooks/useTokensHistory';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCreditsHistory } from '@/hooks/useTokensHistory';
-import { cn } from '@/lib/utils';
-import type { ActivityItem } from '@/types/dashboard';
+import { UserQueryModal } from '@/components/dashboard/activity-table/user-quey-modal';
 
 import { DataTable } from '../../common/data-table';
 import { createColumns } from './columns';
