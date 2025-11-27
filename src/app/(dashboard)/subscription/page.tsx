@@ -1,22 +1,22 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useUserContext } from '@/contexts/user-context';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import type { Plan, Subscription } from '@/types/subscription';
+import apiCaller from '@/config/apiCaller';
+import { cn, formatDateLocal } from '@/lib/utils';
+import { useSubscription } from '@/hooks/useSubscription';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { PricingCard } from '@/components/dashboard/subscription/pricing-card';
 import { SubscriptionInfo } from '@/components/dashboard/subscription/subscription-info';
 import { TokenPurchaseModal } from '@/components/dashboard/subscription/token-purchase-modal';
-import apiCaller from '@/config/apiCaller';
-import { useSubscription } from '@/hooks/useSubscription';
-import { cn, formatDateLocal } from '@/lib/utils';
-import type { Plan, Subscription } from '@/types/subscription';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
@@ -79,7 +79,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       ],
       buttonText: 'Purchase Tokens',
       special: false,
-      buttonAction: () => { },
+      buttonAction: () => {},
     });
   }
 
@@ -109,7 +109,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
       ],
       buttonText: 'Subscribe',
       special: true,
-      buttonAction: () => { },
+      buttonAction: () => {},
     });
   }
 
@@ -138,7 +138,7 @@ const fetchSubscriptionItems = async (): Promise<Plan[]> => {
     ],
     buttonText: 'Contact Sales',
     special: false,
-    buttonAction: () => { },
+    buttonAction: () => {},
   });
 
   return plansArray;
@@ -447,12 +447,14 @@ export default function SubscriptionPage() {
   const latestSubscription = userSubscriptions?.slice(-1)[0];
 
   return (
-    <div className={cn("flex flex-col items-center px-6 py-8")}>
+    <div className={cn('flex flex-col items-center px-6 py-8')}>
       <DashboardHeader title="Subscription" />
 
       {isLoading ? (
-        <LoadingSpinner loadingText='Loading Subscription Plans...' className='bg-white rounded-xl p-8 space-y-8 mt-3 w-full max-h-[70svh]' />
-
+        <LoadingSpinner
+          loadingText="Loading Subscription Plans..."
+          className="bg-white rounded-xl p-8 space-y-8 mt-3 w-full max-h-[70svh]"
+        />
       ) : (
         <>
           <Elements stripe={stripePromise}>
