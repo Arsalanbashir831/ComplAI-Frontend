@@ -1,15 +1,15 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
 
+import { Video } from '@/types/video';
+import apiCaller from '@/config/apiCaller';
+import { Separator } from '@/components/ui/separator';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { SearchInput } from '@/components/dashboard/tutorials/search-input';
 import { VideoSection } from '@/components/dashboard/tutorials/video-section';
-import { Separator } from '@/components/ui/separator';
-import apiCaller from '@/config/apiCaller';
-import { Video } from '@/types/video';
 
 const fetchVideos = async (): Promise<Video[]> => {
   const response = await apiCaller(

@@ -1,14 +1,14 @@
 'use client';
 
+import { useState } from 'react';
+import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { Download, Play, User } from 'lucide-react';
-import Image from 'next/image';
-import { useState } from 'react';
 
+import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import type { Video } from '@/types/video';
 
 import { VideoPlayer } from './video-player';
 
@@ -34,7 +34,7 @@ export function VideoCard({ video }: VideoCardProps) {
           />
           {/* Overlay for better play button visibility */}
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
-          
+
           {/* Centered play button overlay */}
           <div className="absolute inset-0 flex items-center justify-center">
             <Button
@@ -46,9 +46,7 @@ export function VideoCard({ video }: VideoCardProps) {
           </div>
         </div>
         <CardContent className="p-4">
-          <h3 className="font-bold text-lg line-clamp-2 mb-2">
-            {video.title}
-          </h3>
+          <h3 className="font-bold text-lg line-clamp-2 mb-2">{video.title}</h3>
 
           <div className="flex items-center gap-3 mb-3">
             <p className="text-sm flex items-center gap-1">

@@ -1,7 +1,7 @@
 'use client';
 
-import { VideoCard } from '@/components/dashboard/tutorials/video-card';
 import type { VideoSection } from '@/types/video';
+import { VideoCard } from '@/components/dashboard/tutorials/video-card';
 
 export function VideoSection({ title, subtitle, videos }: VideoSection) {
   return (
