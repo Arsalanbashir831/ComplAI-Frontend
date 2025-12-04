@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { Download, Play, User } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
 
-import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import type { Video } from '@/types/video';
 
 import { VideoPlayer } from './video-player';
 
@@ -48,10 +48,10 @@ export function VideoCard({ video }: VideoCardProps) {
         <CardContent className="p-4">
           <h3 className="font-bold text-lg line-clamp-2 mb-2">{video.title}</h3>
 
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 mb-2">
             <p className="text-sm flex items-center gap-1">
               <User className="h-4 w-4 inline-block" />
-              <span className="text-blue-dark">{video.studio}</span>
+              <span className="text-blue-dark">Compl-AI</span>
             </p>
             <Button
               onClick={(e) => {
@@ -70,6 +70,7 @@ export function VideoCard({ video }: VideoCardProps) {
               PDF
             </Button>
           </div>
+         
 
           <p className="text-sm line-clamp-3 text-gray-dark">
             {video.description}
