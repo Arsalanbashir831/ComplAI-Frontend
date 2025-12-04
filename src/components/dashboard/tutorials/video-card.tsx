@@ -1,14 +1,14 @@
 'use client';
 
+import { useState } from 'react';
+import Image from 'next/image';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { Download, Play, User } from 'lucide-react';
-import Image from 'next/image';
-import { useState } from 'react';
 
+import type { Video } from '@/types/video';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import type { Video } from '@/types/video';
 
 import { VideoPlayer } from './video-player';
 
@@ -70,7 +70,6 @@ export function VideoCard({ video }: VideoCardProps) {
               PDF
             </Button>
           </div>
-         
 
           <p className="text-sm line-clamp-3 text-gray-dark">
             {video.description}
