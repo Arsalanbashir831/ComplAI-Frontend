@@ -1,15 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 
-import { Video } from '@/types/video';
-import apiCaller from '@/config/apiCaller';
-import { Separator } from '@/components/ui/separator';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { SearchInput } from '@/components/dashboard/tutorials/search-input';
 import { VideoSection } from '@/components/dashboard/tutorials/video-section';
+import { Separator } from '@/components/ui/separator';
+import apiCaller from '@/config/apiCaller';
+import { Video } from '@/types/video';
 
 const fetchVideos = async (): Promise<Video[]> => {
   const response = await apiCaller(
@@ -47,16 +47,16 @@ export default function TutorialsPage() {
     });
   }, [videos, searchQuery]);
 
-  const filteredTutorials = useMemo(() => {
-    return videos.filter((video) => {
-      const matchesType = video.video_type === 'tutorial';
-      const titleMatches = video.title.toLowerCase().includes(searchQuery);
-      const descriptionMatches =
-        video.description &&
-        video.description.toLowerCase().includes(searchQuery);
-      return matchesType && (titleMatches || descriptionMatches);
-    });
-  }, [videos, searchQuery]);
+  // const filteredTutorials = useMemo(() => {
+  //   return videos.filter((video) => {
+  //     const matchesType = video.video_type === 'tutorial';
+  //     const titleMatches = video.title.toLowerCase().includes(searchQuery);
+  //     const descriptionMatches =
+  //       video.description &&
+  //       video.description.toLowerCase().includes(searchQuery);
+  //     return matchesType && (titleMatches || descriptionMatches);
+  //   });
+  // }, [videos, searchQuery]);
 
   if (isLoading) {
     return (
@@ -66,19 +66,24 @@ export default function TutorialsPage() {
           subtitle="Your Path to Mastering Compl-AI"
         />
 
-        <div className="flex flex-col justify-center flex-1 w-full bg-white shadow-md rounded-xl p-8 space-y-8 mt-3">
+        <div className="flex flex-col flex-1 w-full bg-white shadow-md rounded-xl p-8 space-y-8 mt-3">
           {/* Search Input Skeleton */}
           <div className="h-10 w-full md:w-1/3 bg-gray-200 rounded" />
 
           {/* Recommended Videos Skeleton */}
-          <div className="space-y-4">
-            <div className="h-6 w-1/3 bg-gray-200 rounded" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="h-40 bg-gray-200 rounded-lg" />
-                  <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                  <div className="h-3 w-1/2 bg-gray-200 rounded" />
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="h-8 w-1/3 bg-gray-200 rounded" />
+              <div className="h-4 w-1/4 bg-gray-200 rounded" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="h-64 bg-gray-200 rounded-lg" />
+                  <div className="h-5 w-3/4 bg-gray-200 rounded" />
+                  <div className="h-4 w-1/2 bg-gray-200 rounded" />
+                  <div className="h-3 w-full bg-gray-200 rounded" />
+                  <div className="h-3 w-2/3 bg-gray-200 rounded" />
                 </div>
               ))}
             </div>
@@ -87,7 +92,7 @@ export default function TutorialsPage() {
           <Separator />
 
           {/* Recommended Tutorials Skeleton */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <div className="h-6 w-1/3 bg-gray-200 rounded" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(3)].map((_, i) => (
@@ -98,7 +103,7 @@ export default function TutorialsPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     );
@@ -111,7 +116,7 @@ export default function TutorialsPage() {
         subtitle="Your Path to Mastering Compl-AI"
       />
 
-      <div className="flex flex-col justify-center flex-1 w-full bg-white shadow-md rounded-xl p-8 space-y-8 mt-3">
+      <div className="flex flex-col flex-1 w-full bg-white shadow-md rounded-xl p-8 space-y-8 mt-3">
         {/* Search Section */}
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <SearchInput value={search} onChange={setSearch} />
@@ -122,12 +127,12 @@ export default function TutorialsPage() {
           subtitle="Top picks for You"
           videos={filteredVideos}
         />
-        <Separator />
+        {/* <Separator />
         <VideoSection
           title="Recommended Tutorials"
           subtitle="Top picks for You"
           videos={filteredTutorials}
-        />
+        /> */}
       </div>
     </div>
   );
