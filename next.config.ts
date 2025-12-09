@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
       },
     ],
     unoptimized: true,
-    formats: ['image/avif', 'image/webp'],
+  
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 86400, // 24 hours for better caching
@@ -68,46 +68,8 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Cache static assets with long TTL
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      // Cache images with medium TTL
-      {
-        source: '/(.*\\.(?:jpg|jpeg|gif|png|svg|ico|webp|avif))',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400, stale-while-revalidate=604800',
-          },
-        ],
-      },
-      // Cache fonts with long TTL
-      {
-        source: '/(.*\\.(?:woff|woff2|ttf|otf|eot))',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      // Cache API responses with short TTL and revalidation
-      {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=60, stale-while-revalidate=300',
-          },
-        ],
-      },
+     
+    
     ];
   },
 
