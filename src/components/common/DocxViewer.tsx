@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import mammoth from 'mammoth';
+import { useEffect, useState } from 'react';
 
 export default function DocxViewer({
   filePath,
