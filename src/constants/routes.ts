@@ -11,6 +11,7 @@ export const ROUTES = {
   CHAT_ID: (id: string) => `/chat/${id}`,
   DASHBOARD: '/',
   RESOLVER: '/resolver',
+  RESOLVER_ID: (id: string) => `/resolver/${id}`,
   COMPLIANCE_GPT: '/chat',
   HISTORY: '/history',
   TUTORIALS: '/tutorials',

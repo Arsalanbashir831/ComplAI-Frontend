@@ -17,9 +17,9 @@ import { useChat } from '@/hooks/useChat';
 // import CircularLogoAnimation from './CircularLogoAnimation';
 import { FileCard } from '@/components/common/file-card';
 
+import CopyButton from '../common/copy-button';
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import CopyButton from './copy-button';
 
 interface ChatBubbleProps {
   message: ChatMessage & {

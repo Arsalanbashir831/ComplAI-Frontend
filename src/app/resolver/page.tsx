@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 
 import { UploadedFile } from '@/types/upload';
 import { ResolverMode } from '@/components/resolver/resolver-input-toggle';
@@ -26,9 +28,21 @@ export default function ResolverPage() {
   // Step 3 state
   const [promptText, setPromptText] = useState('');
 
+  const router = useRouter();
+
+  // Generate response and navigate to response page
+  const handleGenerateResponse = () => {
+    // TODO: Call API to generate response and get the response ID
+    // For now, use a mock ID
+    const mockResponseId = 'mock-' + Date.now();
+    router.push(ROUTES.RESOLVER_ID(mockResponseId));
+  };
+
   // Navigation handlers
   const goNext = () => {
-    if (currentStep < 4) {
+    if (currentStep === 4) {
+      handleGenerateResponse();
+    } else if (currentStep < 4) {
       setCurrentStep((prev) => prev + 1);
     }
   };
