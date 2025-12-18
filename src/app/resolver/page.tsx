@@ -1,9 +1,10 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 
+import { UploadedFile } from '@/types/upload';
 import { ResolverMode } from '@/components/resolver/resolver-input-toggle';
 import { ResolverNavigation } from '@/components/resolver/resolver-navigation';
 import { ResolverStepper } from '@/components/resolver/resolver-stepper';
@@ -11,7 +12,6 @@ import { Step1Complaint } from '@/components/resolver/steps/step-1-complaint';
 import { Step2Documents } from '@/components/resolver/steps/step-2-documents';
 import { Step3Prompt } from '@/components/resolver/steps/step-3-prompt';
 import { Step4Preview } from '@/components/resolver/steps/step-4-preview';
-import { UploadedFile } from '@/types/upload';
 
 export default function ResolverPage() {
   // Wizard state
