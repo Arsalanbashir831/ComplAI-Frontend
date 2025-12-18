@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
 import { ResolverMode } from '@/components/resolver/resolver-input-toggle';
 import { ResolverNavigation } from '@/components/resolver/resolver-navigation';
 import { ResolverStepper } from '@/components/resolver/resolver-stepper';
@@ -12,6 +11,7 @@ import { Step1Complaint } from '@/components/resolver/steps/step-1-complaint';
 import { Step2Documents } from '@/components/resolver/steps/step-2-documents';
 import { Step3Prompt } from '@/components/resolver/steps/step-3-prompt';
 import { Step4Preview } from '@/components/resolver/steps/step-4-preview';
+import { UploadedFile } from '@/types/upload';
 
 export default function ResolverPage() {
   // Wizard state
@@ -101,7 +101,7 @@ export default function ResolverPage() {
     <div className="flex h-screen w-full bg-white overflow-hidden font-poppins">
       {/* Center Column: Interactive Content */}
       <div className="flex-1 flex flex-col items-center">
-        <div className="w-full pt-20 pb-12 px-8 flex flex-col">
+        <div className="w-full pt-12 pb-12 px-8 flex flex-col">
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-3xl font-medium text-[#04338B] mb-4">
