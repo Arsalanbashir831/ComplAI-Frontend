@@ -9,9 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FileUpload } from '@/components/common/file-upload';
 import UploadedFiles from '@/components/common/uploaded-files';
-
-import { FileUpload } from './file-upload';
 
 export function UploadModal({
   isOpen,

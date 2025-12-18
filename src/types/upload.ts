@@ -8,6 +8,11 @@ export interface FileUploadProps {
   onUpload: (files: File[]) => void;
   maxSize?: number;
   allowedTypes?: string[];
+  title?: string;
+  subtitle?: string;
+  className?: string;
+  titleClassName?: string;
+  subtitleClassName?: string;
 }
 
 export interface UploadModalProps {

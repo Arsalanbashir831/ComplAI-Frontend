@@ -72,7 +72,7 @@ export default function UploadedFiles({
         />
       </div>
       <ScrollArea
-        className={cn('w-full max-h-48', filesContainerClassName)}
+        className={cn('w-full h-48', filesContainerClassName)}
         onClick={(e) => {
           e.stopPropagation();
         }}

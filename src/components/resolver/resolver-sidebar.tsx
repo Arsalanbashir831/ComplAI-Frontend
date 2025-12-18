@@ -1,14 +1,14 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
-import { FileText, LayoutDashboard, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { FileText, LayoutDashboard, Search } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -130,7 +130,7 @@ export function ResolverSidebar() {
                     className={cn(
                       'w-full justify-start text-left font-normal text-gray-dark h-auto py-3 px-3',
                       currentComplaintId === complaint.id &&
-                      'bg-accent text-black'
+                        'bg-accent text-black'
                     )}
                   >
                     <div className="flex items-start gap-3 w-full">
