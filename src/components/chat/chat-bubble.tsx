@@ -13,13 +13,13 @@ import { User } from '@/types/user';
 import { MarkdownRenderer } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
+// import BounceDots from './BounceDotAnimation';
+// import CircularLogoAnimation from './CircularLogoAnimation';
+import { FileCard } from '@/components/common/file-card';
 
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-// import BounceDots from './BounceDotAnimation';
-// import CircularLogoAnimation from './CircularLogoAnimation';
 import CopyButton from './copy-button';
-import { FileCard } from './file-card';
 
 interface ChatBubbleProps {
   message: ChatMessage & {
