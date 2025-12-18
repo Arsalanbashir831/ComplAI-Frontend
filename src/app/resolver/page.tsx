@@ -9,6 +9,7 @@ import { ResolverStepper } from '@/components/resolver/resolver-stepper';
 import { Step1Complaint } from '@/components/resolver/steps/step-1-complaint';
 import { Step2Documents } from '@/components/resolver/steps/step-2-documents';
 import { Step3Prompt } from '@/components/resolver/steps/step-3-prompt';
+import { Step4Preview } from '@/components/resolver/steps/step-4-preview';
 
 export default function ResolverPage() {
   // Wizard state
@@ -69,12 +70,13 @@ export default function ResolverPage() {
         );
       case 4:
         return (
-          <div className="text-center py-20">
-            <h3 className="text-xl font-medium text-[#04338B]">
-              Step 4: Preview Your Compliant
-            </h3>
-            <p className="text-gray-500 mt-2">Coming soon...</p>
-          </div>
+          <Step4Preview
+            mode={mode}
+            complaintText={complaintText}
+            complaintFiles={complaintFiles}
+            supportingFiles={supportingFiles}
+            promptText={promptText}
+          />
         );
       default:
         return null;

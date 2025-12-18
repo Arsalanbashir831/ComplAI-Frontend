@@ -49,6 +49,7 @@ export function FileCard({
   onRemove,
   titleColor,
   hasShareButton,
+  hasRemoveButton = true,
   className,
 }: FileCardProps) {
   const [backendFileSize, setBackendFileSize] = useState<number>(0);
@@ -150,22 +151,24 @@ export function FileCard({
           <span className="sr-only">Download file</span>
         </Button>
       ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 rounded-full hover:bg-background/20 hover:text-white text-white"
-          onClick={() =>
-            onRemove &&
-            onRemove(
-              'url' in fileData && fileData.url
-                ? fileData.url
-                : (file as UploadedFile).id
-            )
-          }
-        >
-          <X className="h-4 w-4" />
-          <span className="sr-only">Remove file</span>
-        </Button>
+        hasRemoveButton && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full hover:bg-background/20 hover:text-white text-white"
+            onClick={() =>
+              onRemove &&
+              onRemove(
+                'url' in fileData && fileData.url
+                  ? fileData.url
+                  : (file as UploadedFile).id
+              )
+            }
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Remove file</span>
+          </Button>
+        )
       )}
     </div>
   );

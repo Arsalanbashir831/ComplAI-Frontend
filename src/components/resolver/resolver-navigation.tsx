@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, CircleArrowRight } from 'lucide-react';
+import { ArrowLeft, CircleArrowRight, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -56,10 +56,10 @@ export function ResolverNavigation({
         )}
         <Button
           onClick={onNext}
-          className="h-14 px-10 rounded-lg text-base font-semibold flex gap-3 items-center [&_svg]:!size-7"
+          className="h-14 px-10 rounded-lg text-base font-semibold flex gap-3 items-center [&_svg]:!size-6"
         >
-          <span>{isLastStep ? 'Submit' : nextLabel}</span>
-          <CircleArrowRight />
+          <span>{isLastStep ? 'Generate Response' : nextLabel}</span>
+          {isLastStep ? <Sparkles /> : <CircleArrowRight />}
         </Button>
       </div>
     </div>

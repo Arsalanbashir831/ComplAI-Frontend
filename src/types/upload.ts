@@ -29,6 +29,7 @@ export interface FileCardProps {
   onRemove?: (id: string) => void;
   titleColor?: string;
   hasShareButton?: boolean;
+  hasRemoveButton?: boolean;
   className?: string;
 }
 
