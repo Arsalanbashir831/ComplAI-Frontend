@@ -10,6 +10,7 @@ import {
   Banknote,
   Book,
   CircleDollarSign,
+  FileText,
   HelpCircle,
   History,
   LayoutDashboard,
@@ -30,7 +31,7 @@ const COMPLIANCE_TOOLS = [
     image: '/companion-icon.svg',
     label: 'Companion',
   },
-  // { href: ROUTES.DOC_COMPLIANCE, icon: FileText, label: 'Review' },
+  { href: ROUTES.RESOLVER, icon: FileText, label: 'Resolver' },
 ];
 
 const APP_NAVIGATION = [
@@ -77,7 +78,7 @@ export function DashboardSidebar() {
             alt={label}
             width={28}
             height={28}
-            className="mr-2 h-7 w-7 rounded"
+            className="mr-2 h-5 w-5 rounded"
           />
         ) : null}
         {label}

@@ -22,10 +22,10 @@ import { UploadedFile } from '@/types/upload';
 import { cn, shortenText } from '@/lib/utils';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { FileCard } from '@/components/common/file-card';
 
 import { ConfirmationModal } from '../common/confirmation-modal';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import { FileCard } from './file-card';
 import { UploadModal } from './upload-modal';
 
 // Add markdown validation helper at the top (after imports)

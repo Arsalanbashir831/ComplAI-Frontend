@@ -28,6 +28,9 @@ export interface FileCardProps {
 }
 
 export interface UploadedFilesProps extends FileUploadProps {
+  containerClassName?: string;
+  className?: string;
+  filesContainerClassName?: string;
   uploadedFiles: UploadedFile[];
   setUploadedFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>;
 }
