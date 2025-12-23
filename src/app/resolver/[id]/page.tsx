@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { ResponseChat } from '@/components/resolver/response-chat';
 import { ResponseDisplay } from '@/components/resolver/response-display';
 import { ResponseHeader } from '@/components/resolver/response-header';
+import { ResponseKeyPoints } from '@/components/resolver/response-key-points';
+import { ResponseTab, ResponseTabs } from '@/components/resolver/response-tabs';
 
 // Chat message type for the sidebar - now uses string content for markdown
 interface ChatMessage {
@@ -51,6 +53,7 @@ const MOCK_CHAT_MESSAGES: ChatMessage[] = [
 export default function ResolverResponsePage() {
   const [chatMessages, setChatMessages] =
     useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
+  const [activeTab, setActiveTab] = useState<ResponseTab>('chat');
 
   // Get the latest AI response for display
   const latestAiMessage = [...chatMessages]
@@ -112,24 +115,36 @@ Best regards,
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#F8F9FF] overflow-hidden font-poppins">
+    <div className="flex h-screen w-full bg-white overflow-hidden font-poppins">
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col p-6 overflow-hidden">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-3">
           <ResponseHeader />
         </div>
 
-        <div className="flex h-full">
+        <div className="flex h-full bg-[#F5F8FF] p-2 rounded-xl gap-3">
           {/* Response Display - Always show */}
           <ResponseDisplay content={activeContent} onExport={handleExport} />
 
-          {/* Chat Sidebar */}
-          <ResponseChat
-            messages={chatMessages}
-            onRevert={handleRevert}
-            onRefine={handleRefine}
-          />
+          {/* Right Panel: Chat or Key Points */}
+          <div className="w-[40svw] shrink-0 bg-white rounded-[10px] flex flex-col h-[calc(100vh-110px)] max-h-[calc(100vh-120px)] overflow-hidden">
+            <div className="p-4 pb-0">
+              <ResponseTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            </div>
+
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {activeTab === 'chat' ? (
+                <ResponseChat
+                  messages={chatMessages}
+                  onRevert={handleRevert}
+                  onRefine={handleRefine}
+                />
+              ) : (
+                <ResponseKeyPoints />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

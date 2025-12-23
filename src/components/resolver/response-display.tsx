@@ -32,7 +32,7 @@ export function ResponseDisplay({ content, onExport }: ResponseDisplayProps) {
   };
 
   return (
-    <Card className="flex-1 bg-white border-0 shadow-sm rounded-2xl flex flex-col overflow-hidden">
+    <Card className="flex-1 bg-white border-0 shadow-none rounded-xl flex flex-col overflow-hidden">
       {/* Action Buttons - Top Right */}
       <div className="flex items-center justify-end gap-3 px-8 pt-6">
         {/* Copy to Clipboard Button - Figma style */}

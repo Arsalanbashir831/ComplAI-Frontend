@@ -61,7 +61,7 @@ export function ResponseChat({
   };
 
   return (
-    <div className="w-[40svw] shrink-0 bg-white rounded-[10px] shadow-[0px_0px_20px_0px_rgba(0,0,0,0.02)] flex flex-col h-[calc(100vh-110px)] mx-4">
+    <div className="flex-1 flex flex-col min-h-0">
       {/* Scrollable Message Area */}
       <ScrollArea className="flex-1 px-3 py-4">
         <div className="space-y-6">
