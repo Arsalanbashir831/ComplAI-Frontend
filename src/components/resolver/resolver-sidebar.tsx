@@ -7,8 +7,8 @@ import { ROUTES } from '@/constants/routes';
 import { FileText, LayoutDashboard, Search } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -18,6 +18,8 @@ import MenuToggleButton from '../common/menu-toggle-button';
 export interface ResolverComplaint {
   id: string;
   title: string;
+  description: string;
+  type: 'document' | 'text';
   status: 'pending' | 'in_progress' | 'resolved';
   created_at: string;
   updated_at: string;
@@ -27,38 +29,83 @@ export interface ResolverComplaint {
 const DUMMY_COMPLAINTS: ResolverComplaint[] = [
   {
     id: '1',
-    title: 'Client complaint about billing discrepancy',
+    title: 'Document Complaint',
+    description:
+      'recently requested a copy of your data retention policy and was surprised...',
+    type: 'document',
     status: 'pending',
     created_at: '2024-12-17T10:00:00Z',
     updated_at: '2024-12-17T10:00:00Z',
   },
   {
     id: '2',
-    title: 'Service delay investigation request',
+    title: 'Text Complaint',
+    description:
+      'recently requested a copy of your data retention policy and was surprised...',
+    type: 'text',
     status: 'in_progress',
     created_at: '2024-12-16T14:30:00Z',
     updated_at: '2024-12-17T09:15:00Z',
   },
   {
     id: '3',
-    title: 'Contract terms clarification needed',
+    title: 'Document Complaint',
+    description:
+      'recently requested a copy of your data retention policy and was surprised...',
+    type: 'document',
     status: 'resolved',
     created_at: '2024-12-15T09:00:00Z',
     updated_at: '2024-12-16T16:45:00Z',
   },
   {
     id: '4',
-    title: 'Missing documentation follow-up',
+    title: 'Text Complaint',
+    description:
+      'recently requested a copy of your data retention policy and was surprised...',
+    type: 'text',
     status: 'pending',
     created_at: '2024-12-14T11:20:00Z',
     updated_at: '2024-12-14T11:20:00Z',
   },
   {
     id: '5',
-    title: 'Fee structure dispute resolution',
+    title: 'Text Complaint',
+    description:
+      'recently requested a copy of your data retention policy and was surprised...',
+    type: 'text',
     status: 'in_progress',
     created_at: '2024-12-13T16:00:00Z',
     updated_at: '2024-12-17T08:00:00Z',
+  },
+  {
+    id: '6',
+    title: 'Text Complaint',
+    description:
+      'recently requested a copy of your data retention policy and was surprised...',
+    type: 'text',
+    status: 'in_progress',
+    created_at: '2024-12-13T16:00:00Z',
+    updated_at: '2024-12-17T07:00:00Z',
+  },
+  {
+    id: '7',
+    title: 'Text Complaint',
+    description:
+      'recently requested a copy of your data retention policy and was surprised...',
+    type: 'text',
+    status: 'in_progress',
+    created_at: '2024-12-13T16:00:00Z',
+    updated_at: '2024-12-17T06:00:00Z',
+  },
+  {
+    id: '8',
+    title: 'Text Complaint',
+    description:
+      'recently requested a copy of your data retention policy and was surprised...',
+    type: 'text',
+    status: 'in_progress',
+    created_at: '2024-12-13T16:00:00Z',
+    updated_at: '2024-12-17T05:00:00Z',
   },
 ];
 
@@ -88,7 +135,7 @@ export function ResolverSidebar() {
     <>
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col bg-blue-light lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out',
+          'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col bg-[#F5F8FF] lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out border-r border-[#E5E9F0]',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -96,64 +143,87 @@ export function ResolverSidebar() {
         <MenuToggleButton isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
         {/* Header with Logo */}
-        <div className="p-6">
-          <div className="mb-8 border-b border-gray-dark pb-6">
+        <div className="py-6 px-4">
+          <div className="pb-6">
             <Logo href={ROUTES.LANDINGPAGE} />
           </div>
 
+          <div className="text-xl font-medium text-[#04338B] mb-4">
+            Recent Complaints
+          </div>
+
           {/* Search Input */}
-          <Input
-            placeholder="Search for complaints"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            startIcon={<Search className="h-4 w-4 text-muted-foreground" />}
-            className="pl-8"
-          />
+          <div className="relative">
+            <Input
+              placeholder="Search for complaint"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              startIcon={<Search className="h-4 w-4 text-[#73726D]" />}
+              className="pl-10 h-10 bg-white rounded-xl border border-[#BABABA] text-sm placeholder:text-[#73726D]"
+            />
+          </div>
         </div>
 
         {/* Complaints List */}
-        <div className="flex-1 overflow-auto px-6">
-          <h2 className="mb-4 text-lg font-semibold">
-            {searchTerm ? 'Search Results' : 'Complaints'}
-          </h2>
-
-          <div className="space-y-2">
+        <ScrollArea className="flex-1 px-4">
+          <div className="space-y-3 pb-6">
             {filteredComplaints.length > 0 ? (
-              filteredComplaints.map((complaint) => (
-                <Link
-                  key={complaint.id}
-                  href={`/resolver/${complaint.id}`}
-                  className="block"
-                >
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      'w-full justify-start text-left font-normal text-gray-dark h-auto py-3 px-3',
-                      currentComplaintId === complaint.id &&
-                        'bg-accent text-black'
-                    )}
+              filteredComplaints.map((complaint) => {
+                const isActive = currentComplaintId === complaint.id;
+                return (
+                  <Link
+                    key={complaint.id}
+                    href={`/resolver/${complaint.id}`}
+                    className="block"
                   >
-                    <div className="flex items-start gap-3 w-full">
-                      <FileText className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <span className="block text-sm truncate">
-                          {complaint.title}
+                    <div
+                      className={cn(
+                        'w-full rounded-2xl p-4 transition-all flex flex-col gap-3',
+                        isActive
+                          ? 'bg-primary text-white'
+                          : 'bg-white text-[#04338B] hover:bg-white/80'
+                      )}
+                    >
+                      {/* Badge */}
+                      <div
+                        className={cn(
+                          'flex items-center gap-2 px-3 py-1 rounded-full w-fit',
+                          isActive
+                            ? 'text-white border border-[#D1E1FF]'
+                            : 'bg-[#F5F8FF] text-[#04338B] border border-[#D1E1FF]'
+                        )}
+                      >
+                        <FileText className="h-3 w-3" />
+                        <span className="text-[10px] font-semibold whitespace-nowrap">
+                          {complaint.type === 'document'
+                            ? 'Document Complaint'
+                            : 'Text Complaint'}
                         </span>
                       </div>
+
+                      {/* Description */}
+                      <p
+                        className={cn(
+                          'text-[12px] leading-relaxed line-clamp-2',
+                          isActive ? 'text-white/80' : 'text-[#626262]'
+                        )}
+                      >
+                        {complaint.description}
+                      </p>
                     </div>
-                  </Button>
-                </Link>
-              ))
+                  </Link>
+                );
+              })
             ) : (
-              <div className="text-center text-gray-500 py-4">
+              <div className="text-center text-[#626262] py-4 text-sm font-light">
                 No complaints found
               </div>
             )}
           </div>
-        </div>
+        </ScrollArea>
 
         {/* Footer Navigation */}
-        <div className="p-6 pb-4">
+        <div className="px-6 py-4">
           <div className="border-t pt-4">
             <Link
               href={ROUTES.DASHBOARD}
