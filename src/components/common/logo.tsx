@@ -3,15 +3,18 @@ import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 
 import { siteConfig } from '@/config/site';
+import { cn } from '@/lib/utils';
 
 interface LogoProps {
   href?: string;
   outsideDomain?: boolean;
+  className?: string;
 }
 
 export function Logo({
   href = ROUTES.LANDINGPAGE,
   outsideDomain = false,
+  className,
 }: LogoProps) {
   const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL;
   if (outsideDomain && landingUrl) {
@@ -20,7 +23,7 @@ export function Logo({
         href={landingUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center justify-center"
+        className={cn('flex items-center justify-center', className)}
       >
         <Image
           src="/logo.svg"
@@ -33,7 +36,10 @@ export function Logo({
     );
   }
   return (
-    <Link href={href} className="flex items-center justify-center">
+    <Link
+      href={href}
+      className={cn('flex items-center justify-center', className)}
+    >
       <Image
         src="/logo.svg"
         alt={siteConfig.name}

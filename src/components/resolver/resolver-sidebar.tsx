@@ -135,7 +135,7 @@ export function ResolverSidebar() {
     <>
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex h-full w-[280px] flex-col bg-[#F5F8FF] lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out border-r border-[#E5E9F0]',
+          'fixed inset-y-0 left-0 z-40 flex h-full w-[370px] flex-col bg-[#F5F8FF] lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out border-r border-[#E5E9F0]',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -145,7 +145,7 @@ export function ResolverSidebar() {
         {/* Header with Logo */}
         <div className="py-6 px-4">
           <div className="pb-6">
-            <Logo href={ROUTES.LANDINGPAGE} />
+            <Logo href={ROUTES.LANDINGPAGE} className="justify-start" />
           </div>
 
           <div className="text-xl font-medium text-[#04338B] mb-4">
