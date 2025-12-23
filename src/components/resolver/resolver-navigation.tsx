@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, CircleArrowRight, Sparkles } from 'lucide-react';
+import { CircleArrowLeft, CircleArrowRight, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -28,16 +28,16 @@ export function ResolverNavigation({
   isLastStep = false,
 }: ResolverNavigationProps) {
   return (
-    <div className="flex items-center justify-between pt-4">
+    <div className="flex items-center justify-between pt-4 w-full">
       {/* Left: Go Back Button */}
       <div>
         {showBack && onBack && (
           <Button
             variant="outline"
             onClick={onBack}
-            className="h-14 px-6 rounded-lg text-base font-semibold flex gap-2 items-center border-2 border-primary text-primary hover:bg-primary/5 [&_svg]:!size-5"
+            className="h-14 px-6 rounded-lg text-base font-semibold flex gap-2 items-center [&_svg]:!size-5 border-2 border-[#DFEAFF] bg-[#F5F8FF] text-[#04338B] hover:bg-[#F5F8FF]/60 hover:text-[#0945b4]"
           >
-            <ArrowLeft />
+            <CircleArrowLeft />
             <span>Go Back</span>
           </Button>
         )}
@@ -49,7 +49,7 @@ export function ResolverNavigation({
           <Button
             variant="outline"
             onClick={onSkip}
-            className="h-14 px-8 rounded-lg text-base font-semibold border-2 border-primary text-primary hover:bg-primary/5"
+            className="h-14 px-8 rounded-lg text-base font-semibold border-2 border-[#DFEAFF] bg-[#F5F8FF] text-[#04338B] hover:bg-[#F5F8FF]/60 hover:text-[#0945b4]"
           >
             Skip
           </Button>

@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 
 import { UploadedFile } from '@/types/upload';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResolverMode } from '@/components/resolver/resolver-input-toggle';
 import { ResolverNavigation } from '@/components/resolver/resolver-navigation';
-import { ResolverStepper } from '@/components/resolver/resolver-stepper';
 import { Step1Complaint } from '@/components/resolver/steps/step-1-complaint';
 import { Step2Documents } from '@/components/resolver/steps/step-2-documents';
 import { Step3Prompt } from '@/components/resolver/steps/step-3-prompt';
@@ -21,6 +21,9 @@ export default function ResolverPage() {
   const [mode, setMode] = useState<ResolverMode>('documents');
   const [complaintFiles, setComplaintFiles] = useState<UploadedFile[]>([]);
   const [complaintText, setComplaintText] = useState('');
+  const [complaintDate, setComplaintDate] = useState<Date | undefined>(
+    undefined
+  );
 
   // Step 2 state
   const [supportingFiles, setSupportingFiles] = useState<UploadedFile[]>([]);
@@ -69,6 +72,8 @@ export default function ResolverPage() {
             setFiles={setComplaintFiles}
             complaintText={complaintText}
             setComplaintText={setComplaintText}
+            complaintDate={complaintDate}
+            setComplaintDate={setComplaintDate}
           />
         );
       case 2:
@@ -90,8 +95,10 @@ export default function ResolverPage() {
             complaintFiles={complaintFiles}
             supportingFiles={supportingFiles}
             promptText={promptText}
+            complaintDate={complaintDate}
           />
         );
+
       default:
         return null;
     }
@@ -100,17 +107,15 @@ export default function ResolverPage() {
   return (
     <div className="flex h-screen w-full bg-white overflow-hidden font-poppins">
       {/* Center Column: Interactive Content */}
-      <div className="flex-1 flex flex-col items-center">
-        <div className="w-full pt-12 pb-12 px-8 flex flex-col">
+      <ScrollArea className="flex-1">
+        <div className="flex flex-col items-center w-full pt-6 pb-12 px-8">
           {/* Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 w-full">
             <h1 className="text-3xl font-medium text-[#04338B] mb-4">
-              AI Powered Compliant Resolver
+              AI Powered Compliant Resolve v1
             </h1>
             <p className="text-[#626262]">
-              Paste the complaint and add any context .<br />
-              Resolve will help you generate a swift, compliant, and thoughtful
-              response.
+              Compl-AI's AI Powered Complain Handler.
             </p>
           </div>
 
@@ -127,12 +132,12 @@ export default function ResolverPage() {
             isLastStep={currentStep === 4}
           />
         </div>
-      </div>
+      </ScrollArea>
 
       {/* Right Column: Stepper Panel */}
-      <div className="w-[470px] shrink-0 flex flex-col items-end">
+      {/* <div className="w-[470px] shrink-0 flex flex-col items-end">
         <ResolverStepper currentStep={currentStep} />
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -34,23 +34,23 @@ export function Step2Documents({ files, setFiles }: Step2DocumentsProps) {
       {/* Step Header */}
       <div className="self-start">
         <div className="flex items-start gap-4 mb-6">
-          <Card className="w-12 h-12 bg-primary border-none rounded-full flex items-center justify-center shrink-0">
-            <FileText className="text-white h-5.5 w-5.5" />
+          <Card className="w-14 h-14 bg-primary border-none rounded-full flex items-center justify-center shrink-0">
+            <FileText className="text-white h-6 w-6" />
           </Card>
           <div>
             <h3 className="text-xl font-medium text-[#04338B]">
-              Upload Your Supporting Compliant Documents
+              Attach related documents.
             </h3>
             <p className="text-[#04338B] font-normal">
-              Please select the input type for Compliant Form.
+              Attach documents related to the complaint.
             </p>
           </div>
         </div>
       </div>
 
       {/* Upload Area */}
-      <div className="overflow-hidden flex flex-col">
-        <Card className="border-0 bg-white flex flex-col items-center justify-center p-6 relative rounded-[22px] shadow-[0px_0px_24px_0px_rgba(0,0,0,0.02)] flex-1 min-h-[150px]">
+      <div className="overflow-hidden flex flex-col w-full">
+        <Card className="border-0 bg-white flex flex-col items-center justify-center py-6 relative rounded-[22px] shadow-[0px_0px_24px_0px_rgba(0,0,0,0.02)] flex-1 min-h-[150px]">
           <div className="w-full flex-1 flex flex-col">
             {files.length > 0 ? (
               <div className="flex-1">

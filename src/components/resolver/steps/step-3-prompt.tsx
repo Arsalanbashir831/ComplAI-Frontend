@@ -1,6 +1,6 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
+import { PenLine } from 'lucide-react';
 
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,8 +20,8 @@ export function Step3Prompt({ promptText, setPromptText }: Step3PromptProps) {
       {/* Step Header */}
       <div className="self-start">
         <div className="flex items-start gap-4 mb-6">
-          <Card className="w-12 h-12 bg-primary border-none rounded-full flex items-center justify-center shrink-0">
-            <Pencil className="text-white h-5 w-5" />
+          <Card className="w-14 h-14 bg-primary border-none rounded-full flex items-center justify-center shrink-0">
+            <PenLine className="text-white h-6 w-6" />
           </Card>
           <div>
             <h3 className="text-xl font-medium text-[#04338B]">
@@ -35,7 +35,7 @@ export function Step3Prompt({ promptText, setPromptText }: Step3PromptProps) {
       </div>
 
       {/* Prompt Textarea */}
-      <div className="overflow-hidden flex flex-col">
+      <div className="overflow-hidden flex flex-col w-full">
         <Card className="border-0 flex-1 min-h-[300px] shadow-none">
           <Textarea
             value={promptText}
