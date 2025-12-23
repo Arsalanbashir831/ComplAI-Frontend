@@ -59,9 +59,9 @@ export function ResponseKeyPoints() {
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <ScrollArea className="flex-1 px-4 py-6">
-        <div className="space-y-8">
+        <div className="space-y-4">
           {MOCK_KEY_POINTS.map((point) => (
-            <div key={point.id} className="flex gap-4">
+            <div key={point.id} className="flex gap-4 border-b border-[#DFEAFF] pb-4">
               <div className="mt-1">
                 <div className="">
                   <Image
