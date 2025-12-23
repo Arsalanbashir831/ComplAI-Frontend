@@ -58,7 +58,7 @@ export function ResolverNavigation({
           onClick={onNext}
           className="h-14 px-10 rounded-lg text-base font-semibold flex gap-3 items-center [&_svg]:!size-6"
         >
-          <span>{isLastStep ? 'Generate Response' : nextLabel}</span>
+          <span>{isLastStep ? 'Resolve' : nextLabel}</span>
           {isLastStep ? <Sparkles /> : <CircleArrowRight />}
         </Button>
       </div>

@@ -194,7 +194,7 @@ export function ResolverSidebar() {
                         )}
                       >
                         <FileText className="h-3 w-3" />
-                        <span className="text-[10px] font-semibold whitespace-nowrap">
+                        <span className="text-sm font-semibold whitespace-nowrap">
                           {complaint.type === 'document'
                             ? 'Document Complaint'
                             : 'Text Complaint'}
@@ -204,7 +204,7 @@ export function ResolverSidebar() {
                       {/* Description */}
                       <p
                         className={cn(
-                          'text-[12px] leading-relaxed line-clamp-2',
+                          'text-base leading-snug line-clamp-2',
                           isActive ? 'text-white/80' : 'text-[#626262]'
                         )}
                       >

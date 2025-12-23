@@ -35,7 +35,7 @@ export function ResolverInputToggle({
           className={cn(
             'flex items-center gap-3 px-6 py-1.5 h-fit rounded-lg border-2 transition-all font-semibold font-poppins text-lg',
             'data-[state=active]:bg-primary data-[state=active]:border-primary data-[state=active]:text-white',
-            'data-[state=inactive]:bg-[#f5f8ff] data-[state=inactive]:border-[#04338B] data-[state=inactive]:text-[#04338B] hover:opacity-80'
+            'data-[state=inactive]:bg-[#f5f8ff] data-[state=inactive]:border-[#DFEAFF] data-[state=inactive]:text-[#04338B] hover:opacity-80'
           )}
         >
           <FileText className="h-5 w-5" />
@@ -46,10 +46,10 @@ export function ResolverInputToggle({
           className={cn(
             'flex items-center gap-3 px-6 py-1.5 h-fit rounded-lg border-2 transition-all font-semibold font-poppins text-lg',
             'data-[state=active]:bg-primary data-[state=active]:border-primary data-[state=active]:text-white',
-            'data-[state=inactive]:bg-[#f5f8ff] data-[state=inactive]:border-[#04338B] data-[state=inactive]:text-[#04338B] hover:opacity-80'
+            'data-[state=inactive]:bg-[#f5f8ff] data-[state=inactive]:border-[#DFEAFF] data-[state=inactive]:text-[#04338B] hover:opacity-80'
           )}
         >
-          <Type className="h-6 w-6" />
+          <Type className="h-5 w-5" />
           Text
         </TabsTrigger>
       </TabsList>

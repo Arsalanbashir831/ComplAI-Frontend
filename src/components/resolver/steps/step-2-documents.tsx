@@ -60,7 +60,7 @@ export function Step2Documents({ files, setFiles }: Step2DocumentsProps) {
                   onUpload={handleUpload}
                   containerClassName="bg-[#F8F9FF] px-12 py-7"
                   className="text-[#04338B] text-xl font-medium"
-                  filesContainerClassName="h-52"
+                  filesContainerClassName="h-full"
                   maxSize={MAX_FILE_SIZE}
                   allowedTypes={ALLOWED_FILE_TYPES}
                 />
