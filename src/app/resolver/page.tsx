@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResolverMode } from '@/components/resolver/resolver-input-toggle';
 import { ResolverNavigation } from '@/components/resolver/resolver-navigation';
 import { Step1Complaint } from '@/components/resolver/steps/step-1-complaint';
 import { Step2Documents } from '@/components/resolver/steps/step-2-documents';
 import { Step3Prompt } from '@/components/resolver/steps/step-3-prompt';
 import { Step4Preview } from '@/components/resolver/steps/step-4-preview';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { UploadedFile } from '@/types/upload';
 
 export default function ResolverPage() {
   // Wizard state
@@ -133,11 +133,6 @@ export default function ResolverPage() {
           />
         </div>
       </ScrollArea>
-
-      {/* Right Column: Stepper Panel */}
-      {/* <div className="w-[470px] shrink-0 flex flex-col items-end">
-        <ResolverStepper currentStep={currentStep} />
-      </div> */}
     </div>
   );
 }
