@@ -7,6 +7,8 @@ import { MarkdownRenderer } from '@/lib/markdown';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+import { Button } from '../ui/button';
+
 interface ResponseDisplayProps {
   /** The full markdown content from AI response */
   content: string;
@@ -35,10 +37,10 @@ export function ResponseDisplay({ content, onExport }: ResponseDisplayProps) {
     <Card className="flex-1 bg-white border-0 shadow-none rounded-xl flex flex-col overflow-hidden">
       {/* Action Buttons - Top Right */}
       <div className="flex items-center justify-end gap-3 px-8 pt-6">
-        {/* Copy to Clipboard Button - Figma style */}
-        <button
+        {/* Copy to Clipboard Button */}
+        <Button
           onClick={handleCopy}
-          className="flex items-center gap-[2px] bg-[#F5F8FF] hover:bg-[#E8EDFF] px-3 py-[5px] rounded-[6px] transition-colors"
+          className="flex items-center gap-[2px] shadow-none bg-[#F5F8FF] hover:bg-[#E8EDFF] px-3 py-[5px] rounded-[6px] transition-colors"
         >
           {copied ? (
             <CheckCircle className="h-4 w-4 text-[#04338B]" />
@@ -48,18 +50,18 @@ export function ResponseDisplay({ content, onExport }: ResponseDisplayProps) {
           <span className="text-[11.25px] font-medium text-[#04338B] font-poppins leading-[19.5px]">
             Copy to Clipboard
           </span>
-        </button>
+        </Button>
 
-        {/* Export PDF Button - Figma style */}
-        <button
+        {/* Export PDF Button */}
+        <Button
           onClick={onExport}
-          className="flex items-center gap-2 bg-[#B1362F] hover:bg-[#9A2F29] border border-[#B1362F] px-3 py-[5px] rounded-[6px] transition-colors"
+          className="flex items-center gap-2 shadow-none bg-[#B1362F] hover:bg-[#9A2F29] border border-[#B1362F] h-fit px-3 py-[5px] rounded-[6px] transition-colors"
         >
           <CloudUpload className="h-3 w-3 text-white" />
           <span className="text-[11.25px] font-normal text-white font-poppins leading-[19.5px]">
             Export PDF
           </span>
-        </button>
+        </Button>
       </div>
 
       {/* Letter Content */}

@@ -30,6 +30,36 @@ We are also reviewing our internal billing processes to avoid such issues in the
 We appreciate your understanding, and please feel free to reach out if you have any further questions.
 
 Best regards,
+[Compliance Team]
+
+**Subject:** Your Recent Billing Concern
+
+Dear [Customer Name],
+
+Thank you for bringing your concern to our attention. We sincerely apologize for the confusion regarding the late fee on your account.
+
+Upon review, we've confirmed that your payment was made on time, and the late fee was applied in error. As a result, we have reversed the charge from your account.
+
+We are also reviewing our internal billing processes to avoid such issues in the future.
+
+We appreciate your understanding, and please feel free to reach out if you have any further questions.
+
+Best regards,
+[Compliance Team]
+
+**Subject:** Your Recent Billing Concern
+
+Dear [Customer Name],
+
+Thank you for bringing your concern to our attention. We sincerely apologize for the confusion regarding the late fee on your account.
+
+Upon review, we've confirmed that your payment was made on time, and the late fee was applied in error. As a result, we have reversed the charge from your account.
+
+We are also reviewing our internal billing processes to avoid such issues in the future.
+
+We appreciate your understanding, and please feel free to reach out if you have any further questions.
+
+Best regards,
 [Compliance Team]`;
 
 const MOCK_CHAT_MESSAGES: ChatMessage[] = [
@@ -61,8 +91,25 @@ export default function ResolverResponsePage() {
     .find((m) => m.type === 'ai');
   const activeContent = latestAiMessage?.content || '';
 
-  const handleExport = () => {
-    // TODO: Implement PDF export
+  const handleExport = async () => {
+    try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const { PdfDocument } = await import(
+        '@/components/resolver/pdf-document'
+      );
+
+      const blob = await pdf(<PdfDocument content={activeContent} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `compliance-report-${new Date().getTime()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export PDF:', error);
+    }
   };
 
   const handleRevert = (id: string) => {
