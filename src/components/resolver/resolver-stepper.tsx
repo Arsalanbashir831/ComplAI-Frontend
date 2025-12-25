@@ -1,7 +1,7 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface Step {
   id: number;
@@ -63,7 +63,7 @@ export function ResolverStepper({ currentStep }: ResolverStepperProps) {
           </p>
         </div>
 
-        {/* Steps List (from Figma 4:102) - Using absolute container dimensions from Figma if possible */}
+        {/* Steps List (from Figma 4:1022) - Using absolute container dimensions from Figma if possible */}
         <div className="flex flex-col gap-8 mt-4 w-full max-w-[475px]">
           {steps.map((step) => {
             const isActive = step.id === currentStep;
