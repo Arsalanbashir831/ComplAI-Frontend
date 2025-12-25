@@ -31,36 +31,7 @@ We appreciate your understanding, and please feel free to reach out if you have 
 
 Best regards,
 [Compliance Team]
-
-**Subject:** Your Recent Billing Concern
-
-Dear [Customer Name],
-
-Thank you for bringing your concern to our attention. We sincerely apologize for the confusion regarding the late fee on your account.
-
-Upon review, we've confirmed that your payment was made on time, and the late fee was applied in error. As a result, we have reversed the charge from your account.
-
-We are also reviewing our internal billing processes to avoid such issues in the future.
-
-We appreciate your understanding, and please feel free to reach out if you have any further questions.
-
-Best regards,
-[Compliance Team]
-
-**Subject:** Your Recent Billing Concern
-
-Dear [Customer Name],
-
-Thank you for bringing your concern to our attention. We sincerely apologize for the confusion regarding the late fee on your account.
-
-Upon review, we've confirmed that your payment was made on time, and the late fee was applied in error. As a result, we have reversed the charge from your account.
-
-We are also reviewing our internal billing processes to avoid such issues in the future.
-
-We appreciate your understanding, and please feel free to reach out if you have any further questions.
-
-Best regards,
-[Compliance Team]`;
+`;
 
 const MOCK_CHAT_MESSAGES: ChatMessage[] = [
   {
