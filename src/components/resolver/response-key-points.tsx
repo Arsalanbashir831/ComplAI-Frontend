@@ -9,7 +9,10 @@ interface ResponseKeyPointsProps {
   isLoading?: boolean;
 }
 
-export function ResponseKeyPoints({ points, isLoading }: ResponseKeyPointsProps) {
+export function ResponseKeyPoints({
+  points,
+  isLoading,
+}: ResponseKeyPointsProps) {
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">

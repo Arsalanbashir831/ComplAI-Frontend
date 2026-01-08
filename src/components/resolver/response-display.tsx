@@ -1,11 +1,11 @@
 'use client';
 
-import { CheckCircle, CloudUpload, Copy } from 'lucide-react';
 import { useState } from 'react';
+import { CheckCircle, CloudUpload, Copy } from 'lucide-react';
 
+import { MarkdownRenderer } from '@/lib/markdown';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MarkdownRenderer } from '@/lib/markdown';
 
 import { Button } from '../ui/button';
 

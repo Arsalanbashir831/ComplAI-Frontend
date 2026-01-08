@@ -28,7 +28,7 @@ const apiCaller = async (
     if (token) {
       config.headers = {
         ...config.headers,
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       };
     }
   }
@@ -38,7 +38,7 @@ const apiCaller = async (
       config.data = data;
       config.headers = {
         ...config.headers,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       };
     } else if (dataType === 'formdata') {
       if (data instanceof FormData) {
