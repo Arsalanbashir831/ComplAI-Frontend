@@ -12,6 +12,7 @@ interface ResolverNavigationProps {
   showSkip?: boolean;
   nextLabel?: string;
   isLastStep?: boolean;
+  isLoading?: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ export function ResolverNavigation({
   showSkip = false,
   nextLabel = 'Next Step',
   isLastStep = false,
+  isLoading = false,
 }: ResolverNavigationProps) {
   return (
     <div className="flex items-center justify-between pt-4 w-full">
@@ -35,7 +37,8 @@ export function ResolverNavigation({
           <Button
             variant="outline"
             onClick={onBack}
-            className="h-14 px-6 rounded-lg text-base font-semibold flex gap-2 items-center [&_svg]:!size-5 border-2 border-[#DFEAFF] bg-[#F5F8FF] text-[#04338B] hover:bg-[#F5F8FF]/60 hover:text-[#0945b4]"
+            disabled={isLoading}
+            className="h-14 px-6 rounded-lg text-base font-semibold flex gap-2 items-center [&_svg]:!size-5 border-2 border-[#DFEAFF] bg-[#F5F8FF] text-[#04338B] hover:bg-[#F5F8FF]/60 hover:text-[#0945b4] disabled:opacity-50"
           >
             <CircleArrowLeft />
             <span>Go Back</span>
@@ -49,17 +52,28 @@ export function ResolverNavigation({
           <Button
             variant="outline"
             onClick={onSkip}
-            className="h-14 px-8 rounded-lg text-base font-semibold border-2 border-[#DFEAFF] bg-[#F5F8FF] text-[#04338B] hover:bg-[#F5F8FF]/60 hover:text-[#0945b4]"
+            disabled={isLoading}
+            className="h-14 px-8 rounded-lg text-base font-semibold border-2 border-[#DFEAFF] bg-[#F5F8FF] text-[#04338B] hover:bg-[#F5F8FF]/60 hover:text-[#0945b4] disabled:opacity-50"
           >
             Skip
           </Button>
         )}
         <Button
           onClick={onNext}
-          className="h-14 px-10 rounded-lg text-base font-semibold flex gap-3 items-center [&_svg]:!size-6"
+          disabled={isLoading}
+          className="h-14 px-10 rounded-lg text-base font-semibold flex gap-3 items-center [&_svg]:!size-6 disabled:opacity-70"
         >
-          <span>{isLastStep ? 'Resolve' : nextLabel}</span>
-          {isLastStep ? <Sparkles /> : <CircleArrowRight />}
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <span>{isLastStep ? 'Resolving...' : 'Processing...'}</span>
+            </div>
+          ) : (
+            <>
+              <span>{isLastStep ? 'Resolve' : nextLabel}</span>
+              {isLastStep ? <Sparkles /> : <CircleArrowRight />}
+            </>
+          )}
         </Button>
       </div>
     </div>

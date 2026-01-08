@@ -1,113 +1,20 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { FileText, LayoutDashboard, Search } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
-import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
 import MenuToggleButton from '../common/menu-toggle-button';
 
-// Types for resolver complaints
-export interface ResolverComplaint {
-  id: string;
-  title: string;
-  description: string;
-  type: 'document' | 'text';
-  status: 'pending' | 'in_progress' | 'resolved';
-  created_at: string;
-  updated_at: string;
-}
-
-// Dummy data for development
-const DUMMY_COMPLAINTS: ResolverComplaint[] = [
-  {
-    id: '1',
-    title: 'Document Complaint',
-    description:
-      'recently requested a copy of your data retention policy and was surprised...',
-    type: 'document',
-    status: 'pending',
-    created_at: '2024-12-17T10:00:00Z',
-    updated_at: '2024-12-17T10:00:00Z',
-  },
-  {
-    id: '2',
-    title: 'Text Complaint',
-    description:
-      'recently requested a copy of your data retention policy and was surprised...',
-    type: 'text',
-    status: 'in_progress',
-    created_at: '2024-12-16T14:30:00Z',
-    updated_at: '2024-12-17T09:15:00Z',
-  },
-  {
-    id: '3',
-    title: 'Document Complaint',
-    description:
-      'recently requested a copy of your data retention policy and was surprised...',
-    type: 'document',
-    status: 'resolved',
-    created_at: '2024-12-15T09:00:00Z',
-    updated_at: '2024-12-16T16:45:00Z',
-  },
-  {
-    id: '4',
-    title: 'Text Complaint',
-    description:
-      'recently requested a copy of your data retention policy and was surprised...',
-    type: 'text',
-    status: 'pending',
-    created_at: '2024-12-14T11:20:00Z',
-    updated_at: '2024-12-14T11:20:00Z',
-  },
-  {
-    id: '5',
-    title: 'Text Complaint',
-    description:
-      'recently requested a copy of your data retention policy and was surprised...',
-    type: 'text',
-    status: 'in_progress',
-    created_at: '2024-12-13T16:00:00Z',
-    updated_at: '2024-12-17T08:00:00Z',
-  },
-  {
-    id: '6',
-    title: 'Text Complaint',
-    description:
-      'recently requested a copy of your data retention policy and was surprised...',
-    type: 'text',
-    status: 'in_progress',
-    created_at: '2024-12-13T16:00:00Z',
-    updated_at: '2024-12-17T07:00:00Z',
-  },
-  {
-    id: '7',
-    title: 'Text Complaint',
-    description:
-      'recently requested a copy of your data retention policy and was surprised...',
-    type: 'text',
-    status: 'in_progress',
-    created_at: '2024-12-13T16:00:00Z',
-    updated_at: '2024-12-17T06:00:00Z',
-  },
-  {
-    id: '8',
-    title: 'Text Complaint',
-    description:
-      'recently requested a copy of your data retention policy and was surprised...',
-    type: 'text',
-    status: 'in_progress',
-    created_at: '2024-12-13T16:00:00Z',
-    updated_at: '2024-12-17T05:00:00Z',
-  },
-];
+import { useResolver } from '@/hooks/useResolver';
 
 export function ResolverSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -116,12 +23,16 @@ export function ResolverSidebar() {
   const pathname = usePathname();
   const currentComplaintId = pathname.split('/').pop();
 
+  const { useComplaintsList } = useResolver();
+  const { data: complaintsData, isLoading } = useComplaintsList();
+
   const toggleSidebar = () => setIsOpen((prev) => !prev);
 
   // Filter and sort complaints
   const filteredComplaints = useMemo(() => {
-    const filtered = DUMMY_COMPLAINTS.filter((complaint) =>
-      complaint.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const complaints = complaintsData?.results || [];
+    const filtered = complaints.filter((complaint) =>
+      complaint.subject.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Sort by updated_at descending (most recent first)
@@ -129,7 +40,7 @@ export function ResolverSidebar() {
       (a, b) =>
         new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
     );
-  }, [searchTerm]);
+  }, [complaintsData, searchTerm]);
 
   return (
     <>
@@ -194,17 +105,25 @@ export function ResolverSidebar() {
                         )}
                       >
                         <FileText className="h-3 w-3" />
-                        <span className="text-sm font-semibold whitespace-nowrap">
-                          {complaint.type === 'document'
-                            ? 'Document Complaint'
-                            : 'Text Complaint'}
+                        <span className="text-sm font-semibold whitespace-nowrap capitalize">
+                          {complaint.status} Complaint
                         </span>
                       </div>
+
+                      {/* Subject */}
+                      <h3
+                        className={cn(
+                          'text-sm font-semibold line-clamp-1',
+                          isActive ? 'text-white' : 'text-[#04338B]'
+                        )}
+                      >
+                        {complaint.subject}
+                      </h3>
 
                       {/* Description */}
                       <p
                         className={cn(
-                          'text-base leading-snug line-clamp-2',
+                          'text-xs leading-snug line-clamp-2',
                           isActive ? 'text-white/80' : 'text-[#626262]'
                         )}
                       >

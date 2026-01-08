@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { CheckCircle, CloudUpload, Copy } from 'lucide-react';
+import { useState } from 'react';
 
-import { MarkdownRenderer } from '@/lib/markdown';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { MarkdownRenderer } from '@/lib/markdown';
 
 import { Button } from '../ui/button';
 
@@ -34,7 +34,7 @@ export function ResponseDisplay({ content, onExport }: ResponseDisplayProps) {
   };
 
   return (
-    <Card className="flex-1 bg-white border-0 shadow-none rounded-xl flex flex-col overflow-hidden">
+    <Card className="flex-1 h-[calc(100vh-100px)] bg-white border-0 shadow-none rounded-xl flex flex-col overflow-hidden">
       {/* Action Buttons - Top Right */}
       <div className="flex items-center justify-end gap-3 px-8 pt-6">
         {/* Copy to Clipboard Button */}
@@ -65,7 +65,7 @@ export function ResponseDisplay({ content, onExport }: ResponseDisplayProps) {
       </div>
 
       {/* Letter Content */}
-      <ScrollArea className="flex-1 px-8 py-6">
+      <ScrollArea className="px-8 py-6">
         <div className="text-[#39393A] text-sm">
           <MarkdownRenderer content={content} />
         </div>

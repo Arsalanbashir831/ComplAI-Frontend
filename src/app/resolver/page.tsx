@@ -1,17 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { UploadedFile } from '@/types/upload';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResolverMode } from '@/components/resolver/resolver-input-toggle';
 import { ResolverNavigation } from '@/components/resolver/resolver-navigation';
 import { Step1Complaint } from '@/components/resolver/steps/step-1-complaint';
 import { Step2Documents } from '@/components/resolver/steps/step-2-documents';
 import { Step3Prompt } from '@/components/resolver/steps/step-3-prompt';
 import { Step4Preview } from '@/components/resolver/steps/step-4-preview';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { UploadedFile } from '@/types/upload';
+
+import { CreateComplaintPayload, useResolver } from '@/hooks/useResolver';
+import { format } from 'date-fns';
 
 export default function ResolverPage() {
   // Wizard state
@@ -32,13 +35,44 @@ export default function ResolverPage() {
   const [promptText, setPromptText] = useState('');
 
   const router = useRouter();
+  const { createComplaint, uploadDocs, isCreating, isUploading } = useResolver();
 
   // Generate response and navigate to response page
-  const handleGenerateResponse = () => {
-    // TODO: Call API to generate response and get the response ID
-    // For now, use a mock ID
-    const mockResponseId = 'mock-' + Date.now();
-    router.push(ROUTES.RESOLVER_ID(mockResponseId));
+  const handleGenerateResponse = async () => {
+    try {
+      // 1. Create the complaint
+      const payload: CreateComplaintPayload = {
+        subject: complaintDate
+          ? `Complaint - ${format(complaintDate, 'dd MMM yyyy')}`
+          : 'New Complaint',
+        complaint_date: complaintDate
+          ? format(complaintDate, 'yyyy-MM-dd')
+          : format(new Date(), 'yyyy-MM-dd'),
+        // Conditional description/document based on mode
+        description: mode === 'text' ? (complaintText?.slice(0, 200) || 'New Text Complaint') : 'New Document Complaint',
+        context_text: mode === 'text' ? complaintText : undefined,
+        document: mode === 'documents' && complaintFiles[0] ? complaintFiles[0].rawFile : undefined,
+        document_mime_type: mode === 'documents' && complaintFiles[0]
+          ? complaintFiles[0].rawFile.type
+          : undefined,
+        system_prompt: promptText || 'Analyze this complaint and provide a professional response.',
+      };
+
+      const creationResponse = await createComplaint(payload);
+
+      // 2. Upload supporting documents if any
+      if (supportingFiles.length > 0) {
+        await uploadDocs({
+          contextId: creationResponse.context_id,
+          documents: supportingFiles.map((f) => f.rawFile),
+        });
+      }
+
+      // 3. Navigate to the response page
+      router.push(ROUTES.RESOLVER_ID(creationResponse.id));
+    } catch (error) {
+      console.error('Failed to generate response:', error);
+    }
   };
 
   // Navigation handlers
@@ -130,6 +164,7 @@ export default function ResolverPage() {
             showBack={currentStep > 1}
             showSkip={currentStep === 2}
             isLastStep={currentStep === 4}
+            isLoading={isCreating || isUploading}
           />
         </div>
       </ScrollArea>

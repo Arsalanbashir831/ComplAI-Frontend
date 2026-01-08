@@ -34,6 +34,16 @@ export const API_ROUTES = {
   DOC_COMPLIANCE: {
     CHECK_DOC: '/api/checker/check-document/',
   },
+  COMPLAINTS: {
+    LIST: '/api/complaints/complaintlist',
+    CREATE: '/api/complaints/',
+    UPLOAD_DOCS: (contextId: string) =>
+      `/api/complaints/${contextId}/reference-documents/`,
+    ADD_MESSAGE: (complaintId: string) => `/api/complaints/${complaintId}/messages/`,
+    GET_KEY_POINTS: (complaintId: string) => `/api/complaints/${complaintId}/key-points/`,
+    GET_DETAILS: (complaintId: string) => `/api/complaints/${complaintId}/`,
+    GET_MESSAGES_LIST: (complaintId: string) => `/api/complaints/${complaintId}/messageslist/`,
+  },
   BILLING: {
     ADD_CARD: '/api/billing/add-card/',
     DEFAULT_CARD: '/api/billing/default-card/',

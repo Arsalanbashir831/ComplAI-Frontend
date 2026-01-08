@@ -4,65 +4,35 @@ import Image from 'next/image';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-interface KeyPoint {
-  id: string;
-  title: string;
-  description: string;
+interface ResponseKeyPointsProps {
+  points: { title: string; description: string }[];
+  isLoading?: boolean;
 }
 
-const MOCK_KEY_POINTS: KeyPoint[] = [
-  {
-    id: '1',
-    title: 'Formal acknowledgement of the complaint',
-    description:
-      "Confirm receipt of the customer's concern and demonstrate that it has been taken seriously and reviewed by the appropriate team.",
-  },
-  {
-    id: '2',
-    title: 'Clear and unambiguous apology',
-    description:
-      'Offer a sincere apology for the confusion and any inconvenience caused, without shifting responsibility or creating ambiguity.',
-  },
-  {
-    id: '3',
-    title: 'Summary of the investigation conducted',
-    description:
-      'State that the account and payment records were reviewed to assess the validity of the late fee applied.',
-  },
-  {
-    id: '4',
-    title: 'Confirmation of timely payment',
-    description:
-      "Explicitly confirm that the customer's payment was received within the required timeframe and that no delay occurred on their part.",
-  },
-  {
-    id: '5',
-    title: 'Clear and unambiguous apology',
-    description:
-      'Offer a sincere apology for the confusion and any inconvenience caused, without shifting responsibility or creating ambiguity.',
-  },
-  {
-    id: '6',
-    title: 'Clear and unambiguous apology',
-    description:
-      'Offer a sincere apology for the confusion and any inconvenience caused, without shifting responsibility or creating ambiguity.',
-  },
-  {
-    id: '7',
-    title: 'Clear and unambiguous apology',
-    description:
-      'Offer a sincere apology for the confusion and any inconvenience caused, without shifting responsibility or creating ambiguity.',
-  },
-];
+export function ResponseKeyPoints({ points, isLoading }: ResponseKeyPointsProps) {
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#04338B] border-t-transparent" />
+      </div>
+    );
+  }
 
-export function ResponseKeyPoints() {
+  if (!points || points.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <p className="text-[#626262]">No key points extracted yet.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <ScrollArea className="flex-1 px-4 py-6">
         <div className="space-y-4">
-          {MOCK_KEY_POINTS.map((point) => (
+          {points.map((point, index) => (
             <div
-              key={point.id}
+              key={index}
               className="flex gap-4 border-b border-[#DFEAFF] pb-4"
             >
               <div className="mt-1">

@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 type RequestData =
-  | Record<string, string | number | boolean | File | Blob>
+  | Record<string, string | number | boolean | File | Blob | any[]>
   | FormData;
 
 const apiCaller = async (
@@ -22,29 +22,50 @@ const apiCaller = async (
     },
     signal,
   };
-  config.headers = {};
+
   if (useAuth && typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`
+      };
     }
   }
 
   if (data) {
     if (dataType === 'json') {
       config.data = data;
-      config.headers['Content-Type'] = 'application/json';
+      config.headers = {
+        ...config.headers,
+        'Content-Type': 'application/json'
+      };
     } else if (dataType === 'formdata') {
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value instanceof File || value instanceof Blob) {
-          formData.append(key, value);
-        } else {
-          formData.append(key, String(value));
-        }
-      });
-      config.data = formData;
-      delete config.headers['Content-Type'];
+      if (data instanceof FormData) {
+        config.data = data;
+      } else {
+        const formData = new FormData();
+        Object.entries(data as Record<string, any>).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            value.forEach((item) => {
+              if (item instanceof File || item instanceof Blob) {
+                formData.append(key, item);
+              } else if (item !== undefined && item !== null) {
+                formData.append(key, String(item));
+              }
+            });
+          } else if (value instanceof File || value instanceof Blob) {
+            formData.append(key, value);
+          } else if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+        config.data = formData;
+      }
+      // Axios will automatically set the correct Content-Type for FormData
+      if (config.headers) {
+        delete config.headers['Content-Type'];
+      }
     }
   }
 
