@@ -1,7 +1,15 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export type RequestData =
-  | Record<string, string | number | boolean | File | Blob | Array<string | number | boolean | File | Blob>>
+  | Record<
+      string,
+      | string
+      | number
+      | boolean
+      | File
+      | Blob
+      | Array<string | number | boolean | File | Blob>
+    >
   | FormData;
 
 const apiCaller = async (
@@ -45,21 +53,23 @@ const apiCaller = async (
         config.data = data;
       } else {
         const formData = new FormData();
-        Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
-          if (Array.isArray(value)) {
-            value.forEach((item) => {
-              if (item instanceof File || item instanceof Blob) {
-                formData.append(key, item);
-              } else if (item !== undefined && item !== null) {
-                formData.append(key, String(item));
-              }
-            });
-          } else if (value instanceof File || value instanceof Blob) {
-            formData.append(key, value);
-          } else if (value !== undefined && value !== null) {
-            formData.append(key, String(value));
+        Object.entries(data as Record<string, unknown>).forEach(
+          ([key, value]) => {
+            if (Array.isArray(value)) {
+              value.forEach((item) => {
+                if (item instanceof File || item instanceof Blob) {
+                  formData.append(key, item);
+                } else if (item !== undefined && item !== null) {
+                  formData.append(key, String(item));
+                }
+              });
+            } else if (value instanceof File || value instanceof Blob) {
+              formData.append(key, value);
+            } else if (value !== undefined && value !== null) {
+              formData.append(key, String(value));
+            }
           }
-        });
+        );
         config.data = formData;
       }
       // Axios will automatically set the correct Content-Type for FormData
