@@ -161,7 +161,13 @@ export const markdownComponents = {
   pre: (props: React.HTMLAttributes<HTMLPreElement>) => <pre {...props} />,
 };
 
-export function MarkdownRenderer({ content }: { content: string }) {
+export function MarkdownRenderer({
+  content,
+  components = markdownComponents,
+}: {
+  content: string;
+  components?: Partial<import('react-markdown').Components>;
+}) {
   // Detect if content contains a table
   const containsTable = /\n?\s*\|[^\n]*\|[^\n]*\|/m.test(content);
   // let processed = preprocessMarkdown(content).replace(/\\n/g, '\n'); // keep only this
@@ -179,7 +185,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeRaw]}
-      components={markdownComponents}
+      components={components}
     >
       {processed}
     </ReactMarkdown>
@@ -187,3 +193,4 @@ export function MarkdownRenderer({ content }: { content: string }) {
 }
 
 export { remarkGfm };
+

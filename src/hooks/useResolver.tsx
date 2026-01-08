@@ -3,8 +3,8 @@
 import { API_ROUTES } from '@/constants/apiRoutes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import apiCaller, { RequestData } from '@/config/apiCaller';
 import type { Citation } from '@/types/chat';
-import apiCaller from '@/config/apiCaller';
 
 // Types for Complaints
 export interface Complaint {
@@ -178,7 +178,7 @@ export const useResolver = () => {
       const response = await apiCaller(
         API_ROUTES.COMPLAINTS.CREATE,
         'POST',
-        payload as any,
+        payload as unknown as RequestData,
         {},
         true,
         'formdata'
@@ -202,7 +202,7 @@ export const useResolver = () => {
       const response = await apiCaller(
         API_ROUTES.COMPLAINTS.UPLOAD_DOCS(contextId),
         'POST',
-        { documents } as any,
+        { documents } as unknown as RequestData,
         {},
         true,
         'formdata'

@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-type RequestData =
-  | Record<string, string | number | boolean | File | Blob | any[]>
+export type RequestData =
+  | Record<string, string | number | boolean | File | Blob | Array<string | number | boolean | File | Blob>>
   | FormData;
 
 const apiCaller = async (
@@ -45,7 +45,7 @@ const apiCaller = async (
         config.data = data;
       } else {
         const formData = new FormData();
-        Object.entries(data as Record<string, any>).forEach(([key, value]) => {
+        Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
           if (Array.isArray(value)) {
             value.forEach((item) => {
               if (item instanceof File || item instanceof Blob) {

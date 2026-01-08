@@ -1,15 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { FileText, LayoutDashboard, Search } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
-import { cn } from '@/lib/utils';
-import { useResolver } from '@/hooks/useResolver';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useResolver } from '@/hooks/useResolver';
+import { cn } from '@/lib/utils';
 
 import { Logo } from '../common/logo';
 import LogoutButton from '../common/logout-button';
@@ -23,7 +23,7 @@ export function ResolverSidebar() {
   const currentComplaintId = pathname.split('/').pop();
 
   const { useComplaintsList } = useResolver();
-  const { data: complaintsData, isLoading } = useComplaintsList();
+  const { data: complaintsData } = useComplaintsList();
 
   const toggleSidebar = () => setIsOpen((prev) => !prev);
 

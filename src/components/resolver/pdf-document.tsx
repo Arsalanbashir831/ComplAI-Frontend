@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { MarkdownRenderer } from '@/lib/markdown';
 import {
   Document,
   Font,
@@ -86,8 +86,8 @@ const styles = StyleSheet.create({
   },
   paragraph: {
     fontSize: 11,
-    lineHeight: 1.6,
-    marginBottom: 12,
+    lineHeight: 1.5,
+    marginBottom: 6,
     color: '#111827',
     textAlign: 'left',
   },
@@ -107,17 +107,19 @@ const styles = StyleSheet.create({
   },
   listItem: {
     flexDirection: 'row',
-    marginBottom: 6,
-    paddingLeft: 10,
+    alignItems: 'flex-start',
+    marginBottom: 4,
+    paddingLeft: 5,
+    width: '100%',
   },
   bullet: {
-    width: 15,
+    width: 20,
     fontSize: 11,
+    textAlign: 'left',
   },
   listItemText: {
     flex: 1,
-    fontSize: 11,
-    lineHeight: 1.6,
+    flexDirection: 'column',
   },
   watermarkView: {
     position: 'absolute',
@@ -146,84 +148,83 @@ interface PdfDocumentProps {
   content: string;
 }
 
-const renderContent = (content: string) => {
-  const lines = content.split('\n');
-  const elements: React.ReactNode[] = [];
 
-  lines.forEach((line, index) => {
-    const trimmedLine = line.trim();
+import React from 'react';
 
-    if (!trimmedLine) {
-      elements.push(<View key={`empty-${index}`} style={{ height: 8 }} />);
-      return;
-    }
+const Ul = ({ children }: any) => (
+  <View style={{ marginLeft: 12, marginTop: 2, marginBottom: 2 }}>{children}</View>
+);
 
-    // Heading 1
-    if (trimmedLine.startsWith('# ')) {
-      elements.push(
-        <Text key={index} style={styles.heading1}>
-          {trimmedLine.replace('# ', '')}
-        </Text>
-      );
-      return;
-    }
-
-    // Heading 2
-    if (trimmedLine.startsWith('## ')) {
-      elements.push(
-        <Text key={index} style={styles.heading2}>
-          {trimmedLine.replace('## ', '')}
-        </Text>
-      );
-      return;
-    }
-
-    // List Items
-    if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
-      elements.push(
-        <View key={index} style={styles.listItem}>
-          <Text style={styles.bullet}>•</Text>
-          <Text style={styles.listItemText}>
-            {parseInline(trimmedLine.substring(2))}
-          </Text>
-        </View>
-      );
-      return;
-    }
-
-    // Regular paragraph - No more "smart" detection for Subject/Closing
-    elements.push(
-      <Text key={index} style={styles.paragraph}>
-        {parseInline(trimmedLine)}
-      </Text>
-    );
-  });
-
-  return elements;
-};
+const Ol = ({ children }: any) => (
+  <View style={{ marginLeft: 12, marginTop: 2, marginBottom: 2 }}>{children}</View>
+);
 
 /**
- * Basic inline parser for bold (**) and italics (*)
+ * Custom components for ReactMarkdown to render @react-pdf/renderer primitives
+ * This is necessary because react-pdf cannot render standard HTML tags (h1, p, etc.)
  */
-const parseInline = (text: string) => {
-  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return (
-        <Text key={i} style={styles.bold}>
-          {part.slice(2, -2)}
-        </Text>
-      );
-    }
-    if (part.startsWith('*') && part.endsWith('*')) {
-      return (
-        <Text key={i} style={styles.italic}>
-          {part.slice(1, -1)}
-        </Text>
-      );
-    }
-    return part;
-  });
+const MarkdownComponents = {
+  h1: ({ children }: any) => <Text style={styles.heading1}>{children}</Text>,
+  h2: ({ children }: any) => <Text style={styles.heading2}>{children}</Text>,
+  h3: ({ children }: any) => <Text style={styles.heading2}>{children}</Text>,
+  p: ({ children }: any) => (
+    <Text style={[styles.paragraph, { marginBottom: 6 }]}>{children}</Text>
+  ),
+  ul: Ul,
+  ol: Ol,
+  li: ({ children, index, ordered }: any) => {
+    // Separate inline content from block content (like nested lists)
+    const childrenArray = React.Children.toArray(children);
+    const inlineContent: any[] = [];
+    const blockContent: any[] = [];
+    const bullet = ordered ? `${index + 1}.` : '•';
+
+    childrenArray.forEach((child: any) => {
+      // ONLY treat nested lists as block content to ensure they go below
+      if (
+        child &&
+        typeof child === 'object' &&
+        'type' in child &&
+        (child.type === Ul || child.type === Ol)
+      ) {
+        blockContent.push(child);
+      } else if (
+        child &&
+        typeof child === 'object' &&
+        (child.props?.node?.tagName === 'p' ||
+          child.type === Text ||
+          (child.type as any).displayName === 'Text')
+      ) {
+        // Aggressively unwrap p and Text tags to flatten into the parent Text component
+        inlineContent.push(...React.Children.toArray(child.props.children));
+      } else {
+        inlineContent.push(child);
+      }
+    });
+
+    return (
+      <View style={{ marginBottom: 4 }}>
+        {/* Header Row: Bullet + Inline Text */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+          <Text style={styles.bullet}>{bullet}</Text>
+          {inlineContent.length > 0 && (
+            <Text style={[styles.paragraph, { flex: 1, marginBottom: 0 }]}>
+              {inlineContent}
+            </Text>
+          )}
+        </View>
+        {/* Body Segment: Nested Lists */}
+        {blockContent.length > 0 && (
+          <View style={{ marginLeft: 20, marginTop: 2 }}>{blockContent}</View>
+        )}
+      </View>
+    );
+  },
+  strong: ({ children }: any) => <Text style={styles.bold}>{children}</Text>,
+  b: ({ children }: any) => <Text style={styles.bold}>{children}</Text>,
+  em: ({ children }: any) => <Text style={styles.italic}>{children}</Text>,
+  i: ({ children }: any) => <Text style={styles.italic}>{children}</Text>,
+  br: () => <Text>{"\n"}</Text>,
 };
 
 export const PdfDocument = ({ content }: PdfDocumentProps) => {
@@ -248,7 +249,12 @@ export const PdfDocument = ({ content }: PdfDocumentProps) => {
         </View>
 
         {/* Content */}
-        <View style={styles.content}>{renderContent(content)}</View>
+        <View style={styles.content}>
+          <MarkdownRenderer
+            content={content}
+            components={MarkdownComponents}
+          />
+        </View>
 
         {/* Footer */}
         <View style={styles.footer} fixed>
