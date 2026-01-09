@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import { ResolverMessage, useResolver } from '@/hooks/useResolver';
@@ -12,26 +12,72 @@ import { ResponseTab, ResponseTabs } from '@/components/resolver/response-tabs';
 
 export default function ResolverResponsePage() {
   const { id } = useParams();
-  const { sendMessage, useComplaintDetails, useKeyPoints, useMessagesList } =
-    useResolver();
+  const {
+    sendMessage,
+    useComplaintDetails,
+    useKeyPoints,
+    useInfiniteMessagesList,
+  } = useResolver();
 
   // Queries
   const { data: details, isLoading: isLoadingDetails } = useComplaintDetails(
-    id as string
-  );
-  const { data: messagesData, isLoading: isLoadingMessages } = useMessagesList(
     id as string
   );
   const { data: keyPointsData, isLoading: isLoadingKeyPoints } = useKeyPoints(
     id as string
   );
 
+  const {
+    data: infiniteMessagesData,
+    isLoading: isLoadingMessages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteMessagesList(id as string, 30);
+
   const [chatMessages, setChatMessages] = useState<ResolverMessage[]>([]);
   const [activeTab, setActiveTab] = useState<ResponseTab>('chat');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [hasTriggeredAuto, setHasTriggeredAuto] = useState(false);
-  const [hasSynced, setHasSynced] = useState(false);
+
+  // Map infinite pages to the chatMessages state.
+  const fetchedMessages = useMemo(() => {
+    if (!infiniteMessagesData) return [];
+
+    // Flat map all pages and map to ResolverMessage format
+    // InfiniteQuery pages are in order of fetch, but results within pages are descending (newer first)
+    // Actually, usually messages are fetched 'before_seq', so the first page is the newest.
+    // We reverse everything to show oldest at top for display.
+    const allMsgs: ResolverMessage[] = (infiniteMessagesData.pages || [])
+      .flatMap(
+        (page: import('@/hooks/useResolver').MessageListResponse) =>
+          page.results
+      )
+      .filter((m: import('@/hooks/useResolver').Message) => m.role !== 'system')
+      .map((m: import('@/hooks/useResolver').Message) => ({
+        id: m.id,
+        complaint: id as string,
+        user: m.role === 'assistant' ? 'AI' : 'USER',
+        content: m.content,
+        created_at: m.created_at,
+        done: true,
+      }));
+
+    // Results from API are usually sorted newest first (descending)
+    // We want to sort them ascending for the chat UI.
+    return [...allMsgs].sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+  }, [infiniteMessagesData, id]);
+
+  // Sync fetched messages with local chatMessages state
+  useEffect(() => {
+    if (!isStreaming && fetchedMessages.length > 0) {
+      setChatMessages(fetchedMessages);
+    }
+  }, [fetchedMessages, isStreaming]);
 
   const handleRefine = useCallback(
     async (prompt: string) => {
@@ -120,53 +166,43 @@ export default function ResolverResponsePage() {
     [id, sendMessage]
   );
 
-  // Sync messages from API to local state
-  useEffect(() => {
-    if (!isLoadingMessages && messagesData?.results && !hasSynced) {
-      const mappedMessages: ResolverMessage[] = messagesData.results
-        .filter((m) => m.role !== 'system')
-        .map((m) => ({
-          id: m.id,
-          complaint: id as string,
-          user: m.role === 'assistant' ? 'AI' : 'USER',
-          content: m.content,
-          created_at: m.created_at,
-          done: true,
-        }));
-      setChatMessages(mappedMessages);
-      setHasSynced(true);
+  // No manual sync needed anymore with useInfiniteQuery memo
+  // No manual fetch logic needed anymore with useInfiniteQuery memo
+
+  const handleLoadMoreMessages = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [messagesData, id, hasSynced, isLoadingMessages]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Auto-trigger first analysis if no messages exist
   useEffect(() => {
     if (
       !isLoadingMessages &&
       !isLoadingDetails &&
-      messagesData &&
+      infiniteMessagesData &&
       details &&
       !hasTriggeredAuto
     ) {
-      // Check if there are no user/assistant messages
-      const existingMessages = messagesData.results.filter(
-        (m) => m.role !== 'system'
+      // Check if there are no user/assistant messages across all pages
+      const hasMessages = infiniteMessagesData.pages.some((page) =>
+        page.results.some((m) => m.role !== 'system')
       );
 
-      if (existingMessages.length === 0) {
+      if (!hasMessages) {
         setHasTriggeredAuto(true);
         const initialPrompt =
           details.context?.system_prompt ||
           'Analyze this complaint and provide a professional response.';
         handleRefine(initialPrompt);
       } else {
-        // If messages already exist, we don't need to auto-trigger
         setHasTriggeredAuto(true);
       }
     }
   }, [
     isLoadingMessages,
     isLoadingDetails,
-    messagesData,
+    infiniteMessagesData,
     details,
     hasTriggeredAuto,
     handleRefine,
@@ -270,6 +306,9 @@ export default function ResolverResponsePage() {
                   onRevert={handleRevert}
                   onRefine={handleRefine}
                   onRetry={handleRetry}
+                  onLoadMore={handleLoadMoreMessages}
+                  isLoadingMore={isFetchingNextPage}
+                  hasMore={hasNextPage}
                 />
               ) : (
                 <ResponseKeyPoints

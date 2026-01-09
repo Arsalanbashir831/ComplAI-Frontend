@@ -1,7 +1,12 @@
 'use client';
 
 import { API_ROUTES } from '@/constants/apiRoutes';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import type { Citation } from '@/types/chat';
 import apiCaller, { RequestData } from '@/config/apiCaller';
@@ -19,6 +24,10 @@ export interface Complaint {
   last_seq: number;
   // UI helper fields
   type?: 'document' | 'text';
+  context?: {
+    id: string;
+    system_prompt: string;
+  };
 }
 
 export interface ComplaintListResponse {
@@ -167,6 +176,24 @@ export const useResolver = () => {
       queryKey: ['complaints', limit, offset],
       queryFn: () => fetchComplaints(limit, offset),
       staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+  };
+
+  // Query: Infinite complaints list
+  const useInfiniteComplaintsList = (limit = 20) => {
+    return useInfiniteQuery<ComplaintListResponse, Error>({
+      queryKey: ['complaints', 'infinite', limit],
+      queryFn: ({ pageParam = 0 }) =>
+        fetchComplaints(limit, pageParam as number),
+      getNextPageParam: (lastPage) => {
+        const nextOffset = lastPage.offset + lastPage.results.length;
+        if (nextOffset < lastPage.total) {
+          return nextOffset;
+        }
+        return undefined;
+      },
+      initialPageParam: 0,
+      staleTime: 1000 * 60 * 5,
     });
   };
 
@@ -399,6 +426,7 @@ export const useResolver = () => {
 
   return {
     useComplaintsList,
+    useInfiniteComplaintsList,
     useKeyPoints,
     // Query: Get complaint details
     useComplaintDetails: (complaintId: string | undefined) => {
@@ -420,7 +448,7 @@ export const useResolver = () => {
       });
     },
     // Query: Get message history for a complaint
-    useMessagesList: (complaintId: string | undefined, limit = 50) => {
+    useMessagesList: (complaintId: string | undefined, limit = 30) => {
       return useQuery<MessageListResponse, Error>({
         queryKey: ['complaintMessages', complaintId, limit],
         queryFn: async () => {
@@ -435,6 +463,28 @@ export const useResolver = () => {
           );
           return response.data;
         },
+        enabled: !!complaintId,
+      });
+    },
+
+    // Query: Infinite message history for a complaint (Reverse/Older)
+    useInfiniteMessagesList: (complaintId: string | undefined, limit = 30) => {
+      return useInfiniteQuery<MessageListResponse, Error>({
+        queryKey: ['complaintMessages', 'infinite', complaintId, limit],
+        queryFn: async ({ pageParam }) => {
+          if (!complaintId) throw new Error('Complaint ID is required');
+          const cursor = pageParam as number | undefined;
+          const url = `${API_ROUTES.COMPLAINTS.GET_MESSAGES_LIST(complaintId)}?limit=${limit}${cursor ? `&before_seq=${cursor}` : ''}`;
+          const response = await apiCaller(url, 'GET', {}, {}, true, 'json');
+          return response.data;
+        },
+        getNextPageParam: (lastPage) => {
+          if (lastPage.has_more && lastPage.next_before_seq) {
+            return lastPage.next_before_seq;
+          }
+          return undefined;
+        },
+        initialPageParam: undefined,
         enabled: !!complaintId,
       });
     },
